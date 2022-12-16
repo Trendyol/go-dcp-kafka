@@ -1,0 +1,52 @@
+package kafka
+
+import (
+	"connector/config"
+	"context"
+	"github.com/segmentio/kafka-go"
+	"strings"
+)
+
+type Producer interface {
+	Produce(ctx *context.Context, message []byte, key []byte, headers map[string]string) error
+	Close() error
+}
+
+type producer struct {
+	writer *kafka.Writer
+}
+
+func NewProducer(config *config.Kafka) Producer {
+	writer := &kafka.Writer{
+		Topic:        config.Topic,
+		Addr:         kafka.TCP(strings.Split(config.Brokers, ",")...),
+		Balancer:     &kafka.Hash{},
+		MaxAttempts:  config.MaxAttempts,
+		ReadTimeout:  config.ReadTimeout,
+		WriteTimeout: config.WriteTimeout,
+		RequiredAcks: kafka.RequireOne,
+		//ErrorLogger:  SegmentioLog,
+	}
+	return &producer{
+		writer: writer,
+	}
+}
+
+func (a *producer) Produce(ctx *context.Context, message []byte, key []byte, headers map[string]string) error {
+	return a.writer.WriteMessages(*ctx, kafka.Message{Value: message, Headers: newHeaders(headers), Key: key})
+}
+
+func newHeaders(headersMap map[string]string) []kafka.Header {
+	var headers []kafka.Header
+	for key, value := range headersMap {
+		headers = append(headers, kafka.Header{
+			Key:   key,
+			Value: []byte(value),
+		})
+	}
+	return headers
+}
+
+func (a *producer) Close() error {
+	return a.writer.Close()
+}

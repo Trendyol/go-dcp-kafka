@@ -1,0 +1,32 @@
+hosts:
+  - localhost:8091
+username: user
+password: password
+bucketName: dcp-test
+userAgent: stdout-listener
+compression: true
+metadataBucket: dcp-test-meta
+connectTimeout: 10s
+dcp:
+  connectTimeout: 10s
+  flowControlBuffer: 16
+  persistencePollingInterval: 100ms
+  group:
+    name: groupName
+    membership:
+      type: static
+      memberNumber: 1
+      totalMembers: 1
+api:
+  port: 8080
+metric:
+  enabled: true
+  path: /metrics
+kafka:
+  topic: "topicname"
+  brokers: "broker1,broker2"
+  readTimeout: 30s
+  writeTimeout: 30s
+  maxAttempts: 3
+  producerBatchSize: 50
+  producerBatchTickerDuration: 5s
