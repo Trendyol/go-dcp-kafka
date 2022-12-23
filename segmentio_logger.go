@@ -1,4 +1,4 @@
-package main
+package godcpkafkaconnector
 
 type SegmentioLogger struct {
 }

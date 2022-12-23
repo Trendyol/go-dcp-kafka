@@ -1,9 +1,10 @@
 package kafka
 
 import (
-	"connector/config"
 	"context"
 	"github.com/segmentio/kafka-go"
+	"godcpkafkaconnector"
+	"godcpkafkaconnector/config"
 	"strings"
 )
 
@@ -16,7 +17,7 @@ type producer struct {
 	writer *kafka.Writer
 }
 
-func NewProducer(config *config.Kafka) Producer {
+func NewProducer(config *config.Kafka, logger godcpkafkaconnector.Logger, errorLogger godcpkafkaconnector.Logger) Producer {
 	writer := &kafka.Writer{
 		Topic:        config.Topic,
 		Addr:         kafka.TCP(strings.Split(config.Brokers, ",")...),
@@ -25,7 +26,8 @@ func NewProducer(config *config.Kafka) Producer {
 		ReadTimeout:  config.ReadTimeout,
 		WriteTimeout: config.WriteTimeout,
 		RequiredAcks: kafka.RequireOne,
-		//ErrorLogger:  SegmentioLog,
+		Logger:       logger,
+		ErrorLogger:  errorLogger,
 	}
 	return &producer{
 		writer: writer,

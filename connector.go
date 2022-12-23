@@ -1,12 +1,11 @@
-package main
+package godcpkafkaconnector
 
 import (
-	"connector/config"
-	"connector/couchbase"
-	kafka "connector/kafka/producer"
 	"context"
 	godcpclient "github.com/Trendyol/go-dcp-client"
-	"log"
+	"godcpkafkaconnector/config"
+	"godcpkafkaconnector/couchbase"
+	kafka "godcpkafkaconnector/kafka/producer"
 )
 
 type Connector interface {
@@ -15,10 +14,12 @@ type Connector interface {
 }
 
 type connector struct {
-	dcp      godcpclient.Dcp
-	mapper   Mapper
-	producer kafka.Producer
-	config   *config.Config
+	dcp         godcpclient.Dcp
+	mapper      Mapper
+	producer    kafka.Producer
+	config      *config.Config
+	logger      Logger
+	errorLogger Logger
 }
 
 func (c *connector) Start() {
@@ -31,7 +32,7 @@ func (c *connector) Close() {
 
 func (c *connector) listener(event interface{}, err error) {
 	if err != nil {
-		log.Printf("error | %v", err)
+		c.errorLogger.Printf("error | %v", err)
 		return
 	}
 
@@ -50,7 +51,7 @@ func (c *connector) listener(event interface{}, err error) {
 
 		messageValue, err := JsonIter.Marshal(message.Value)
 		if err != nil {
-			log.Printf("error | %v", err)
+			c.errorLogger.Printf("error | %v", err)
 			return
 		}
 
@@ -65,25 +66,35 @@ func (c *connector) listener(event interface{}, err error) {
 		ctx := context.TODO()
 		err = c.producer.Produce(&ctx, messageValue, messageKey, message.Headers)
 		if err != nil {
-			panic("error")
+			c.errorLogger.Printf("error | %v", err)
 		}
 	}
 
 }
 
 func NewConnector(configPath string, mapper Mapper) Connector {
-	c := config.NewConfig("cbgokafka", configPath)
+	return newConnector(configPath, mapper, &Log, &Log)
+}
+
+func NewConnectorWithLoggers(configPath string, mapper Mapper, logger Logger, errorLogger Logger) Connector {
+	return newConnector(configPath, mapper, logger, errorLogger)
+}
+
+func newConnector(configPath string, mapper Mapper, logger Logger, errorLogger Logger) Connector {
+	c := config.NewConfig("cbgokafka", configPath, errorLogger)
 
 	connector := &connector{
-		mapper: mapper,
-		config: c,
+		mapper:      mapper,
+		config:      c,
+		logger:      logger,
+		errorLogger: errorLogger,
 	}
 
 	dcp, err := godcpclient.NewDcp(configPath, connector.listener)
 	if err != nil {
-		panic(err)
+		connector.errorLogger.Printf("Dcp error: %v", err)
 	}
 	connector.dcp = dcp
-	connector.producer = kafka.NewProducer(c.Kafka)
+	connector.producer = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger)
 	return connector
 }

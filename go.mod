@@ -1,4 +1,4 @@
-module connector
+module godcpkafkaconnector
 
 go 1.19
 

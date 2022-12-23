@@ -1,8 +1,8 @@
-package main
+package godcpkafkaconnector
 
 import (
-	"connector/couchbase"
-	"connector/kafka"
+	"godcpkafkaconnector/couchbase"
+	"godcpkafkaconnector/kafka"
 )
 
 func mapper(event *couchbase.Event) *kafka.Message {

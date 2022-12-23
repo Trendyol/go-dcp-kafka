@@ -1,4 +1,4 @@
-package main
+package godcpkafkaconnector
 
 import "github.com/json-iterator/go"
 
