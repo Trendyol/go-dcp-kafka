@@ -29,6 +29,10 @@ func (c *connector) Start() {
 
 func (c *connector) Close() {
 	c.dcp.Close()
+	err := c.producer.Close()
+	if err != nil {
+		c.errorLogger.Printf("error | %v", err)
+	}
 }
 
 func (c *connector) listener(event interface{}, err error) {
