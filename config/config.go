@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
-	"godcpkafkaconnector"
+	"godcpkafkaconnector/logger"
 	"time"
 )
 
@@ -28,7 +28,7 @@ func Options(opts *config.Options) {
 	opts.EnableCache = true
 }
 
-func NewConfig(name string, filePath string, errorLogger godcpkafkaconnector.Logger) *Config {
+func NewConfig(name string, filePath string, errorLogger logger.Logger) *Config {
 	conf := config.New(name).WithOptions(Options).WithDriver(yamlv3.Driver)
 
 	err := conf.LoadFiles(filePath)

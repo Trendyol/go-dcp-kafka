@@ -3,8 +3,8 @@ package kafka
 import (
 	"context"
 	"github.com/segmentio/kafka-go"
-	"godcpkafkaconnector"
 	"godcpkafkaconnector/config"
+	"godcpkafkaconnector/logger"
 	"strings"
 )
 
@@ -17,7 +17,7 @@ type producer struct {
 	writer *kafka.Writer
 }
 
-func NewProducer(config *config.Kafka, logger godcpkafkaconnector.Logger, errorLogger godcpkafkaconnector.Logger) Producer {
+func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger) Producer {
 	writer := &kafka.Writer{
 		Topic:        config.Topic,
 		Addr:         kafka.TCP(strings.Split(config.Brokers, ",")...),

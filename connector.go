@@ -6,6 +6,7 @@ import (
 	"godcpkafkaconnector/config"
 	"godcpkafkaconnector/couchbase"
 	kafka "godcpkafkaconnector/kafka/producer"
+	"godcpkafkaconnector/logger"
 )
 
 type Connector interface {
@@ -18,8 +19,8 @@ type connector struct {
 	mapper      Mapper
 	producer    kafka.Producer
 	config      *config.Config
-	logger      Logger
-	errorLogger Logger
+	logger      logger.Logger
+	errorLogger logger.Logger
 }
 
 func (c *connector) Start() {
@@ -45,6 +46,8 @@ func (c *connector) listener(event interface{}, err error) {
 		e = couchbase.NewExpireEvent(string(event.Key), nil)
 	case godcpclient.DcpDeletion:
 		e = couchbase.NewDeleteEvent(string(event.Key), nil)
+	default:
+		return
 	}
 
 	if message := c.mapper(e); message != nil {
@@ -73,14 +76,14 @@ func (c *connector) listener(event interface{}, err error) {
 }
 
 func NewConnector(configPath string, mapper Mapper) Connector {
-	return newConnector(configPath, mapper, &Log, &Log)
+	return newConnector(configPath, mapper, &logger.Log, &logger.Log)
 }
 
-func NewConnectorWithLoggers(configPath string, mapper Mapper, logger Logger, errorLogger Logger) Connector {
+func NewConnectorWithLoggers(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) Connector {
 	return newConnector(configPath, mapper, logger, errorLogger)
 }
 
-func newConnector(configPath string, mapper Mapper, logger Logger, errorLogger Logger) Connector {
+func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) Connector {
 	c := config.NewConfig("cbgokafka", configPath, errorLogger)
 
 	connector := &connector{

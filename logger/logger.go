@@ -1,4 +1,4 @@
-package godcpkafkaconnector
+package logger
 
 import "fmt"
 

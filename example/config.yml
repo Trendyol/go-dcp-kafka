@@ -3,6 +3,8 @@ hosts:
 username: user
 password: password
 bucketName: dcp-test
+scopeName: _default
+collectionName: _default
 userAgent: stdout-listener
 compression: true
 metadataBucket: dcp-test-meta
