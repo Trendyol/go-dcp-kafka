@@ -10,7 +10,7 @@ type Logger interface {
 type DefaultLogger struct{}
 
 func (d *DefaultLogger) Printf(msg string, args ...interface{}) {
-	fmt.Printf(msg, args)
+	fmt.Printf(msg, args...)
 }
 
 var Log = DefaultLogger{}

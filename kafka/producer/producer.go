@@ -5,7 +5,9 @@ import (
 	"github.com/segmentio/kafka-go"
 	"godcpkafkaconnector/config"
 	"godcpkafkaconnector/logger"
+	"math"
 	"strings"
+	"time"
 )
 
 type Producer interface {
@@ -14,7 +16,7 @@ type Producer interface {
 }
 
 type producer struct {
-	writer *kafka.Writer
+	producerBatch *producerBatch
 }
 
 func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger) Producer {
@@ -22,20 +24,25 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 		Topic:        config.Topic,
 		Addr:         kafka.TCP(strings.Split(config.Brokers, ",")...),
 		Balancer:     &kafka.Hash{},
-		MaxAttempts:  config.MaxAttempts,
+		MaxAttempts:  math.MaxInt,
 		ReadTimeout:  config.ReadTimeout,
 		WriteTimeout: config.WriteTimeout,
-		RequiredAcks: kafka.RequireOne,
+		RequiredAcks: kafka.RequiredAcks(config.RequiredAcks),
 		Logger:       logger,
 		ErrorLogger:  errorLogger,
 	}
 	return &producer{
-		writer: writer,
+		producerBatch: NewProducerBatch(config.ProducerBatchTickerDuration, writer, config.ProducerBatchSize, logger, errorLogger),
 	}
 }
 
 func (a *producer) Produce(ctx *context.Context, message []byte, key []byte, headers map[string]string) error {
-	return a.writer.WriteMessages(*ctx, kafka.Message{Value: message, Headers: newHeaders(headers), Key: key})
+	kafkaMessage := kafkaMessagePool.New().(kafka.Message)
+	kafkaMessage.Key = key
+	kafkaMessage.Value = message
+	kafkaMessage.Headers = newHeaders(headers)
+
+	return a.producerBatch.AddMessage(kafkaMessage)
 }
 
 func newHeaders(headersMap map[string]string) []kafka.Header {
@@ -50,5 +57,8 @@ func newHeaders(headersMap map[string]string) []kafka.Header {
 }
 
 func (a *producer) Close() error {
-	return a.writer.Close()
+	a.producerBatch.isClosed <- true
+	// TODO: Wait until batch is clear
+	time.Sleep(2 * time.Second)
+	return a.producerBatch.Writer.Close()
 }

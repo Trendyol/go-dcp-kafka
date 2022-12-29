@@ -12,10 +12,9 @@ type Kafka struct {
 	Topic                       string        `yaml:"topic"`
 	ProducerBatchSize           int           `yaml:"producerBatchSize"`
 	ProducerBatchTickerDuration time.Duration `yaml:"producerBatchTickerDuration"`
-	MaxAttempts                 int           `yaml:"maxAttempts"`
 	ReadTimeout                 time.Duration `yaml:"readTimeout"`
 	WriteTimeout                time.Duration `yaml:"writeTimeout"`
-	RequiredAcks                string        `yaml:"requiredAcks"`
+	RequiredAcks                int           `yaml:"requiredAcks"`
 }
 
 type Config struct {

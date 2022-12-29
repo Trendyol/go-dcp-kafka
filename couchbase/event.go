@@ -1,21 +1,21 @@
 package couchbase
 
 type Event struct {
-	Key       string
-	Value     *string
+	Key       []byte
+	Value     []byte
 	IsDeleted bool
 	IsExpired bool
 	IsMutated bool
 }
 
-func NewDeleteEvent(key string, value *string) *Event {
+func NewDeleteEvent(key []byte, value []byte) *Event {
 	return &Event{Key: key, Value: value, IsDeleted: true}
 }
 
-func NewExpireEvent(key string, value *string) *Event {
+func NewExpireEvent(key []byte, value []byte) *Event {
 	return &Event{Key: key, Value: value, IsExpired: true}
 }
 
-func NewMutateEvent(key string, value *string) *Event {
+func NewMutateEvent(key []byte, value []byte) *Event {
 	return &Event{Key: key, Value: value, IsMutated: true}
 }

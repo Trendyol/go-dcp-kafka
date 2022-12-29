@@ -1,7 +1,7 @@
 package kafka
 
 type Message struct {
-	Key     *string
-	Value   interface{}
+	Key     []byte
+	Value   []byte
 	Headers map[string]string
 }

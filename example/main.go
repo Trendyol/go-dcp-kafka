@@ -8,7 +8,7 @@ import (
 
 func mapper(event *couchbase.Event) *kafka.Message {
 	return &kafka.Message{
-		Key:     &event.Key,
+		Key:     event.Key,
 		Value:   event.Value,
 		Headers: map[string]string{},
 	}

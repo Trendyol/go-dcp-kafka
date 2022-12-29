@@ -29,6 +29,6 @@ kafka:
   brokers: "broker1,broker2"
   readTimeout: 30s
   writeTimeout: 30s
-  maxAttempts: 3
   producerBatchSize: 50
   producerBatchTickerDuration: 5s
+  requiredAcks: 1

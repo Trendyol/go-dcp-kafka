@@ -44,34 +44,19 @@ func (c *connector) listener(event interface{}, err error) {
 	var e *couchbase.Event
 	switch event := event.(type) {
 	case godcpclient.DcpMutation:
-		v := string(event.Value)
-		e = couchbase.NewMutateEvent(string(event.Key), &v)
+		e = couchbase.NewMutateEvent(event.Key, event.Value)
 	case godcpclient.DcpExpiration:
-		e = couchbase.NewExpireEvent(string(event.Key), nil)
+		e = couchbase.NewExpireEvent(event.Key, nil)
 	case godcpclient.DcpDeletion:
-		e = couchbase.NewDeleteEvent(string(event.Key), nil)
+		e = couchbase.NewDeleteEvent(event.Key, nil)
 	default:
 		return
 	}
 
 	if message := c.mapper(e); message != nil {
-
-		messageValue, err := JsonIter.Marshal(message.Value)
-		if err != nil {
-			c.errorLogger.Printf("error | %v", err)
-			return
-		}
-
-		var messageKey []byte
-		if message.Key != nil {
-			messageKey = []byte(*message.Key)
-		} else {
-			messageKey = nil
-		}
-
 		// TODO: use contexts
 		ctx := context.TODO()
-		err = c.producer.Produce(&ctx, messageValue, messageKey, message.Headers)
+		err = c.producer.Produce(&ctx, message.Value, message.Key, message.Headers)
 		if err != nil {
 			c.errorLogger.Printf("error | %v", err)
 		}
