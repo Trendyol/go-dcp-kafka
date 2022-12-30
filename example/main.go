@@ -1,6 +1,7 @@
 package main
 
 import (
+	gokafkaconnectcouchbase "github.com/Trendyol/go-kafka-connect-couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
 )
@@ -15,7 +16,7 @@ func mapper(event *couchbase.Event) *kafka.Message {
 }
 
 func main() {
-	connector := godcpkafkaconnector.NewConnector("./example/config.yml", mapper)
+	connector := gokafkaconnectcouchbase.NewConnector("./example/config.yml", mapper)
 
 	defer connector.Close()
 

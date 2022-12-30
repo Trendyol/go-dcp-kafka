@@ -10,7 +10,7 @@ import (
 )
 
 type Kafka struct {
-	Brokers                     string        `yaml:"brokers"`
+	Brokers                     []string      `yaml:"brokers"`
 	Topic                       string        `yaml:"topic"`
 	ProducerBatchSize           int           `yaml:"producerBatchSize"`
 	ProducerBatchTickerDuration time.Duration `yaml:"producerBatchTickerDuration"`
