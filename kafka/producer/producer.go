@@ -39,13 +39,7 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 }
 
 func (a *producer) Produce(ctx *context.Context, message []byte, key []byte, headers map[string]string) error {
-	kafkaMessage := kafkaMessagePool.Get().(kafka.Message)
-
-	kafkaMessage.Key = key
-	kafkaMessage.Value = message
-	kafkaMessage.Headers = newHeaders(headers)
-
-	return a.producerBatch.AddMessage(kafkaMessage)
+	return a.producerBatch.AddMessage(kafka.Message{Key: key, Value: message, Headers: newHeaders(headers)})
 }
 
 func newHeaders(headersMap map[string]string) []kafka.Header {

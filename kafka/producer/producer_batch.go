@@ -91,16 +91,8 @@ func (b *producerBatch) FlushMessages() error {
 	if err != nil {
 		return err
 	}
-	for _, message := range b.messages {
-		kafkaMessagePool.Put(message)
-	}
+
 	b.messages = b.messages[:0]
 	b.batchTicker.Reset(b.batchTickerDuration)
 	return nil
-}
-
-var kafkaMessagePool = sync.Pool{
-	New: func() any {
-		return kafka.Message{}
-	},
 }
