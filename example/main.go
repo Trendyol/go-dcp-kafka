@@ -3,16 +3,12 @@ package main
 import (
 	gokafkaconnectcouchbase "github.com/Trendyol/go-kafka-connect-couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 )
 
-func mapper(event *couchbase.Event) *kafka.Message {
+func mapper(event couchbase.Event) *message.KafkaMessage {
 	// return nil if you wish filter the event
-	return &kafka.Message{
-		Key:     event.Key,
-		Value:   event.Value,
-		Headers: nil,
-	}
+	return message.GetKafkaMessage(event.Key, event.Value, nil)
 }
 
 func main() {

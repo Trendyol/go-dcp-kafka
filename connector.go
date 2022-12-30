@@ -3,6 +3,8 @@ package gokafkaconnectcouchbase
 import (
 	"context"
 
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
+
 	godcpclient "github.com/Trendyol/go-dcp-client"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
@@ -42,7 +44,7 @@ func (c *connector) listener(event interface{}, err error) {
 		return
 	}
 
-	var e *couchbase.Event
+	var e couchbase.Event
 	switch event := event.(type) {
 	case godcpclient.DcpMutation:
 		e = couchbase.NewMutateEvent(event.Key, event.Value)
@@ -53,12 +55,12 @@ func (c *connector) listener(event interface{}, err error) {
 	default:
 		return
 	}
-	defer couchbase.CbDcpEventPool.Put(e)
 
-	if message := c.mapper(e); message != nil {
+	if kafkaMessage := c.mapper(e); kafkaMessage != nil {
+		defer message.KafkaMessagePool.Put(kafkaMessage)
 		// TODO: use contexts
 		ctx := context.TODO()
-		err = c.producer.Produce(&ctx, message.Value, message.Key, message.Headers)
+		err = c.producer.Produce(&ctx, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers)
 		if err != nil {
 			c.errorLogger.Printf("error | %v", err)
 		}

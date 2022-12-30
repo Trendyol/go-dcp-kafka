@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/Trendyol/go-dcp-client v0.0.3
 	github.com/gookit/config/v2 v2.1.8
-	github.com/json-iterator/go v1.1.12
 	github.com/segmentio/kafka-go v0.4.38
 )
 
@@ -29,6 +28,7 @@ require (
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/gookit/goutil v0.5.15 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect

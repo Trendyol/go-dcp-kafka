@@ -11,15 +11,15 @@ import (
 )
 
 type producerBatch struct {
-	batchTickerDuration time.Duration
-	batchTicker         *time.Ticker
-	messages            []kafka.Message
-	flushMutex          sync.Mutex
-	Writer              *kafka.Writer
-	batchLimit          int
-	isClosed            chan bool
 	logger              logger.Logger
 	errorLogger         logger.Logger
+	batchTicker         *time.Ticker
+	Writer              *kafka.Writer
+	isClosed            chan bool
+	messages            []kafka.Message
+	batchTickerDuration time.Duration
+	batchLimit          int
+	flushMutex          sync.Mutex
 }
 
 func newProducerBatch(

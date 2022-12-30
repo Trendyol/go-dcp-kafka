@@ -1,7 +1,5 @@
 package couchbase
 
-import "sync"
-
 type Event struct {
 	Key       []byte
 	Value     []byte
@@ -10,33 +8,26 @@ type Event struct {
 	IsMutated bool
 }
 
-func NewDeleteEvent(key []byte, value []byte) *Event {
-	event := getEvent(key, value)
-	event.IsDeleted = true
-	return event
+func NewDeleteEvent(key []byte, value []byte) Event {
+	return Event{
+		Key:       key,
+		Value:     value,
+		IsDeleted: true,
+	}
 }
 
-func NewExpireEvent(key []byte, value []byte) *Event {
-	event := getEvent(key, value)
-	event.IsExpired = true
-	return event
+func NewExpireEvent(key []byte, value []byte) Event {
+	return Event{
+		Key:       key,
+		Value:     value,
+		IsExpired: true,
+	}
 }
 
-func NewMutateEvent(key []byte, value []byte) *Event {
-	event := getEvent(key, value)
-	event.IsMutated = true
-	return event
-}
-
-func getEvent(key []byte, value []byte) *Event {
-	event := CbDcpEventPool.Get().(*Event)
-	event.Key = key
-	event.Value = value
-	return event
-}
-
-var CbDcpEventPool = sync.Pool{
-	New: func() any {
-		return &Event{}
-	},
+func NewMutateEvent(key []byte, value []byte) Event {
+	return Event{
+		Key:       key,
+		Value:     value,
+		IsMutated: true,
+	}
 }
