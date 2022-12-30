@@ -7,6 +7,7 @@ import (
 )
 
 func mapper(event *couchbase.Event) *kafka.Message {
+	// return nil if you wish filter the event
 	return &kafka.Message{
 		Key:     event.Key,
 		Value:   event.Value,
