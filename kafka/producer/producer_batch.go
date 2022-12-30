@@ -2,9 +2,10 @@ package kafka
 
 import (
 	"context"
-	"godcpkafkaconnector/logger"
 	"sync"
 	"time"
+
+	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 
 	"github.com/segmentio/kafka-go"
 )

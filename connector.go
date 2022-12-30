@@ -1,13 +1,13 @@
-package godcpkafkaconnector
+package gokafkaconnectcouchbase
 
 import (
 	"context"
-	"godcpkafkaconnector/config"
-	"godcpkafkaconnector/couchbase"
-	kafka "godcpkafkaconnector/kafka/producer"
-	"godcpkafkaconnector/logger"
 
 	godcpclient "github.com/Trendyol/go-dcp-client"
+	"github.com/Trendyol/go-kafka-connect-couchbase/config"
+	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
+	kafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
+	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 )
 
 type Connector interface {

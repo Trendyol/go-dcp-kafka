@@ -2,11 +2,12 @@ package kafka
 
 import (
 	"context"
-	"godcpkafkaconnector/config"
-	"godcpkafkaconnector/logger"
 	"math"
 	"strings"
 	"time"
+
+	"github.com/Trendyol/go-kafka-connect-couchbase/config"
+	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 
 	"github.com/segmentio/kafka-go"
 )

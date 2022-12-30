@@ -1,9 +1,8 @@
 package main
 
 import (
-	"godcpkafkaconnector"
-	"godcpkafkaconnector/couchbase"
-	"godcpkafkaconnector/kafka"
+	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
 )
 
 func mapper(event *couchbase.Event) *kafka.Message {

@@ -1,4 +1,4 @@
-module godcpkafkaconnector
+module github.com/Trendyol/go-kafka-connect-couchbase
 
 go 1.19
 
