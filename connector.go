@@ -53,6 +53,7 @@ func (c *connector) listener(event interface{}, err error) {
 	default:
 		return
 	}
+	defer couchbase.CbDcpEventPool.Put(e)
 
 	if message := c.mapper(e); message != nil {
 		// TODO: use contexts
