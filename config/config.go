@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/gookit/config/v2"
-	"github.com/gookit/config/v2/yamlv3"
 	"godcpkafkaconnector/logger"
 	"time"
+
+	"github.com/gookit/config/v2"
+	"github.com/gookit/config/v2/yamlv3"
 )
 
 type Kafka struct {
@@ -31,7 +32,6 @@ func NewConfig(name string, filePath string, errorLogger logger.Logger) *Config 
 	conf := config.New(name).WithOptions(Options).WithDriver(yamlv3.Driver)
 
 	err := conf.LoadFiles(filePath)
-
 	if err != nil {
 		errorLogger.Printf("Error while reading config %v", err)
 	}

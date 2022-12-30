@@ -2,12 +2,13 @@ package kafka
 
 import (
 	"context"
-	"github.com/segmentio/kafka-go"
 	"godcpkafkaconnector/config"
 	"godcpkafkaconnector/logger"
 	"math"
 	"strings"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
 type Producer interface {
@@ -32,7 +33,7 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 		ErrorLogger:  errorLogger,
 	}
 	return &producer{
-		producerBatch: NewProducerBatch(config.ProducerBatchTickerDuration, writer, config.ProducerBatchSize, logger, errorLogger),
+		producerBatch: newProducerBatch(config.ProducerBatchTickerDuration, writer, config.ProducerBatchSize, logger, errorLogger),
 	}
 }
 

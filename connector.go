@@ -2,11 +2,12 @@ package godcpkafkaconnector
 
 import (
 	"context"
-	godcpclient "github.com/Trendyol/go-dcp-client"
 	"godcpkafkaconnector/config"
 	"godcpkafkaconnector/couchbase"
 	kafka "godcpkafkaconnector/kafka/producer"
 	"godcpkafkaconnector/logger"
+
+	godcpclient "github.com/Trendyol/go-dcp-client"
 )
 
 type Connector interface {
@@ -61,7 +62,6 @@ func (c *connector) listener(event interface{}, err error) {
 			c.errorLogger.Printf("error | %v", err)
 		}
 	}
-
 }
 
 func NewConnector(configPath string, mapper Mapper) Connector {

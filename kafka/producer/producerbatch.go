@@ -2,10 +2,11 @@ package kafka
 
 import (
 	"context"
-	"github.com/segmentio/kafka-go"
 	"godcpkafkaconnector/logger"
 	"sync"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
 type producerBatch struct {
@@ -20,7 +21,13 @@ type producerBatch struct {
 	errorLogger         logger.Logger
 }
 
-func NewProducerBatch(batchTime time.Duration, writer *kafka.Writer, batchLimit int, logger logger.Logger, errorLogger logger.Logger) *producerBatch {
+func newProducerBatch(
+	batchTime time.Duration,
+	writer *kafka.Writer,
+	batchLimit int,
+	logger logger.Logger,
+	errorLogger logger.Logger,
+) *producerBatch {
 	batch := &producerBatch{
 		batchTickerDuration: batchTime,
 		batchTicker:         time.NewTicker(batchTime),
@@ -34,11 +41,9 @@ func NewProducerBatch(batchTime time.Duration, writer *kafka.Writer, batchLimit 
 	go func() {
 		errChan := make(chan error, 1)
 		batch.CheckBatchTicker(errChan)
-		for {
-			select {
-			case err := <-errChan:
-				errorLogger.Printf("Batch producer flush error %v", err)
-			}
+
+		for err := range errChan {
+			errorLogger.Printf("Batch producer flush error %v", err)
 		}
 	}()
 	return batch

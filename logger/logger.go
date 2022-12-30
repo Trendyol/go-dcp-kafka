@@ -15,6 +15,6 @@ func (d *DefaultLogger) Printf(msg string, args ...interface{}) {
 
 var Log = DefaultLogger{}
 
-type LoggerFunc func(string, ...interface{})
+type LogFunc func(string, ...interface{})
 
-func (f LoggerFunc) Printf(msg string, args ...interface{}) { f(msg, args...) }
+func (f LogFunc) Printf(msg string, args ...interface{}) { f(msg, args...) }
