@@ -3,7 +3,6 @@ package kafka
 import (
 	"context"
 	"math"
-	"strings"
 	"time"
 
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
@@ -24,7 +23,7 @@ type producer struct {
 func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger) Producer {
 	writer := &kafka.Writer{
 		Topic:        config.Topic,
-		Addr:         kafka.TCP(strings.Split(config.Brokers, ",")...),
+		Addr:         kafka.TCP(config.Brokers...),
 		Balancer:     &kafka.Hash{},
 		MaxAttempts:  math.MaxInt,
 		ReadTimeout:  config.ReadTimeout,
