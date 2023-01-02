@@ -4,7 +4,8 @@ username: user
 password: password
 bucketName: dcp-test
 scopeName: _default
-collectionName: _default
+collectionNames:
+  - _default
 userAgent: stdout-listener
 compression: true
 metadataBucket: dcp-test-meta
