@@ -74,7 +74,7 @@ func (b *producerBatch) StartBatch() {
 }
 
 func (b *producerBatch) FlushMessages() error {
-	messageCount := len(b.messageChn)
+	messageCount := len(b.messages)
 	if messageCount == 0 {
 		return nil
 	}
