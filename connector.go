@@ -1,8 +1,6 @@
 package gokafkaconnectcouchbase
 
 import (
-	"context"
-
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 
 	godcpclient "github.com/Trendyol/go-dcp-client"
@@ -57,13 +55,8 @@ func (c *connector) listener(event interface{}, err error) {
 	}
 
 	if kafkaMessage := c.mapper(e); kafkaMessage != nil {
-		defer message.KafkaMessagePool.Put(kafkaMessage)
-		// TODO: use contexts
-		ctx := context.TODO()
-		err = c.producer.Produce(&ctx, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers)
-		if err != nil {
-			c.errorLogger.Printf("error | %v", err)
-		}
+		defer message.MessagePool.Put(kafkaMessage)
+		c.producer.Produce(kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers)
 	}
 }
 

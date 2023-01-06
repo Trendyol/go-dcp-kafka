@@ -11,14 +11,14 @@ type KafkaMessage struct {
 }
 
 func GetKafkaMessage(key []byte, value []byte, headers map[string]string) *KafkaMessage {
-	message := KafkaMessagePool.Get().(*KafkaMessage)
+	message := MessagePool.Get().(*KafkaMessage)
 	message.Key = key
 	message.Value = value
 	message.Headers = headers
 	return message
 }
 
-var KafkaMessagePool = sync.Pool{
+var MessagePool = sync.Pool{
 	New: func() any {
 		return &KafkaMessage{}
 	},

@@ -1,8 +1,8 @@
 package kafka
 
 import (
-	"context"
 	"math"
+	"sync"
 	"time"
 
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
@@ -12,7 +12,7 @@ import (
 )
 
 type Producer interface {
-	Produce(ctx *context.Context, message []byte, key []byte, headers map[string]string) error
+	Produce(message []byte, key []byte, headers map[string]string)
 	Close() error
 }
 
@@ -25,6 +25,8 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 		Topic:        config.Topic,
 		Addr:         kafka.TCP(config.Brokers...),
 		Balancer:     &kafka.Hash{},
+		BatchSize:    config.ProducerBatchSize,
+		BatchBytes:   math.MaxInt,
 		MaxAttempts:  math.MaxInt,
 		ReadTimeout:  config.ReadTimeout,
 		WriteTimeout: config.WriteTimeout,
@@ -37,8 +39,18 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 	}
 }
 
-func (a *producer) Produce(ctx *context.Context, message []byte, key []byte, headers map[string]string) error {
-	return a.producerBatch.AddMessage(kafka.Message{Key: key, Value: message, Headers: newHeaders(headers)})
+var KafkaMessagePool = sync.Pool{
+	New: func() any {
+		return &kafka.Message{}
+	},
+}
+
+func (a *producer) Produce(message []byte, key []byte, headers map[string]string) {
+	msg := KafkaMessagePool.Get().(*kafka.Message)
+	msg.Key = key
+	msg.Value = message
+	msg.Headers = newHeaders(headers)
+	a.producerBatch.messageChn <- msg
 }
 
 func newHeaders(headersMap map[string]string) []kafka.Header {
