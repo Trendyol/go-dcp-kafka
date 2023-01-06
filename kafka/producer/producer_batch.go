@@ -61,6 +61,7 @@ func (b *producerBatch) StartBatch() {
 
 			case message := <-b.messageChn:
 				b.messages = append(b.messages, *message)
+				KafkaMessagePool.Put(message)
 				if len(b.messages) == b.batchLimit {
 					err := b.FlushMessages()
 					if err != nil {
