@@ -12,19 +12,12 @@ metadataBucket: dcp-test-meta
 connectTimeout: 10s
 dcp:
   connectTimeout: 10s
-  flowControlBuffer: 16
-  persistencePollingInterval: 100ms
   group:
     name: groupName
     membership:
       type: static
       memberNumber: 1
       totalMembers: 1
-api:
-  port: 8080
-metric:
-  enabled: true
-  path: /metrics
 kafka:
   topic: "topicname"
   brokers:
@@ -35,3 +28,17 @@ kafka:
   producerBatchSize: 50
   producerBatchTickerDuration: 5s
   requiredAcks: 1
+
+  #SSL configurations
+  secureConnection: true
+  #Config support env variable "$HOME/example/..."
+  rootCAPath: "example/stretch-kafka/rootCA.pem"
+  interCAPath: "example/stretch-kafka/interCA.pem"
+  scramUsername: "username"
+  scramPassword: "password"
+
+checkpoint:
+  timeout: 100s
+
+logging:
+  level: debug
