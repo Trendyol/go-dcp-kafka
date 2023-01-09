@@ -32,6 +32,7 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 		Balancer:     &kafka.Hash{},
 		BatchSize:    config.ProducerBatchSize,
 		BatchBytes:   math.MaxInt,
+		BatchTimeout: 500 * time.Microsecond,
 		MaxAttempts:  math.MaxInt,
 		ReadTimeout:  config.ReadTimeout,
 		WriteTimeout: config.WriteTimeout,
