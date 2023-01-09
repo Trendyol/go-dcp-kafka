@@ -1,7 +1,8 @@
-package kafka
+package segmentio
 
 import (
 	"context"
+	kafka2 "github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 	"time"
 
 	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
@@ -51,21 +52,21 @@ func (b *producerBatch) StartBatch() {
 				b.batchTicker.Stop()
 				err := b.FlushMessages()
 				if err != nil {
-					b.errorLogger.Printf("Batch producer flush error %v", err)
+					b.errorLogger.Printf("Batch segmentio flush error %v", err)
 				}
 			case <-b.batchTicker.C:
 				err := b.FlushMessages()
 				if err != nil {
-					b.errorLogger.Printf("Batch producer flush error %v", err)
+					b.errorLogger.Printf("Batch segmentio flush error %v", err)
 				}
 
 			case message := <-b.messageChn:
 				b.messages = append(b.messages, *message)
-				KafkaMessagePool.Put(message)
+				kafka2.MessagePool.Put(message)
 				if len(b.messages) == b.batchLimit {
 					err := b.FlushMessages()
 					if err != nil {
-						b.errorLogger.Printf("Batch producer flush error %v", err)
+						b.errorLogger.Printf("Batch segmentio flush error %v", err)
 					}
 				}
 			}

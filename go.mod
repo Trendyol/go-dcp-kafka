@@ -6,6 +6,7 @@ require (
 	github.com/Trendyol/go-dcp-client v0.0.8
 	github.com/gookit/config/v2 v2.1.8
 	github.com/segmentio/kafka-go v0.4.38
+	github.com/twmb/franz-go v1.11.0
 )
 
 require (
@@ -44,6 +45,7 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
+	github.com/twmb/franz-go/pkg/kmsg v1.2.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.40.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

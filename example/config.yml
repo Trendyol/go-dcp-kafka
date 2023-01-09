@@ -26,6 +26,7 @@ kafka:
   readTimeout: 30s
   writeTimeout: 30s
   producerBatchSize: 50
+  producerBatchTimeout: 500ms
   producerBatchTickerDuration: 5s
   requiredAcks: 1
 

@@ -17,11 +17,12 @@ type Kafka struct {
 	RootCAPath                  string        `yaml:"rootCAPath"`
 	Brokers                     []string      `yaml:"brokers"`
 	ProducerBatchSize           int           `yaml:"producerBatchSize"`
+	RequiredAcks                int           `yaml:"requiredAcks"`
+	SecureConnection            bool          `yaml:"secureConnection"`
 	ProducerBatchTickerDuration time.Duration `yaml:"producerBatchTickerDuration"`
 	ReadTimeout                 time.Duration `yaml:"readTimeout"`
 	WriteTimeout                time.Duration `yaml:"writeTimeout"`
-	RequiredAcks                int           `yaml:"requiredAcks"`
-	SecureConnection            bool          `yaml:"secureConnection"`
+	ProducerBatchTimeout        time.Duration `yaml:"producerBatchTimeout"`
 }
 
 type Config struct {

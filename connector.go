@@ -1,12 +1,12 @@
 package gokafkaconnectcouchbase
 
 import (
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
-
 	godcpclient "github.com/Trendyol/go-dcp-client"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	kafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer/franz"
 	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 )
 
@@ -18,7 +18,7 @@ type Connector interface {
 type connector struct {
 	dcp         godcpclient.Dcp
 	mapper      Mapper
-	producer    kafka.Producer
+	producer    producer.Producer
 	config      *config.Config
 	logger      logger.Logger
 	errorLogger logger.Logger
@@ -83,6 +83,6 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 		connector.errorLogger.Printf("Dcp error: %v", err)
 	}
 	connector.dcp = dcp
-	connector.producer = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger)
+	connector.producer = franz.NewProducer(c.Kafka, connector.logger, connector.errorLogger) // switch package franz & segmentio
 	return connector
 }
