@@ -1,19 +1,36 @@
 # Go Kafka Connect Couchbase
 
-This repository contains go implementation of a Couchbase Kafka Connector.
+This repository contains the Go implementation of the Couchbase Kafka Connector.
 
 ### Contents
+
 ---
 
+* [What is Couchbase Kafka Connector?](#what-is-couchbase-kafka-connector)
 * [Why?](#why)
 * [Features](#features)
 * [Usage](#usage)
 * [Configuration](#configuration)
 * [Examples](#examples)
 
+### What is Couchbase Kafka Connector?
+Official Couchbase documentation defines the Couchbase Kafka Connector as follows:
+
+_The Couchbase Kafka connector is a plug-in for the Kafka Connect framework. It provides source and sink components._
+
+The **source connector** streams documents from Couchbase Database Change Protocol (DCP) and publishes each document to a Kafka topic in near real-time.
+
+The **sink connector** subscribes to Kafka topics and writes the messages to Couchbase.
+
+**Go Kafka Connect Couchbase is a source connector**. So it sends Couchbase mutations to Kafka as events.
+
+---
+
 ### Why?
 
-+ Our main goal is to build a kafka-connector for faster and stateful systems. 
++ Build a Couchbase Kafka Connector by using **Go** to reduce resource usage.
++ Suggesting more **configurations** so users can make changes to less code.
++ By presenting the connector as a **library**, ensuring that users do not clone the code they don't need.
 
 ---
 
@@ -21,17 +38,34 @@ This repository contains go implementation of a Couchbase Kafka Connector.
 ```
 package main
 
-func mapper(event *couchbase.Event) *kafka.Message {
-	// return nil if you wish filter the event
-	return &kafka.Message{
-		Key:     event.Key,
-		Value:   event.Value,
-		Headers: map[string]string{},
-	}
+func mapper(event couchbase.Event) *message.KafkaMessage {
+	// return nil if you wish to filter the event
+	return message.GetKafkaMessage(event.Key, event.Value, map[string]string{})
 }
 
 func main() {
-	connector := godcpkafkaconnector.NewConnector("./example/config.yml", mapper)
+	connector := gokafkaconnectcouchbase.NewConnector("./example/config.yml", mapper)
+
+	defer connector.Close()
+
+	connector.Start()
+}
+
+```
+
+Custom log structures can be used with the connector
+```
+package main
+
+type ConnectorLogger struct{}
+
+func (d *ConnectorLogger) Printf(msg string, args ...interface{}) {
+	zapLogger.Info(fmt.Sprintf(msg, args...))
+}
+
+func main() {
+	l := &ConnectorLogger{}
+	connector := gokafkaconnectcouchbase.NewConnectorWithLoggers("./example/config.yml", mapper, l, l)
 
 	defer connector.Close()
 
@@ -77,8 +111,8 @@ $ go get github.com/Trendyol/go-kafka-connect-couchbase
 | `kafka.brokers`                     | array                       | yes         |
 | `kafka.readTimeout`                 | integer                     | no          |
 | `kafka.writeTimeout`                | integer                     | no          |
-| `kafka.producerBatchSize`           | integer                     | no          |
-| `kafka.producerBatchTickerDuration` | integer                     | no          |
+| `kafka.producerBatchSize`           | integer                     | yes         |
+| `kafka.producerBatchTickerDuration` | integer                     | yes         |
 | `kafka.requiredAcks`                | integer                     | no          |
 | `kafka.secureConnection`            | boolean (true/false)        | no          |
 | `kafka.rootCAPath`                  | string                      | no          |
