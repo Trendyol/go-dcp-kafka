@@ -17,7 +17,7 @@ import (
 )
 
 type Producer interface {
-	Produce(message []byte, key []byte, headers map[string]string)
+	Produce(message []byte, key []byte, headers map[string]string, topic string)
 	Close() error
 }
 
@@ -27,7 +27,6 @@ type producer struct {
 
 func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger) Producer {
 	writer := &kafka.Writer{
-		Topic:        config.Topic,
 		Addr:         kafka.TCP(config.Brokers...),
 		Balancer:     &kafka.Hash{},
 		BatchSize:    config.ProducerBatchSize,
@@ -96,11 +95,12 @@ var KafkaMessagePool = sync.Pool{
 	},
 }
 
-func (a *producer) Produce(message []byte, key []byte, headers map[string]string) {
+func (a *producer) Produce(message []byte, key []byte, headers map[string]string, topic string) {
 	msg := KafkaMessagePool.Get().(*kafka.Message)
 	msg.Key = key
 	msg.Value = message
 	msg.Headers = newHeaders(headers)
+	msg.Topic = topic
 	a.producerBatch.messageChn <- msg
 }
 

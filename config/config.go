@@ -10,18 +10,18 @@ import (
 )
 
 type Kafka struct {
-	Topic                       string        `yaml:"topic"`
-	InterCAPath                 string        `yaml:"interCAPath"`
-	ScramUsername               string        `yaml:"scramUsername"`
-	ScramPassword               string        `yaml:"scramPassword"`
-	RootCAPath                  string        `yaml:"rootCAPath"`
-	Brokers                     []string      `yaml:"brokers"`
-	ProducerBatchSize           int           `yaml:"producerBatchSize"`
-	ProducerBatchTickerDuration time.Duration `yaml:"producerBatchTickerDuration"`
-	ReadTimeout                 time.Duration `yaml:"readTimeout"`
-	WriteTimeout                time.Duration `yaml:"writeTimeout"`
-	RequiredAcks                int           `yaml:"requiredAcks"`
-	SecureConnection            bool          `yaml:"secureConnection"`
+	CollectionTopicMapping      map[string]string `yaml:"collectionTopicMapping"`
+	InterCAPath                 string            `yaml:"interCAPath"`
+	ScramUsername               string            `yaml:"scramUsername"`
+	ScramPassword               string            `yaml:"scramPassword"`
+	RootCAPath                  string            `yaml:"rootCAPath"`
+	Brokers                     []string          `yaml:"brokers"`
+	ProducerBatchSize           int               `yaml:"producerBatchSize"`
+	ProducerBatchTickerDuration time.Duration     `yaml:"producerBatchTickerDuration"`
+	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
+	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
+	RequiredAcks                int               `yaml:"requiredAcks"`
+	SecureConnection            bool              `yaml:"secureConnection"`
 }
 
 type Config struct {
