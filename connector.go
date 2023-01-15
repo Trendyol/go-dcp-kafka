@@ -45,18 +45,29 @@ func (c *connector) listener(event interface{}, err error) {
 	var e couchbase.Event
 	switch event := event.(type) {
 	case godcpclient.DcpMutation:
-		e = couchbase.NewMutateEvent(event.Key, event.Value)
+		e = couchbase.NewMutateEvent(event.Key, event.Value, event.CollectionName)
 	case godcpclient.DcpExpiration:
-		e = couchbase.NewExpireEvent(event.Key, nil)
+		e = couchbase.NewExpireEvent(event.Key, nil, event.CollectionName)
 	case godcpclient.DcpDeletion:
-		e = couchbase.NewDeleteEvent(event.Key, nil)
+		e = couchbase.NewDeleteEvent(event.Key, nil, event.CollectionName)
 	default:
 		return
 	}
 
 	if kafkaMessage := c.mapper(e); kafkaMessage != nil {
 		defer message.MessagePool.Put(kafkaMessage)
-		c.producer.Produce(kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers)
+		var collectionName string
+		if e.CollectionName == nil {
+			collectionName = "_default"
+		} else {
+			collectionName = *e.CollectionName
+		}
+		topic := c.config.Kafka.CollectionTopicMapping[collectionName]
+		if topic == "" {
+			c.errorLogger.Printf("unexpected collection | %s", collectionName)
+			return
+		}
+		c.producer.Produce(kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
 	}
 }
 

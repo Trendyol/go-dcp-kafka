@@ -19,7 +19,9 @@ dcp:
       memberNumber: 1
       totalMembers: 1
 kafka:
-  topic: "topicname"
+  collectionTopicMapping:
+    _default: topicname
+
   brokers:
     - broker1
     - broker2

@@ -94,33 +94,33 @@ $ go get github.com/Trendyol/go-kafka-connect-couchbase
 
 ### Configuration
 
-| Variable                            | Type                        | Is Required |
-|-------------------------------------|-----------------------------|-------------|
-| `hosts`                             | array                       | yes         |
-| `username`                          | string                      | yes         |
-| `password`                          | string                      | yes         |
-| `bucketName`                        | string                      | yes         |
-| `scopeName`                         | string                      | no          |
-| `collectionNames`                   | array                       | no          |
-| `metadataBucket`                    | string                      | no          |
-| `dcp.group.name`                    | string                      | yes         |
-| `dcp.group.membership.type`         | string                      | yes         |
-| `dcp.group.membership.memberNumber` | integer                     | no          |
-| `dcp.group.membership.totalMembers` | integer                     | no          |
-| `kafka.topic`                       | string                      | yes         |
-| `kafka.brokers`                     | array                       | yes         |
-| `kafka.readTimeout`                 | integer                     | no          |
-| `kafka.writeTimeout`                | integer                     | no          |
-| `kafka.producerBatchSize`           | integer                     | yes         |
-| `kafka.producerBatchTickerDuration` | integer                     | yes         |
-| `kafka.requiredAcks`                | integer                     | no          |
-| `kafka.secureConnection`            | boolean (true/false)        | no          |
-| `kafka.rootCAPath`                  | string                      | no          |
-| `kafka.interCAPath`                 | string                      | no          |
-| `kafka.scramUsername`               | string                      | no          |
-| `kafka.scramPassword`               | string                      | no          |
-| `logger.level`                      | string                      | no          |
-| `checkpoint.timeout`                | integer                     | no          |
+| Variable                            | Type                 | Is Required |
+|-------------------------------------|----------------------|-------------|
+| `hosts`                             | array                | yes         |
+| `username`                          | string               | yes         |
+| `password`                          | string               | yes         |
+| `bucketName`                        | string               | yes         |
+| `scopeName`                         | string               | no          |
+| `collectionNames`                   | array                | no          |
+| `metadataBucket`                    | string               | no          |
+| `dcp.group.name`                    | string               | yes         |
+| `dcp.group.membership.type`         | string               | yes         |
+| `dcp.group.membership.memberNumber` | integer              | no          |
+| `dcp.group.membership.totalMembers` | integer              | no          |
+| `kafka.collectionTopicMapping`      | map[string][string]  | yes         |
+| `kafka.brokers`                     | array                | yes         |
+| `kafka.readTimeout`                 | integer              | no          |
+| `kafka.writeTimeout`                | integer              | no          |
+| `kafka.producerBatchSize`           | integer              | yes         |
+| `kafka.producerBatchTickerDuration` | integer              | yes         |
+| `kafka.requiredAcks`                | integer              | no          |
+| `kafka.secureConnection`            | boolean (true/false) | no          |
+| `kafka.rootCAPath`                  | string               | no          |
+| `kafka.interCAPath`                 | string               | no          |
+| `kafka.scramUsername`               | string               | no          |
+| `kafka.scramPassword`               | string               | no          |
+| `logger.level`                      | string               | no          |
+| `checkpoint.timeout`                | integer              | no          |
 
 ---
 
