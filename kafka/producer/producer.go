@@ -26,6 +26,9 @@ type producer struct {
 }
 
 func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger) Producer {
+	if !validateProducerConfig(config, errorLogger) {
+		panic("unexpected producer config")
+	}
 	writer := &kafka.Writer{
 		Addr:         kafka.TCP(config.Brokers...),
 		Balancer:     &kafka.Hash{},
@@ -50,6 +53,45 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 	return &producer{
 		producerBatch: newProducerBatch(config.ProducerBatchTickerDuration, writer, config.ProducerBatchSize, logger, errorLogger),
 	}
+}
+
+func validateProducerConfig(config *config.Kafka, errorLogger logger.Logger) bool {
+	topics := make([]string, 0, len(config.CollectionTopicMapping))
+	for _, value := range config.CollectionTopicMapping {
+		topics = append(topics, value)
+	}
+
+	for _, broker := range config.Brokers {
+		conn, err := kafka.Dial("tcp", broker)
+		if err != nil {
+			errorLogger.Printf("An error occurred while connecting to broker %s: %v", broker, err)
+			return false
+		}
+
+		partitions, err := conn.ReadPartitions(topics...)
+		if err != nil {
+			errorLogger.Printf("An error occurred while reading partitions from broker %s: %v", broker, err)
+			return false
+		}
+
+		topicExist := make(map[string]bool)
+		for _, p := range partitions {
+			topicExist[p.Topic] = true
+		}
+
+		for _, topic := range topics {
+			if _, ok := topicExist[topic]; !ok {
+				errorLogger.Printf("Topic %s does not exist in broker %s", topic, broker)
+				return false
+			}
+		}
+
+		if err := conn.Close(); err != nil {
+			errorLogger.Printf("An error occurred while closing partitions from broker %s: %v", broker, err)
+			return false
+		}
+	}
+	return true
 }
 
 func createSecureKafkaTransport(
