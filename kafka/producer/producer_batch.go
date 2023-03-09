@@ -46,12 +46,10 @@ func newProducerBatch(
 func (b *producerBatch) StartBatchTicker() {
 	go func() {
 		for {
-			select {
-			case <-b.batchTicker.C:
-				err := b.FlushMessages()
-				if err != nil {
-					b.errorLogger.Printf("Batch producer flush error %v", err)
-				}
+			<-b.batchTicker.C
+			err := b.FlushMessages()
+			if err != nil {
+				b.errorLogger.Printf("Batch producer flush error %v", err)
 			}
 		}
 	}()
