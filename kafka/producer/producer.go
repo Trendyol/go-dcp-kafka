@@ -5,8 +5,9 @@ import (
 	"crypto/x509"
 	"math"
 	"os"
-	"sync"
 	"time"
+
+	"github.com/Trendyol/go-dcp-client/models"
 
 	"github.com/segmentio/kafka-go/sasl/scram"
 
@@ -17,7 +18,7 @@ import (
 )
 
 type Producer interface {
-	Produce(message []byte, key []byte, headers map[string]string, topic string)
+	Produce(ctx *models.ListenerContext, message []byte, key []byte, headers map[string]string, topic string)
 	Close() error
 }
 
@@ -90,19 +91,8 @@ func createSecureKafkaTransport(
 	}, nil
 }
 
-var KafkaMessagePool = sync.Pool{
-	New: func() any {
-		return &kafka.Message{}
-	},
-}
-
-func (a *producer) Produce(message []byte, key []byte, headers map[string]string, topic string) {
-	msg := KafkaMessagePool.Get().(*kafka.Message)
-	msg.Key = key
-	msg.Value = message
-	msg.Headers = newHeaders(headers)
-	msg.Topic = topic
-	a.producerBatch.messageChn <- msg
+func (a *producer) Produce(ctx *models.ListenerContext, message []byte, key []byte, headers map[string]string, topic string) {
+	a.producerBatch.AddMessage(ctx, message, key, newHeaders(headers), topic)
 }
 
 func newHeaders(headersMap map[string]string) []kafka.Header {
@@ -117,8 +107,6 @@ func newHeaders(headersMap map[string]string) []kafka.Header {
 }
 
 func (a *producer) Close() error {
-	a.producerBatch.isClosed <- true
-	// TODO: Wait until batch is clear
-	time.Sleep(2 * time.Second)
+	a.producerBatch.Close()
 	return a.producerBatch.Writer.Close()
 }
