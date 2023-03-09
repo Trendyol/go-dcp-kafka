@@ -3,10 +3,11 @@ package kafka
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"github.com/Trendyol/go-dcp-client/models"
 	"math"
 	"os"
 	"time"
+
+	"github.com/Trendyol/go-dcp-client/models"
 
 	"github.com/segmentio/kafka-go/sasl/scram"
 

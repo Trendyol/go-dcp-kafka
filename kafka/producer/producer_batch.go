@@ -2,9 +2,10 @@ package kafka
 
 import (
 	"context"
-	"github.com/Trendyol/go-dcp-client/models"
 	"sync"
 	"time"
+
+	"github.com/Trendyol/go-dcp-client/models"
 
 	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 
