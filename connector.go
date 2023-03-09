@@ -1,6 +1,7 @@
 package gokafkaconnectcouchbase
 
 import (
+	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 
 	godcpclient "github.com/Trendyol/go-dcp-client"
@@ -36,19 +37,16 @@ func (c *connector) Close() {
 	}
 }
 
-func (c *connector) listener(event interface{}, err error) {
-	if err != nil {
-		c.errorLogger.Printf("error | %v", err)
-		return
-	}
+const defaultCollection = "_default"
 
+func (c *connector) listener(ctx *models.ListenerContext) {
 	var e couchbase.Event
-	switch event := event.(type) {
-	case godcpclient.DcpMutation:
+	switch event := ctx.Event.(type) {
+	case models.DcpMutation:
 		e = couchbase.NewMutateEvent(event.Key, event.Value, event.CollectionName)
-	case godcpclient.DcpExpiration:
+	case models.DcpExpiration:
 		e = couchbase.NewExpireEvent(event.Key, nil, event.CollectionName)
-	case godcpclient.DcpDeletion:
+	case models.DcpDeletion:
 		e = couchbase.NewDeleteEvent(event.Key, nil, event.CollectionName)
 	default:
 		return
@@ -58,7 +56,7 @@ func (c *connector) listener(event interface{}, err error) {
 		defer message.MessagePool.Put(kafkaMessage)
 		var collectionName string
 		if e.CollectionName == nil {
-			collectionName = "_default"
+			collectionName = defaultCollection
 		} else {
 			collectionName = *e.CollectionName
 		}
@@ -67,7 +65,7 @@ func (c *connector) listener(event interface{}, err error) {
 			c.errorLogger.Printf("unexpected collection | %s", collectionName)
 			return
 		}
-		c.producer.Produce(kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
+		c.producer.Produce(ctx, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
 	}
 }
 
