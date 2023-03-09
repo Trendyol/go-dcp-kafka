@@ -1,6 +1,6 @@
 module github.com/Trendyol/go-kafka-connect-couchbase
 
-go 1.20
+go 1.19
 
 require (
 	github.com/Trendyol/go-dcp-client v0.0.18
