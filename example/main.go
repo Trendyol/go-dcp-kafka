@@ -12,7 +12,7 @@ func mapper(event couchbase.Event) *message.KafkaMessage {
 }
 
 func main() {
-	connector := gokafkaconnectcouchbase.NewConnector("./example/config.yml", mapper)
+	connector, _ := gokafkaconnectcouchbase.NewConnector("./example/config.yml", mapper)
 
 	defer connector.Close()
 
