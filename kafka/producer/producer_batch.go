@@ -24,7 +24,14 @@ type producerBatch struct {
 	flushLock           sync.Mutex
 }
 
-func newProducerBatch(batchTime time.Duration, writer *kafka.Writer, batchLimit int, logger logger.Logger, errorLogger logger.Logger, dcpCheckpointCommit func()) *producerBatch {
+func newProducerBatch(
+	batchTime time.Duration,
+	writer *kafka.Writer,
+	batchLimit int,
+	logger logger.Logger,
+	errorLogger logger.Logger,
+	dcpCheckpointCommit func(),
+) *producerBatch {
 	batch := &producerBatch{
 		batchTickerDuration: batchTime,
 		batchTicker:         time.NewTicker(batchTime),

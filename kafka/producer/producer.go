@@ -50,7 +50,13 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 		writer.Transport = transport
 	}
 	return &producer{
-		producerBatch: newProducerBatch(config.ProducerBatchTickerDuration, writer, config.ProducerBatchSize, logger, errorLogger, dcpCheckpointCommit),
+		producerBatch: newProducerBatch(
+			config.ProducerBatchTickerDuration,
+			writer,
+			config.ProducerBatchSize,
+			logger,
+			errorLogger,
+			dcpCheckpointCommit),
 	}
 }
 
