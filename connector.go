@@ -85,6 +85,9 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 	}
 
 	connector.dcp = dcp
-	connector.producer = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
+	connector.producer, err = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
+	if err != nil {
+		panic("Kafka producer is could not initialized: " + err.Error())
+	}
 	return connector, err
 }

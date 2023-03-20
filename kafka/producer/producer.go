@@ -26,7 +26,7 @@ type producer struct {
 	producerBatch *producerBatch
 }
 
-func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger, dcpCheckpointCommit func()) Producer {
+func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger, dcpCheckpointCommit func()) (Producer, error) {
 	writer := &kafka.Writer{
 		Addr:         kafka.TCP(config.Brokers...),
 		Balancer:     &kafka.Hash{},
@@ -41,14 +41,16 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 		ErrorLogger:  errorLogger,
 		Compression:  kafka.Compression(config.GetCompression()),
 	}
+	
 	if config.SecureConnection {
 		transport, err := createSecureKafkaTransport(config.ScramUsername, config.ScramPassword, config.RootCAPath,
 			config.InterCAPath, errorLogger)
 		if err != nil {
-			panic("Secure kafka couldn't connect " + err.Error())
+			return nil, err
 		}
 		writer.Transport = transport
 	}
+
 	return &producer{
 		producerBatch: newProducerBatch(
 			config.ProducerBatchTickerDuration,
@@ -57,7 +59,7 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 			logger,
 			errorLogger,
 			dcpCheckpointCommit),
-	}
+	}, nil
 }
 
 func createSecureKafkaTransport(
