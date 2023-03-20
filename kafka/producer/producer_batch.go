@@ -17,20 +17,14 @@ type producerBatch struct {
 	errorLogger         logger.Logger
 	batchTicker         *time.Ticker
 	Writer              *kafka.Writer
-	lastMessageContext  *models.ListenerContext
+	dcpCheckpointCommit func()
 	messages            []kafka.Message
 	batchTickerDuration time.Duration
 	batchLimit          int
 	flushLock           sync.Mutex
 }
 
-func newProducerBatch(
-	batchTime time.Duration,
-	writer *kafka.Writer,
-	batchLimit int,
-	logger logger.Logger,
-	errorLogger logger.Logger,
-) *producerBatch {
+func newProducerBatch(batchTime time.Duration, writer *kafka.Writer, batchLimit int, logger logger.Logger, errorLogger logger.Logger, dcpCheckpointCommit func()) *producerBatch {
 	batch := &producerBatch{
 		batchTickerDuration: batchTime,
 		batchTicker:         time.NewTicker(batchTime),
@@ -39,6 +33,7 @@ func newProducerBatch(
 		batchLimit:          batchLimit,
 		logger:              logger,
 		errorLogger:         errorLogger,
+		dcpCheckpointCommit: dcpCheckpointCommit,
 	}
 	batch.StartBatchTicker()
 	return batch
@@ -67,7 +62,6 @@ func (b *producerBatch) Close() {
 func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message []byte, key []byte, headers []kafka.Header, topic string) {
 	b.flushLock.Lock()
 	b.messages = append(b.messages, kafka.Message{Key: key, Value: message, Headers: headers, Topic: topic})
-	b.lastMessageContext = ctx
 	ctx.Ack()
 	b.flushLock.Unlock()
 
@@ -89,7 +83,7 @@ func (b *producerBatch) FlushMessages() error {
 	if err != nil {
 		return err
 	}
-	b.lastMessageContext.Commit()
+	b.dcpCheckpointCommit()
 
 	b.messages = b.messages[:0]
 	b.batchTicker.Reset(b.batchTickerDuration)
