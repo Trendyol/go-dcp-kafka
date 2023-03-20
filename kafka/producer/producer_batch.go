@@ -50,20 +50,14 @@ func (b *producerBatch) StartBatchTicker() {
 	go func() {
 		for {
 			<-b.batchTicker.C
-			err := b.FlushMessages()
-			if err != nil {
-				b.errorLogger.Printf("Batch producer flush error %v", err)
-			}
+			b.FlushMessages()
 		}
 	}()
 }
 
 func (b *producerBatch) Close() {
 	b.batchTicker.Stop()
-	err := b.FlushMessages()
-	if err != nil {
-		b.errorLogger.Printf("Batch producer flush error %v", err)
-	}
+	b.FlushMessages()
 }
 
 func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message []byte, key []byte, headers []kafka.Header, topic string) {
@@ -73,26 +67,23 @@ func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message []byte, 
 	b.flushLock.Unlock()
 
 	if len(b.messages) == b.batchLimit {
-		err := b.FlushMessages()
-		if err != nil {
-			b.errorLogger.Printf("Batch producer flush error %v", err)
-		}
+		b.FlushMessages()
 	}
 }
 
-func (b *producerBatch) FlushMessages() error {
+func (b *producerBatch) FlushMessages() {
 	b.flushLock.Lock()
 	defer b.flushLock.Unlock()
 	if len(b.messages) == 0 {
-		return nil
+		return
 	}
 	err := b.Writer.WriteMessages(context.Background(), b.messages...)
 	if err != nil {
-		return err
+		b.errorLogger.Printf("Batch producer flush error %v", err)
+		return
 	}
 	b.dcpCheckpointCommit()
 
 	b.messages = b.messages[:0]
 	b.batchTicker.Reset(b.batchTickerDuration)
-	return nil
 }
