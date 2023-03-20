@@ -1,7 +1,7 @@
 package couchbase
 
 type Event struct {
-	CollectionName *string
+	CollectionName string
 	Key            []byte
 	Value          []byte
 	IsDeleted      bool
@@ -9,7 +9,7 @@ type Event struct {
 	IsMutated      bool
 }
 
-func NewDeleteEvent(key []byte, value []byte, collectionName *string) Event {
+func NewDeleteEvent(key []byte, value []byte, collectionName string) Event {
 	return Event{
 		Key:            key,
 		Value:          value,
@@ -18,7 +18,7 @@ func NewDeleteEvent(key []byte, value []byte, collectionName *string) Event {
 	}
 }
 
-func NewExpireEvent(key []byte, value []byte, collectionName *string) Event {
+func NewExpireEvent(key []byte, value []byte, collectionName string) Event {
 	return Event{
 		Key:            key,
 		Value:          value,
@@ -27,7 +27,7 @@ func NewExpireEvent(key []byte, value []byte, collectionName *string) Event {
 	}
 }
 
-func NewMutateEvent(key []byte, value []byte, collectionName *string) Event {
+func NewMutateEvent(key []byte, value []byte, collectionName string) Event {
 	return Event{
 		Key:            key,
 		Value:          value,

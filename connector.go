@@ -37,8 +37,6 @@ func (c *connector) Close() {
 	}
 }
 
-const defaultCollection = "_default"
-
 func (c *connector) listener(ctx *models.ListenerContext) {
 	var e couchbase.Event
 	switch event := ctx.Event.(type) {
@@ -54,15 +52,9 @@ func (c *connector) listener(ctx *models.ListenerContext) {
 
 	if kafkaMessage := c.mapper(e); kafkaMessage != nil {
 		defer message.MessagePool.Put(kafkaMessage)
-		var collectionName string
-		if e.CollectionName == nil {
-			collectionName = defaultCollection
-		} else {
-			collectionName = *e.CollectionName
-		}
-		topic := c.config.Kafka.CollectionTopicMapping[collectionName]
+		topic := c.config.Kafka.CollectionTopicMapping[e.CollectionName]
 		if topic == "" {
-			c.errorLogger.Printf("unexpected collection | %s", collectionName)
+			c.errorLogger.Printf("unexpected collection | %s", e.CollectionName)
 			return
 		}
 		c.producer.Produce(ctx, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
