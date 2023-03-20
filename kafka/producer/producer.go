@@ -26,7 +26,7 @@ type producer struct {
 	producerBatch *producerBatch
 }
 
-func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger) Producer {
+func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger, dcpCheckpointCommit func()) Producer {
 	writer := &kafka.Writer{
 		Addr:         kafka.TCP(config.Brokers...),
 		Balancer:     &kafka.Hash{},
@@ -50,7 +50,7 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 		writer.Transport = transport
 	}
 	return &producer{
-		producerBatch: newProducerBatch(config.ProducerBatchTickerDuration, writer, config.ProducerBatchSize, logger, errorLogger),
+		producerBatch: newProducerBatch(config.ProducerBatchTickerDuration, writer, config.ProducerBatchSize, logger, errorLogger, dcpCheckpointCommit),
 	}
 }
 

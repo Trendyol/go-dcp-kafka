@@ -92,6 +92,6 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 		connector.errorLogger.Printf("Dcp error: %v", err)
 	}
 	connector.dcp = dcp
-	connector.producer = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger)
+	connector.producer = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
 	return connector
 }
