@@ -72,7 +72,7 @@ func validateProducerConfig(config *config.Kafka, errorLogger logger.Logger) boo
 	for _, broker := range config.Brokers {
 		conn, err := kafka.Dial("tcp", broker)
 		if err != nil {
-			errorLogger.Printf("An error occurred while connecting to broker %s: %v", broker, err)
+			errorLogger.Printf("An error occurred while connecting to brokers %s: %v", broker, err)
 			return false
 		}
 
