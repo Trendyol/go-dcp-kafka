@@ -6,22 +6,21 @@ bucketName: dcp-test
 scopeName: _default
 collectionNames:
   - _default
-userAgent: stdout-listener
-compression: true
 metadataBucket: dcp-test-meta
-connectTimeout: 10s
+metadataScope: _default
+metadataCollection: _default
 dcp:
-  connectTimeout: 10s
   group:
     name: groupName
     membership:
       type: static
       memberNumber: 1
       totalMembers: 1
+logging:
+  level: debug
 kafka:
   collectionTopicMapping:
     _default: topicname
-
   brokers:
     - broker1
     - broker2
@@ -30,23 +29,16 @@ kafka:
   producerBatchSize: 50
   producerBatchTickerDuration: 5s
   requiredAcks: 1
-#  0 -> None
-#  1 -> Gzip
-#  2 -> Snappy
-#  3 -> Lz4
-#  4 -> Zstd
+  #  0 -> None
+  #  1 -> Gzip
+  #  2 -> Snappy
+  #  3 -> Lz4
+  #  4 -> Zstd
   compression: 0
-
-  #SSL configurations
+  # SSL configurations
   secureConnection: true
-  #Config support env variable "$HOME/example/..."
+  # Config support env variable "$HOME/example/..."
   rootCAPath: "example/stretch-kafka/rootCA.pem"
   interCAPath: "example/stretch-kafka/interCA.pem"
   scramUsername: "username"
   scramPassword: "password"
-
-checkpoint:
-  timeout: 100s
-
-logging:
-  level: debug
