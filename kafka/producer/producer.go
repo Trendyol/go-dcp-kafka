@@ -41,7 +41,7 @@ func NewProducer(config *config.Kafka, logger logger.Logger, errorLogger logger.
 		ErrorLogger:  errorLogger,
 		Compression:  kafka.Compression(config.GetCompression()),
 	}
-	
+
 	if config.SecureConnection {
 		transport, err := createSecureKafkaTransport(config.ScramUsername, config.ScramPassword, config.RootCAPath,
 			config.InterCAPath, errorLogger)
