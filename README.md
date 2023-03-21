@@ -92,21 +92,14 @@ $ go get github.com/Trendyol/go-kafka-connect-couchbase
 
 ---
 
-### Configuration
+### Dcp Configuration
+
+Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configuration)
+
+### Kafka Specific Configuration
 
 | Variable                            | Type                 | Is Required |
 |-------------------------------------|----------------------|-------------|
-| `hosts`                             | array                | yes         |
-| `username`                          | string               | yes         |
-| `password`                          | string               | yes         |
-| `bucketName`                        | string               | yes         |
-| `scopeName`                         | string               | no          |
-| `collectionNames`                   | array                | no          |
-| `metadataBucket`                    | string               | no          |
-| `dcp.group.name`                    | string               | yes         |
-| `dcp.group.membership.type`         | string               | yes         |
-| `dcp.group.membership.memberNumber` | integer              | no          |
-| `dcp.group.membership.totalMembers` | integer              | no          |
 | `kafka.collectionTopicMapping`      | map[string][string]  | yes         |
 | `kafka.brokers`                     | array                | yes         |
 | `kafka.readTimeout`                 | integer              | no          |
@@ -120,8 +113,6 @@ $ go get github.com/Trendyol/go-kafka-connect-couchbase
 | `kafka.interCAPath`                 | string               | no          |
 | `kafka.scramUsername`               | string               | no          |
 | `kafka.scramPassword`               | string               | no          |
-| `logger.level`                      | string               | no          |
-| `checkpoint.timeout`                | integer              | no          |
 
 ---
 
