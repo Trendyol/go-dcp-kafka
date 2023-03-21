@@ -61,15 +61,15 @@ func (c *connector) listener(ctx *models.ListenerContext) {
 	}
 }
 
-func NewConnector(configPath string, mapper Mapper) Connector {
+func NewConnector(configPath string, mapper Mapper) (Connector, error) {
 	return newConnector(configPath, mapper, &logger.Log, &logger.Log)
 }
 
-func NewConnectorWithLoggers(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) Connector {
+func NewConnectorWithLoggers(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
 	return newConnector(configPath, mapper, logger, errorLogger)
 }
 
-func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) Connector {
+func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
 	c := config.NewConfig("cbgokafka", configPath, errorLogger)
 
 	connector := &connector{
@@ -82,8 +82,14 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 	dcp, err := godcpclient.NewDcp(configPath, connector.listener)
 	if err != nil {
 		connector.errorLogger.Printf("Dcp error: %v", err)
+		return nil, err
 	}
+
 	connector.dcp = dcp
-	connector.producer = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
-	return connector
+	connector.producer, err = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
+	if err != nil {
+		connector.errorLogger.Printf("Kafka error: %v", err)
+		return nil, err
+	}
+	return connector, nil
 }
