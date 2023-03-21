@@ -82,12 +82,14 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 	dcp, err := godcpclient.NewDcp(configPath, connector.listener)
 	if err != nil {
 		connector.errorLogger.Printf("Dcp error: %v", err)
+		return nil, err
 	}
 
 	connector.dcp = dcp
 	connector.producer, err = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
 	if err != nil {
-		panic("Kafka producer is could not initialized: " + err.Error())
+		connector.errorLogger.Printf("Kafka error: %v", err)
+		return nil, err
 	}
-	return connector, err
+	return connector, nil
 }
