@@ -110,6 +110,7 @@ $ go get github.com/Trendyol/go-kafka-connect-couchbase
 | `kafka.collectionTopicMapping`      | map[string][string]  | yes         |
 | `kafka.brokers`                     | array                | yes         |
 | `kafka.readTimeout`                 | integer              | no          |
+| `kafka.compression`                 | integer              | no          |
 | `kafka.writeTimeout`                | integer              | no          |
 | `kafka.producerBatchSize`           | integer              | yes         |
 | `kafka.producerBatchTickerDuration` | integer              | yes         |

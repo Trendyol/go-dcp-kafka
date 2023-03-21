@@ -1,6 +1,7 @@
 package gokafkaconnectcouchbase
 
 import (
+	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 
 	godcpclient "github.com/Trendyol/go-dcp-client"
@@ -36,19 +37,14 @@ func (c *connector) Close() {
 	}
 }
 
-func (c *connector) listener(event interface{}, err error) {
-	if err != nil {
-		c.errorLogger.Printf("error | %v", err)
-		return
-	}
-
+func (c *connector) listener(ctx *models.ListenerContext) {
 	var e couchbase.Event
-	switch event := event.(type) {
-	case godcpclient.DcpMutation:
+	switch event := ctx.Event.(type) {
+	case models.DcpMutation:
 		e = couchbase.NewMutateEvent(event.Key, event.Value, event.CollectionName)
-	case godcpclient.DcpExpiration:
+	case models.DcpExpiration:
 		e = couchbase.NewExpireEvent(event.Key, nil, event.CollectionName)
-	case godcpclient.DcpDeletion:
+	case models.DcpDeletion:
 		e = couchbase.NewDeleteEvent(event.Key, nil, event.CollectionName)
 	default:
 		return
@@ -56,18 +52,12 @@ func (c *connector) listener(event interface{}, err error) {
 
 	if kafkaMessage := c.mapper(e); kafkaMessage != nil {
 		defer message.MessagePool.Put(kafkaMessage)
-		var collectionName string
-		if e.CollectionName == nil {
-			collectionName = "_default"
-		} else {
-			collectionName = *e.CollectionName
-		}
-		topic := c.config.Kafka.CollectionTopicMapping[collectionName]
+		topic := c.config.Kafka.CollectionTopicMapping[e.CollectionName]
 		if topic == "" {
-			c.errorLogger.Printf("unexpected collection | %s", collectionName)
+			c.errorLogger.Printf("unexpected collection | %s", e.CollectionName)
 			return
 		}
-		c.producer.Produce(kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
+		c.producer.Produce(ctx, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
 	}
 }
 
@@ -94,6 +84,6 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 		connector.errorLogger.Printf("Dcp error: %v", err)
 	}
 	connector.dcp = dcp
-	connector.producer = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger)
+	connector.producer = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
 	return connector
 }

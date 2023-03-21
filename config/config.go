@@ -21,7 +21,15 @@ type Kafka struct {
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
 	RequiredAcks                int               `yaml:"requiredAcks"`
+	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
+}
+
+func (k *Kafka) GetCompression() int8 {
+	if k.Compression < 0 || k.Compression > 4 {
+		panic("Invalid kafka compression method")
+	}
+	return k.Compression
 }
 
 type Config struct {
