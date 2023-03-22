@@ -1,9 +1,10 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Kafka struct {
