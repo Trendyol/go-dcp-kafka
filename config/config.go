@@ -1,12 +1,9 @@
 package config
 
 import (
+	"gopkg.in/yaml.v3"
+	"os"
 	"time"
-
-	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
-
-	"github.com/gookit/config/v2"
-	"github.com/gookit/config/v2/yamlv3"
 )
 
 type Kafka struct {
@@ -36,26 +33,17 @@ type Config struct {
 	Kafka *Kafka `yaml:"kafka"`
 }
 
-func Options(opts *config.Options) {
-	opts.ParseTime = true
-	opts.Readonly = true
-	opts.EnableCache = true
-}
-
-func NewConfig(name string, filePath string, errorLogger logger.Logger) *Config {
-	conf := config.New(name).WithOptions(Options).WithDriver(yamlv3.Driver)
-
-	err := conf.LoadFiles(filePath)
+func NewConfig(filePath string) (*Config, error) {
+	fileBytes, err := os.ReadFile(filePath)
 	if err != nil {
-		errorLogger.Printf("Error while reading config %v", err)
+		return nil, err
 	}
 
-	_config := &Config{}
-	err = conf.Decode(_config)
-
+	var c *Config
+	err = yaml.Unmarshal(fileBytes, &c)
 	if err != nil {
-		errorLogger.Printf("Error while reading config %v", err)
+		return nil, err
 	}
 
-	return _config
+	return c, err
 }

@@ -70,8 +70,10 @@ func NewConnectorWithLoggers(configPath string, mapper Mapper, logger logger.Log
 }
 
 func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
-	c := config.NewConfig("cbgokafka", configPath, errorLogger)
-
+	c, err := config.NewConfig(configPath)
+	if err != nil {
+		return nil, err
+	}
 	connector := &connector{
 		mapper:      mapper,
 		config:      c,
