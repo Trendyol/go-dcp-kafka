@@ -3,7 +3,7 @@ module github.com/Trendyol/go-kafka-connect-couchbase
 go 1.19
 
 require (
-	github.com/Trendyol/go-dcp-client v0.0.29
+	github.com/Trendyol/go-dcp-client v0.0.30
 	github.com/gookit/config/v2 v2.2.1
 	github.com/json-iterator/go v1.1.12
 	github.com/segmentio/kafka-go v0.4.39
@@ -16,7 +16,7 @@ require (
 	github.com/avast/retry-go/v4 v4.3.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/couchbase/gocbcore/v10 v10.2.1 // indirect
+	github.com/couchbase/gocbcore/v10 v10.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.1 // indirect
 	github.com/fatih/color v1.14.1 // indirect
