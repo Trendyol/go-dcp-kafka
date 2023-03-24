@@ -153,19 +153,18 @@ func (c *client) GetPartitions(topic string) ([]int, error) {
 
 func (c *client) Producer() *kafka.Writer {
 	return &kafka.Writer{
-		Addr:                   kafka.TCP(c.config.Brokers...),
-		Balancer:               &kafka.Hash{},
-		BatchSize:              c.config.ProducerBatchSize,
-		BatchBytes:             math.MaxInt,
-		BatchTimeout:           500 * time.Microsecond,
-		MaxAttempts:            math.MaxInt,
-		ReadTimeout:            c.config.ReadTimeout,
-		WriteTimeout:           c.config.WriteTimeout,
-		RequiredAcks:           kafka.RequiredAcks(c.config.RequiredAcks),
-		Logger:                 c.logger,
-		ErrorLogger:            c.errorLogger,
-		Compression:            kafka.Compression(c.config.GetCompression()),
-		AllowAutoTopicCreation: true,
+		Addr:         kafka.TCP(c.config.Brokers...),
+		Balancer:     &kafka.Hash{},
+		BatchSize:    c.config.ProducerBatchSize,
+		BatchBytes:   math.MaxInt,
+		BatchTimeout: 500 * time.Microsecond,
+		MaxAttempts:  math.MaxInt,
+		ReadTimeout:  c.config.ReadTimeout,
+		WriteTimeout: c.config.WriteTimeout,
+		RequiredAcks: kafka.RequiredAcks(c.config.RequiredAcks),
+		Logger:       c.logger,
+		ErrorLogger:  c.errorLogger,
+		Compression:  kafka.Compression(c.config.GetCompression()),
 	}
 }
 
