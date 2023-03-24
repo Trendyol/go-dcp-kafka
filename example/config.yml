@@ -6,24 +6,24 @@ bucketName: dcp-test
 scopeName: _default
 collectionNames:
   - _default
-metadataBucket: dcp-test-meta
-metadataScope: _default
-metadataCollection: _default
+metadata:
+  type: kafka
+  config:
+    topic: dcp-test-connect-offset.0
+    replicationFactor: 1 # default 3
+    # partition: 25
 dcp:
   group:
     name: groupName
     membership:
       type: static
-      memberNumber: 1
-      totalMembers: 1
 logging:
   level: debug
 kafka:
   collectionTopicMapping:
     _default: topicname
   brokers:
-    - broker1
-    - broker2
+    - localhost:9092
   readTimeout: 30s
   writeTimeout: 30s
   producerBatchSize: 50
@@ -36,9 +36,12 @@ kafka:
   #  4 -> Zstd
   compression: 0
   # SSL configurations
-  secureConnection: true
+  #
+  # secureConnection: true
   # Config support env variable "$HOME/example/..."
-  rootCAPath: "example/stretch-kafka/rootCA.pem"
-  interCAPath: "example/stretch-kafka/interCA.pem"
-  scramUsername: "username"
-  scramPassword: "password"
+  # rootCAPath: "example/stretch-kafka/rootCA.pem"
+  # interCAPath: "example/stretch-kafka/interCA.pem"
+  # scramUsername: "username"
+  # scramPassword: "password"
+checkpoint:
+  type: manual

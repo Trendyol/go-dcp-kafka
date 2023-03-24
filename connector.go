@@ -3,13 +3,17 @@ package gokafkaconnectcouchbase
 import (
 	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 
 	godcpclient "github.com/Trendyol/go-dcp-client"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	kafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
 	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 )
+
+var MetadataTypeKafka = "kafka"
 
 type Connector interface {
 	Start()
@@ -19,7 +23,7 @@ type Connector interface {
 type connector struct {
 	dcp         godcpclient.Dcp
 	mapper      Mapper
-	producer    kafka.Producer
+	producer    producer.Producer
 	config      *config.Config
 	logger      logger.Logger
 	errorLogger logger.Logger
@@ -79,14 +83,24 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 		errorLogger: errorLogger,
 	}
 
+	kafkaClient := kafka.NewClient(c.Kafka, connector.logger, connector.errorLogger)
+
 	dcp, err := godcpclient.NewDcp(configPath, connector.listener)
 	if err != nil {
 		connector.errorLogger.Printf("Dcp error: %v", err)
 		return nil, err
 	}
 
+	dcpConfig := dcp.GetConfig()
+
+	if dcpConfig.Metadata.Type == MetadataTypeKafka {
+		kafkaMetadata := metadata.NewKafkaMetadata(kafkaClient, dcpConfig.Metadata.Config, connector.logger, connector.errorLogger)
+		dcp.SetMetadata(kafkaMetadata)
+	}
+
 	connector.dcp = dcp
-	connector.producer, err = kafka.NewProducer(c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
+
+	connector.producer, err = producer.NewProducer(kafkaClient, c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
 	if err != nil {
 		connector.errorLogger.Printf("Kafka error: %v", err)
 		return nil, err
