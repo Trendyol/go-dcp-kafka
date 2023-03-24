@@ -5,14 +5,15 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"github.com/Trendyol/go-kafka-connect-couchbase/config"
-	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
-	"github.com/segmentio/kafka-go"
-	"github.com/segmentio/kafka-go/sasl/scram"
 	"math"
 	"net"
 	"os"
 	"time"
+
+	"github.com/Trendyol/go-kafka-connect-couchbase/config"
+	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
+	"github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/sasl/scram"
 )
 
 type Client interface {
@@ -85,7 +86,6 @@ func (c *client) GetEndOffsets(topic string, partitions []int) ([]kafka.Partitio
 	}
 
 	response, err := c.kafkaClient.ListOffsets(context.Background(), request)
-
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,6 @@ func (c *client) CheckTopicIsCompacted(topic string) error {
 		IncludeSynonyms:      false,
 		IncludeDocumentation: false,
 	})
-
 	if err != nil {
 		return err
 	}
@@ -133,7 +132,6 @@ func (c *client) GetPartitions(topic string) ([]int, error) {
 		Topics: []string{topic},
 		Addr:   c.addr,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +201,6 @@ func (c *client) CreateCompactedTopic(topic string, partition int, replicationFa
 			},
 		},
 	})
-
 	if err != nil {
 		return err
 	}

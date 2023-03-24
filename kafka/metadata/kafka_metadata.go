@@ -3,13 +3,14 @@ package metadata
 import (
 	"context"
 	"errors"
+	"strconv"
+	"sync"
+
 	godcpclient "github.com/Trendyol/go-dcp-client"
 	gKafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka"
 	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/segmentio/kafka-go"
-	"strconv"
-	"sync"
 )
 
 type kafkaMetadata struct {
@@ -29,7 +30,6 @@ func (s *kafkaMetadata) Save(state map[uint16]*godcpclient.CheckpointDocument, d
 		}
 
 		value, err := jsoniter.Marshal(document)
-
 		if err != nil {
 			return err
 		}
@@ -44,15 +44,16 @@ func (s *kafkaMetadata) Save(state map[uint16]*godcpclient.CheckpointDocument, d
 	return s.writer.WriteMessages(context.Background(), messages...)
 }
 
-func (s *kafkaMetadata) Load(vbIDs []uint16, bucketUUID string) (map[uint16]*godcpclient.CheckpointDocument, bool, error) {
+func (s *kafkaMetadata) Load( //nolint:funlen
+	vbIDs []uint16,
+	bucketUUID string,
+) (map[uint16]*godcpclient.CheckpointDocument, bool, error) {
 	partitions, err := s.kafkaClient.GetPartitions(s.topic)
-
 	if err != nil {
 		return nil, false, err
 	}
 
 	endOffsets, err := s.kafkaClient.GetEndOffsets(s.topic, partitions)
-
 	if err != nil {
 		return nil, false, err
 	}
@@ -77,7 +78,6 @@ func (s *kafkaMetadata) Load(vbIDs []uint16, bucketUUID string) (map[uint16]*god
 				}
 
 				ch <- m
-
 				if m.Offset+1 >= lastOffset {
 					break
 				}
@@ -100,7 +100,6 @@ func (s *kafkaMetadata) Load(vbIDs []uint16, bucketUUID string) (map[uint16]*god
 			var doc *godcpclient.CheckpointDocument
 
 			err = jsoniter.Unmarshal(m.Value, &doc)
-
 			if err != nil {
 				doc = godcpclient.NewEmptyCheckpointDocument(bucketUUID)
 			} else {
@@ -108,7 +107,6 @@ func (s *kafkaMetadata) Load(vbIDs []uint16, bucketUUID string) (map[uint16]*god
 			}
 
 			vbID, err := strconv.ParseUint(string(m.Key), 0, 16)
-
 			if err == nil {
 				stateLock.Lock()
 				state[uint16(vbID)] = doc
@@ -135,7 +133,12 @@ func (s *kafkaMetadata) Clear(_ []uint16) error {
 	return nil
 }
 
-func NewKafkaMetadata(kafkaClient gKafka.Client, kafkaMetadataConfig map[string]string, logger logger.Logger, errorLogger logger.Logger) godcpclient.Metadata {
+func NewKafkaMetadata(
+	kafkaClient gKafka.Client,
+	kafkaMetadataConfig map[string]string,
+	logger logger.Logger,
+	errorLogger logger.Logger,
+) godcpclient.Metadata {
 	var topic string
 	var partition int
 	var replicationFactor int

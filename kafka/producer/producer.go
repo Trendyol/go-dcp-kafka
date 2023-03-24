@@ -19,7 +19,12 @@ type producer struct {
 	producerBatch *producerBatch
 }
 
-func NewProducer(kafkaClient gKafka.Client, config *config.Kafka, logger logger.Logger, errorLogger logger.Logger, dcpCheckpointCommit func()) (Producer, error) {
+func NewProducer(kafkaClient gKafka.Client,
+	config *config.Kafka,
+	logger logger.Logger,
+	errorLogger logger.Logger,
+	dcpCheckpointCommit func(),
+) (Producer, error) {
 	writer := kafkaClient.Producer()
 
 	return &producer{
