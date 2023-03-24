@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	godcpclient "github.com/Trendyol/go-dcp-client"
+	"github.com/Trendyol/go-dcp-client/logger"
 	gKafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka"
-	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/segmentio/kafka-go"
 )

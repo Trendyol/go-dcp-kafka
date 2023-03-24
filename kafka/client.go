@@ -10,8 +10,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
-	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/scram"
 )
@@ -47,13 +47,13 @@ func createSecureKafkaTransport(
 
 	caCert, err := os.ReadFile(os.ExpandEnv(rootCAPath))
 	if err != nil {
-		errorLogger.Printf("An error occurred while reading ca.pem file! Error: %s", err.Error())
+		errorLogger.Printf("an error occurred while reading ca.pem file! Error: %s", err.Error())
 		return nil, err
 	}
 
 	intCert, err := os.ReadFile(os.ExpandEnv(interCAPath))
 	if err != nil {
-		errorLogger.Printf("An error occurred while reading int.pem file! Error: %s", err.Error())
+		errorLogger.Printf("an error occurred while reading int.pem file! Error: %s", err.Error())
 		return nil, err
 	}
 
@@ -151,18 +151,19 @@ func (c *client) GetPartitions(topic string) ([]int, error) {
 
 func (c *client) Producer() *kafka.Writer {
 	return &kafka.Writer{
-		Addr:         kafka.TCP(c.config.Brokers...),
-		Balancer:     &kafka.Hash{},
-		BatchSize:    c.config.ProducerBatchSize,
-		BatchBytes:   math.MaxInt,
-		BatchTimeout: 500 * time.Microsecond,
-		MaxAttempts:  math.MaxInt,
-		ReadTimeout:  c.config.ReadTimeout,
-		WriteTimeout: c.config.WriteTimeout,
-		RequiredAcks: kafka.RequiredAcks(c.config.RequiredAcks),
-		Logger:       c.logger,
-		ErrorLogger:  c.errorLogger,
-		Compression:  kafka.Compression(c.config.GetCompression()),
+		Addr:                   kafka.TCP(c.config.Brokers...),
+		Balancer:               &kafka.Hash{},
+		BatchSize:              c.config.ProducerBatchSize,
+		BatchBytes:             math.MaxInt,
+		BatchTimeout:           500 * time.Microsecond,
+		MaxAttempts:            math.MaxInt,
+		ReadTimeout:            c.config.ReadTimeout,
+		WriteTimeout:           c.config.WriteTimeout,
+		RequiredAcks:           kafka.RequiredAcks(c.config.RequiredAcks),
+		Logger:                 c.logger,
+		ErrorLogger:            c.errorLogger,
+		Compression:            kafka.Compression(c.config.GetCompression()),
+		AllowAutoTopicCreation: true,
 	}
 }
 

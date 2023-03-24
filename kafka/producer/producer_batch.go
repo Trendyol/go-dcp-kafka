@@ -7,7 +7,7 @@ import (
 
 	"github.com/Trendyol/go-dcp-client/models"
 
-	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
+	"github.com/Trendyol/go-dcp-client/logger"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -79,7 +79,7 @@ func (b *producerBatch) FlushMessages() {
 	}
 	err := b.Writer.WriteMessages(context.Background(), b.messages...)
 	if err != nil {
-		b.errorLogger.Printf("Batch producer flush error %v", err)
+		b.errorLogger.Printf("batch producer flush error %v", err)
 		return
 	}
 	b.dcpCheckpointCommit()

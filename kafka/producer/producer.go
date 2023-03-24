@@ -3,9 +3,9 @@ package producer
 import (
 	"github.com/Trendyol/go-dcp-client/models"
 
+	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	gKafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka"
-	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 
 	"github.com/segmentio/kafka-go"
 )

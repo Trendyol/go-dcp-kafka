@@ -7,10 +7,10 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 
 	godcpclient "github.com/Trendyol/go-dcp-client"
+	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
-	"github.com/Trendyol/go-kafka-connect-couchbase/logger"
 )
 
 var MetadataTypeKafka = "kafka"
@@ -68,7 +68,7 @@ func (c *connector) listener(ctx *models.ListenerContext) {
 }
 
 func NewConnector(configPath string, mapper Mapper) (Connector, error) {
-	return newConnector(configPath, mapper, &logger.Log, &logger.Log)
+	return newConnector(configPath, mapper, logger.Log, logger.Log)
 }
 
 func NewConnectorWithLoggers(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
@@ -87,9 +87,9 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 
 	kafkaClient := kafka.NewClient(c.Kafka, connector.logger, connector.errorLogger)
 
-	dcp, err := godcpclient.NewDcp(configPath, connector.listener)
+	dcp, err := godcpclient.NewDcpWithLoggers(configPath, connector.listener, logger, errorLogger)
 	if err != nil {
-		connector.errorLogger.Printf("Dcp error: %v", err)
+		connector.errorLogger.Printf("dcp error: %v", err)
 		return nil, err
 	}
 
@@ -104,7 +104,7 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 
 	connector.producer, err = producer.NewProducer(kafkaClient, c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
 	if err != nil {
-		connector.errorLogger.Printf("Kafka error: %v", err)
+		connector.errorLogger.Printf("kafka error: %v", err)
 		return nil, err
 	}
 	return connector, nil

@@ -14,11 +14,13 @@ This repository contains the Go implementation of the Couchbase Kafka Connector.
 * [Examples](#examples)
 
 ### What is Couchbase Kafka Connector?
+
 Official Couchbase documentation defines the Couchbase Kafka Connector as follows:
 
 _The Couchbase Kafka connector is a plug-in for the Kafka Connect framework. It provides source and sink components._
 
-The **source connector** streams documents from Couchbase Database Change Protocol (DCP) and publishes each document to a Kafka topic in near real-time.
+The **source connector** streams documents from Couchbase Database Change Protocol (DCP) and publishes each document to
+a Kafka topic in near real-time.
 
 The **sink connector** subscribes to Kafka topics and writes the messages to Couchbase.
 
@@ -35,7 +37,8 @@ The **sink connector** subscribes to Kafka topics and writes the messages to Cou
 ---
 
 ### Example
-```
+
+```go
 package main
 
 func mapper(event couchbase.Event) *message.KafkaMessage {
@@ -54,7 +57,8 @@ func main() {
 ```
 
 Custom log structures can be used with the connector
-```
+
+```go
 package main
 
 type ConnectorLogger struct{}
@@ -80,6 +84,7 @@ func main() {
 
 - [X] Batch Producer
 - [X] Secure Kafka
+- [X] Kafka Metadata
 
 ---
 
@@ -100,7 +105,7 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 
 | Variable                            | Type                 | Is Required |
 |-------------------------------------|----------------------|-------------|
-| `kafka.collectionTopicMapping`      | map[string][string]  | yes         |
+| `kafka.collectionTopicMapping`      | map[string]string    | yes         |
 | `kafka.brokers`                     | array                | yes         |
 | `kafka.readTimeout`                 | integer              | no          |
 | `kafka.compression`                 | integer              | no          |
