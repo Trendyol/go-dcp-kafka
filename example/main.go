@@ -6,9 +6,9 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 )
 
-func mapper(event couchbase.Event) *message.KafkaMessage {
-	// return nil if you wish filter the event
-	return message.GetKafkaMessage(event.Key, event.Value, nil)
+func mapper(event couchbase.Event) []*message.KafkaMessage {
+	// return empty if you wish filter the event
+	return []*message.KafkaMessage{message.GetKafkaMessage(event.Key, event.Value, nil)}
 }
 
 func main() {

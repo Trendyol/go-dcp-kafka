@@ -54,14 +54,16 @@ func (c *connector) listener(ctx *models.ListenerContext) {
 		return
 	}
 
-	if kafkaMessage := c.mapper(e); kafkaMessage != nil {
-		defer message.MessagePool.Put(kafkaMessage)
-		topic := c.config.Kafka.CollectionTopicMapping[e.CollectionName]
-		if topic == "" {
-			c.errorLogger.Printf("unexpected collection | %s", e.CollectionName)
-			return
+	for _, kafkaMessage := range c.mapper(e) {
+		if kafkaMessage != nil {
+			topic := c.config.Kafka.CollectionTopicMapping[e.CollectionName]
+			if topic == "" {
+				c.errorLogger.Printf("unexpected collection | %s", e.CollectionName)
+				return
+			}
+			c.producer.Produce(ctx, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
+			message.MessagePool.Put(kafkaMessage)
 		}
-		c.producer.Produce(ctx, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
 	}
 }
 
