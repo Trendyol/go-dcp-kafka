@@ -103,21 +103,21 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 
 ### Kafka Specific Configuration
 
-| Variable                            | Type                 | Is Required |
-|-------------------------------------|----------------------|-------------|
-| `kafka.collectionTopicMapping`      | map[string]string    | yes         |
-| `kafka.brokers`                     | array                | yes         |
-| `kafka.readTimeout`                 | integer              | no          |
-| `kafka.compression`                 | integer              | no          |
-| `kafka.writeTimeout`                | integer              | no          |
-| `kafka.producerBatchSize`           | integer              | yes         |
-| `kafka.producerBatchTickerDuration` | integer              | yes         |
-| `kafka.requiredAcks`                | integer              | no          |
-| `kafka.secureConnection`            | boolean (true/false) | no          |
-| `kafka.rootCAPath`                  | string               | no          |
-| `kafka.interCAPath`                 | string               | no          |
-| `kafka.scramUsername`               | string               | no          |
-| `kafka.scramPassword`               | string               | no          |
+| Variable                            | Type              | Required | Default |                                                             
+|-------------------------------------|-------------------|----------|---------|
+| `kafka.collectionTopicMapping`      | map[string]string | yes      |         |
+| `kafka.brokers`                     | []string          | yes      |         |
+| `kafka.producerBatchSize`           | integer           | yes      |         |
+| `kafka.producerBatchTickerDuration` | time.Duration     | yes      |         |
+| `kafka.readTimeout`                 | time.Duration     | no       |         |
+| `kafka.compression`                 | integer           | no       |         |
+| `kafka.writeTimeout`                | time.Duration     | no       |         |
+| `kafka.requiredAcks`                | integer           | no       |         |
+| `kafka.secureConnection`            | bool              | no       |         |
+| `kafka.rootCAPath`                  | string            | no       |         |
+| `kafka.interCAPath`                 | string            | no       |         |
+| `kafka.scramUsername`               | string            | no       |         |
+| `kafka.scramPassword`               | string            | no       |         |
 
 ---
 
