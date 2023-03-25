@@ -1,4 +1,4 @@
-# Go Kafka Connect Couchbase
+# Go Kafka Connect Couchbase [![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-kafka-connect-couchbase.svg)](https://pkg.go.dev/github.com/Trendyol/go-kafka-connect-couchbase) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-kafka-connect-couchbase)](https://goreportcard.com/report/github.com/Trendyol/go-kafka-connect-couchbase)
 
 This repository contains the Go implementation of the Couchbase Kafka Connector.
 
