@@ -92,7 +92,7 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 		topics = append(topics, topic)
 	}
 
-	err := kafkaClient.CheckExistTopics(topics)
+	err := kafkaClient.CheckTopics(topics)
 	if err != nil {
 		connector.errorLogger.Printf("collection topic mapping error: %v", err)
 		return nil, err
