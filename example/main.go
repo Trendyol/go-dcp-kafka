@@ -8,15 +8,17 @@ import (
 
 func mapper(event couchbase.Event) []*message.KafkaMessage {
 	// return empty if you wish filter the event
-	return []*message.KafkaMessage{message.GetKafkaMessage(event.Key, event.Value, nil)}
+	return []*message.KafkaMessage{
+		message.GetKafkaMessage(event.Key, event.Value, nil),
+	}
 }
 
 func main() {
 	connector, err := gokafkaconnectcouchbase.NewConnector("./example/config.yml", mapper)
 	if err != nil {
-		panic("New connector is could not initialized: " + err.Error())
+		panic(err)
 	}
-	defer connector.Close()
 
+	defer connector.Close()
 	connector.Start()
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"math"
 	"net"
 	"os"
@@ -23,6 +24,7 @@ type Client interface {
 	Producer() *kafka.Writer
 	Consumer(topic string, partition int, startOffset int64) *kafka.Reader
 	CheckTopicIsCompacted(topic string) error
+	CheckExistTopics(topics []string) error
 }
 
 type client struct {
@@ -147,6 +149,24 @@ func (c *client) GetPartitions(topic string) ([]int, error) {
 	}
 
 	return partitions, nil
+}
+
+func (c *client) CheckExistTopics(topics []string) error {
+	response, err := c.kafkaClient.Metadata(context.Background(), &kafka.MetadataRequest{
+		Topics: topics,
+		Addr:   c.addr,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, responseTopic := range response.Topics {
+		if responseTopic.Error != nil {
+			return fmt.Errorf("topic=%s, err=%v", responseTopic.Name, responseTopic.Error)
+		}
+	}
+
+	return nil
 }
 
 func (c *client) Producer() *kafka.Writer {

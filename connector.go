@@ -1,16 +1,15 @@
 package gokafkaconnectcouchbase
 
 import (
-	"github.com/Trendyol/go-dcp-client/models"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
-
 	godcpclient "github.com/Trendyol/go-dcp-client"
 	"github.com/Trendyol/go-dcp-client/logger"
+	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 )
 
 var MetadataTypeKafka = "kafka"
@@ -41,7 +40,7 @@ func (c *connector) Close() {
 	}
 }
 
-func (c *connector) listener(ctx *models.ListenerContext) {
+func (c *connector) produce(ctx *models.ListenerContext) {
 	var e couchbase.Event
 	switch event := ctx.Event.(type) {
 	case models.DcpMutation:
@@ -87,7 +86,19 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 
 	kafkaClient := kafka.NewClient(c.Kafka, connector.logger, connector.errorLogger)
 
-	dcp, err := godcpclient.NewDcpWithLoggers(configPath, connector.listener, logger, errorLogger)
+	var topics []string
+
+	for _, topic := range c.Kafka.CollectionTopicMapping {
+		topics = append(topics, topic)
+	}
+
+	err := kafkaClient.CheckExistTopics(topics)
+	if err != nil {
+		connector.errorLogger.Printf("collection topic mapping error: %v", err)
+		return nil, err
+	}
+
+	dcp, err := godcpclient.NewDcpWithLoggers(configPath, connector.produce, logger, errorLogger)
 	if err != nil {
 		connector.errorLogger.Printf("dcp error: %v", err)
 		return nil, err
