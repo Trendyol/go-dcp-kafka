@@ -1,7 +1,7 @@
 package gokafkaconnectcouchbase
 
 import (
-	godcpclient "github.com/Trendyol/go-dcp-client"
+	"github.com/Trendyol/go-dcp-client"
 	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"

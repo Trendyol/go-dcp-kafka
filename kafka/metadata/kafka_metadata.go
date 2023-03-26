@@ -6,10 +6,12 @@ import (
 	"strconv"
 	"sync"
 
-	godcpclient "github.com/Trendyol/go-dcp-client"
+	"github.com/Trendyol/go-dcp-client/metadata"
+	"github.com/Trendyol/go-dcp-client/models"
+
 	"github.com/Trendyol/go-dcp-client/logger"
 	gKafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/json-iterator/go"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -21,7 +23,7 @@ type kafkaMetadata struct {
 	errorLogger logger.Logger
 }
 
-func (s *kafkaMetadata) Save(state map[uint16]*godcpclient.CheckpointDocument, dirtyOffsets map[uint16]bool, _ string) error {
+func (s *kafkaMetadata) Save(state map[uint16]*models.CheckpointDocument, dirtyOffsets map[uint16]bool, _ string) error {
 	var messages []kafka.Message
 
 	for vbID, document := range state {
@@ -47,7 +49,7 @@ func (s *kafkaMetadata) Save(state map[uint16]*godcpclient.CheckpointDocument, d
 func (s *kafkaMetadata) Load( //nolint:funlen
 	vbIDs []uint16,
 	bucketUUID string,
-) (map[uint16]*godcpclient.CheckpointDocument, bool, error) {
+) (map[uint16]*models.CheckpointDocument, bool, error) {
 	partitions, err := s.kafkaClient.GetPartitions(s.topic)
 	if err != nil {
 		return nil, false, err
@@ -91,17 +93,17 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 		}(consumer, endOffset.LastOffset)
 	}
 
-	state := map[uint16]*godcpclient.CheckpointDocument{}
+	state := map[uint16]*models.CheckpointDocument{}
 	stateLock := &sync.Mutex{}
 	exist := false
 
 	go func() {
 		for m := range ch {
-			var doc *godcpclient.CheckpointDocument
+			var doc *models.CheckpointDocument
 
 			err = jsoniter.Unmarshal(m.Value, &doc)
 			if err != nil {
-				doc = godcpclient.NewEmptyCheckpointDocument(bucketUUID)
+				doc = models.NewEmptyCheckpointDocument(bucketUUID)
 			} else {
 				exist = true
 			}
@@ -122,7 +124,7 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 
 	for _, vbID := range vbIDs {
 		if _, ok := state[vbID]; !ok {
-			state[vbID] = godcpclient.NewEmptyCheckpointDocument(bucketUUID)
+			state[vbID] = models.NewEmptyCheckpointDocument(bucketUUID)
 		}
 	}
 
@@ -138,7 +140,7 @@ func NewKafkaMetadata(
 	kafkaMetadataConfig map[string]string,
 	logger logger.Logger,
 	errorLogger logger.Logger,
-) godcpclient.Metadata {
+) metadata.Metadata {
 	var topic string
 	var partition int
 	var replicationFactor int
