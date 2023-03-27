@@ -183,6 +183,7 @@ func (c *client) Producer() *kafka.Writer {
 		Logger:       c.logger,
 		ErrorLogger:  c.errorLogger,
 		Compression:  kafka.Compression(c.config.GetCompression()),
+		Transport:    c.kafkaClient.Transport,
 	}
 }
 
