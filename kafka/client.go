@@ -239,6 +239,9 @@ func (c *client) CreateCompactedTopic(topic string, partition int, replicationFa
 				}, {
 					ConfigName:  "retention.bytes",
 					ConfigValue: "-1",
+				}, {
+					ConfigName:  "segment.bytes",
+					ConfigValue: "2097152", // 2MB
 				}},
 			},
 		},

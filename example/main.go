@@ -14,7 +14,7 @@ func mapper(event couchbase.Event) []*message.KafkaMessage {
 }
 
 func main() {
-	connector, err := gokafkaconnectcouchbase.NewConnector("./example/config.yml", mapper)
+	connector, err := gokafkaconnectcouchbase.NewConnector("config.yml", mapper)
 	if err != nil {
 		panic(err)
 	}
