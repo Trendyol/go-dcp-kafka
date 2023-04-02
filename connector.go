@@ -10,6 +10,7 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
+	"github.com/Trendyol/go-kafka-connect-couchbase/metric"
 )
 
 var MetadataTypeKafka = "kafka"
@@ -60,7 +61,7 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 				c.errorLogger.Printf("unexpected collection | %s", e.CollectionName)
 				return
 			}
-			c.producer.Produce(ctx, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
+			c.producer.Produce(ctx, e.EventTime, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
 			message.MessagePool.Put(kafkaMessage)
 		}
 	}
@@ -113,10 +114,14 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 
 	connector.dcp = dcp
 
-	connector.producer, err = producer.NewProducer(kafkaClient, c.Kafka, connector.logger, connector.errorLogger, dcp.Commit)
+	connector.producer, err = producer.NewProducer(kafkaClient, c, connector.logger, connector.errorLogger, dcp.Commit)
 	if err != nil {
 		connector.errorLogger.Printf("kafka error: %v", err)
 		return nil, err
 	}
+
+	metricCollector := metric.NewMetricCollector(connector.producer)
+	dcp.SetMetricCollectors(metricCollector)
+
 	return connector, nil
 }

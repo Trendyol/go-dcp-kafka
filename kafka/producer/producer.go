@@ -1,18 +1,25 @@
 package producer
 
 import (
-	"github.com/Trendyol/go-dcp-client/models"
+	"time"
 
 	"github.com/Trendyol/go-dcp-client/logger"
+	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	gKafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka"
+	"github.com/VividCortex/ewma"
 
 	"github.com/segmentio/kafka-go"
 )
 
 type Producer interface {
-	Produce(ctx *models.ListenerContext, message []byte, key []byte, headers map[string]string, topic string)
+	Produce(ctx *models.ListenerContext, eventTime time.Time, message []byte, key []byte, headers map[string]string, topic string)
 	Close() error
+	GetMetric() *Metric
+}
+
+type Metric struct {
+	KafkaConnectorLatency ewma.MovingAverage
 }
 
 type producer struct {
@@ -20,7 +27,7 @@ type producer struct {
 }
 
 func NewProducer(kafkaClient gKafka.Client,
-	config *config.Kafka,
+	config *config.Config,
 	logger logger.Logger,
 	errorLogger logger.Logger,
 	dcpCheckpointCommit func(),
@@ -29,17 +36,25 @@ func NewProducer(kafkaClient gKafka.Client,
 
 	return &producer{
 		producerBatch: newProducerBatch(
-			config.ProducerBatchTickerDuration,
+			config.Kafka.ProducerBatchTickerDuration,
 			writer,
-			config.ProducerBatchSize,
+			config.Kafka.ProducerBatchSize,
+			config.Metric.AverageWindowSec,
 			logger,
 			errorLogger,
 			dcpCheckpointCommit),
 	}, nil
 }
 
-func (a *producer) Produce(ctx *models.ListenerContext, message []byte, key []byte, headers map[string]string, topic string) {
-	a.producerBatch.AddMessage(ctx, message, key, newHeaders(headers), topic)
+func (p *producer) Produce(
+	ctx *models.ListenerContext,
+	eventTime time.Time,
+	message []byte,
+	key []byte,
+	headers map[string]string,
+	topic string,
+) {
+	p.producerBatch.AddMessage(ctx, kafka.Message{Key: key, Value: message, Headers: newHeaders(headers), Topic: topic}, eventTime)
 }
 
 func newHeaders(headersMap map[string]string) []kafka.Header {
@@ -53,7 +68,11 @@ func newHeaders(headersMap map[string]string) []kafka.Header {
 	return headers
 }
 
-func (a *producer) Close() error {
-	a.producerBatch.Close()
-	return a.producerBatch.Writer.Close()
+func (p *producer) Close() error {
+	p.producerBatch.Close()
+	return p.producerBatch.Writer.Close()
+}
+
+func (p *producer) GetMetric() *Metric {
+	return p.producerBatch.metric
 }

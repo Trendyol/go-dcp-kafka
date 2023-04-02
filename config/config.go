@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/Trendyol/go-dcp-client/helpers"
 	"github.com/Trendyol/go-dcp-client/logger"
 
 	"github.com/gookit/config/v2"
@@ -33,7 +34,8 @@ func (k *Kafka) GetCompression() int8 {
 }
 
 type Config struct {
-	Kafka *Kafka `yaml:"kafka"`
+	Kafka  *Kafka               `yaml:"kafka"`
+	Metric helpers.ConfigMetric `yaml:"metric"`
 }
 
 func Options(opts *config.Options) {
