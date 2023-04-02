@@ -5,10 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Trendyol/go-dcp-client/models"
-
 	"github.com/Trendyol/go-dcp-client/logger"
-
+	"github.com/Trendyol/go-dcp-client/models"
+	"github.com/VividCortex/ewma"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -18,6 +17,7 @@ type producerBatch struct {
 	batchTicker         *time.Ticker
 	Writer              *kafka.Writer
 	dcpCheckpointCommit func()
+	metric              *Metric
 	messages            []kafka.Message
 	batchTickerDuration time.Duration
 	batchLimit          int
@@ -28,6 +28,7 @@ func newProducerBatch(
 	batchTime time.Duration,
 	writer *kafka.Writer,
 	batchLimit int,
+	averageWindowSec float64,
 	logger logger.Logger,
 	errorLogger logger.Logger,
 	dcpCheckpointCommit func(),
@@ -35,6 +36,9 @@ func newProducerBatch(
 	batch := &producerBatch{
 		batchTickerDuration: batchTime,
 		batchTicker:         time.NewTicker(batchTime),
+		metric: &Metric{
+			KafkaConnectorLatency: ewma.NewMovingAverage(averageWindowSec),
+		},
 		messages:            make([]kafka.Message, 0, batchLimit),
 		Writer:              writer,
 		batchLimit:          batchLimit,
@@ -60,11 +64,13 @@ func (b *producerBatch) Close() {
 	b.FlushMessages()
 }
 
-func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message []byte, key []byte, headers []kafka.Header, topic string) {
+func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message kafka.Message, eventTime time.Time) {
 	b.flushLock.Lock()
-	b.messages = append(b.messages, kafka.Message{Key: key, Value: message, Headers: headers, Topic: topic})
+	b.messages = append(b.messages, message)
 	ctx.Ack()
 	b.flushLock.Unlock()
+
+	b.metric.KafkaConnectorLatency.Add(float64(time.Since(eventTime).Milliseconds()))
 
 	if len(b.messages) == b.batchLimit {
 		b.FlushMessages()
