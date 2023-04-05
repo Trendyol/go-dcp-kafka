@@ -97,6 +97,7 @@ func main() {
 	connector.Start()
 }
 ```
+
 ---
 
 ### Features
@@ -127,6 +128,7 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 | `kafka.collectionTopicMapping`      | map[string]string | yes      |         |
 | `kafka.brokers`                     | []string          | yes      |         |
 | `kafka.producerBatchSize`           | integer           | yes      |         |
+| `kafka.producerBatchBytes`          | integer           | yes      |         |
 | `kafka.producerBatchTickerDuration` | time.Duration     | yes      |         |
 | `kafka.readTimeout`                 | time.Duration     | no       |         |
 | `kafka.compression`                 | integer           | no       |         |
