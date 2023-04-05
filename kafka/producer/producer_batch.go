@@ -19,8 +19,10 @@ type producerBatch struct {
 	dcpCheckpointCommit func()
 	metric              *Metric
 	messages            []kafka.Message
+	currentMessageBytes int
 	batchTickerDuration time.Duration
 	batchLimit          int
+	batchBytes          int
 	flushLock           sync.Mutex
 }
 
@@ -28,6 +30,7 @@ func newProducerBatch(
 	batchTime time.Duration,
 	writer *kafka.Writer,
 	batchLimit int,
+	batchBytes int,
 	averageWindowSec float64,
 	logger logger.Logger,
 	errorLogger logger.Logger,
@@ -45,6 +48,7 @@ func newProducerBatch(
 		logger:              logger,
 		errorLogger:         errorLogger,
 		dcpCheckpointCommit: dcpCheckpointCommit,
+		batchBytes:          batchBytes,
 	}
 	batch.StartBatchTicker()
 	return batch
@@ -67,12 +71,13 @@ func (b *producerBatch) Close() {
 func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message kafka.Message, eventTime time.Time) {
 	b.flushLock.Lock()
 	b.messages = append(b.messages, message)
+	b.currentMessageBytes += len(message.Value)
 	ctx.Ack()
 	b.flushLock.Unlock()
 
 	b.metric.KafkaConnectorLatency.Add(float64(time.Since(eventTime).Milliseconds()))
 
-	if len(b.messages) == b.batchLimit {
+	if len(b.messages) == b.batchLimit || b.currentMessageBytes >= b.batchBytes {
 		b.FlushMessages()
 	}
 }
@@ -91,5 +96,6 @@ func (b *producerBatch) FlushMessages() {
 	b.dcpCheckpointCommit()
 
 	b.messages = b.messages[:0]
+	b.currentMessageBytes = 0
 	b.batchTicker.Reset(b.batchTickerDuration)
 }

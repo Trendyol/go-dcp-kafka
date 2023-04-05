@@ -39,10 +39,12 @@ func NewProducer(kafkaClient gKafka.Client,
 			config.Kafka.ProducerBatchTickerDuration,
 			writer,
 			config.Kafka.ProducerBatchSize,
+			config.Kafka.ProducerBatchBytes,
 			config.Metric.AverageWindowSec,
 			logger,
 			errorLogger,
-			dcpCheckpointCommit),
+			dcpCheckpointCommit,
+		),
 	}, nil
 }
 

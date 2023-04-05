@@ -17,10 +17,10 @@ import (
 
 type kafkaMetadata struct {
 	kafkaClient gKafka.Client
-	writer      *kafka.Writer
-	topic       string
 	logger      logger.Logger
 	errorLogger logger.Logger
+	writer      *kafka.Writer
+	topic       string
 }
 
 func (s *kafkaMetadata) Save(state map[uint16]*models.CheckpointDocument, dirtyOffsets map[uint16]bool, _ string) error {
