@@ -32,7 +32,7 @@ type Client interface {
 type client struct {
 	addr        net.Addr
 	kafkaClient *kafka.Client
-	config      *config.Kafka
+	config      *config.Config
 	logger      logger.Logger
 	errorLogger logger.Logger
 	transport   *kafka.Transport
@@ -180,18 +180,18 @@ func (c *client) CheckTopics(topics []string) error {
 
 func (c *client) Producer() *kafka.Writer {
 	writer := &kafka.Writer{
-		Addr:         kafka.TCP(c.config.Brokers...),
+		Addr:         kafka.TCP(c.config.Kafka.Brokers...),
 		Balancer:     &kafka.Hash{},
-		BatchSize:    c.config.ProducerBatchSize,
+		BatchSize:    c.config.Kafka.ProducerBatchSize,
 		BatchBytes:   math.MaxInt,
 		BatchTimeout: 500 * time.Microsecond,
 		MaxAttempts:  math.MaxInt,
-		ReadTimeout:  c.config.ReadTimeout,
-		WriteTimeout: c.config.WriteTimeout,
-		RequiredAcks: kafka.RequiredAcks(c.config.RequiredAcks),
+		ReadTimeout:  c.config.Kafka.ReadTimeout,
+		WriteTimeout: c.config.Kafka.WriteTimeout,
+		RequiredAcks: kafka.RequiredAcks(c.config.Kafka.RequiredAcks),
 		Logger:       c.logger,
 		ErrorLogger:  c.errorLogger,
-		Compression:  kafka.Compression(c.config.GetCompression()),
+		Compression:  kafka.Compression(c.config.Kafka.GetCompression()),
 		Transport:    c.kafkaClient.Transport,
 	}
 
@@ -204,7 +204,7 @@ func (c *client) Producer() *kafka.Writer {
 
 func (c *client) Consumer(topic string, partition int, startOffset int64) *kafka.Reader {
 	readerConfig := kafka.ReaderConfig{
-		Brokers:     c.config.Brokers,
+		Brokers:     c.config.Kafka.Brokers,
 		Topic:       topic,
 		Partition:   partition,
 		StartOffset: startOffset,
@@ -259,8 +259,8 @@ func (c *client) CreateCompactedTopic(topic string, partition int, replicationFa
 	return nil
 }
 
-func NewClient(config *config.Kafka, logger logger.Logger, errorLogger logger.Logger) Client {
-	addr := kafka.TCP(config.Brokers...)
+func NewClient(config *config.Config, logger logger.Logger, errorLogger logger.Logger) Client {
+	addr := kafka.TCP(config.Kafka.Brokers...)
 
 	newClient := &client{
 		addr: addr,
@@ -272,12 +272,12 @@ func NewClient(config *config.Kafka, logger logger.Logger, errorLogger logger.Lo
 		errorLogger: errorLogger,
 	}
 
-	if config.SecureConnection {
+	if config.Kafka.SecureConnection {
 		tlsContent, err := newTLSContent(
-			config.ScramUsername,
-			config.ScramPassword,
-			config.RootCAPath,
-			config.InterCAPath,
+			config.Kafka.ScramUsername,
+			config.Kafka.ScramPassword,
+			config.Kafka.RootCAPath,
+			config.Kafka.InterCAPath,
 			errorLogger,
 		)
 		if err != nil {

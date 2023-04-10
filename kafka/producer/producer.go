@@ -7,8 +7,6 @@ import (
 	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	gKafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka"
-	"github.com/VividCortex/ewma"
-
 	"github.com/segmentio/kafka-go"
 )
 
@@ -19,7 +17,7 @@ type Producer interface {
 }
 
 type Metric struct {
-	KafkaConnectorLatency ewma.MovingAverage
+	KafkaConnectorLatency int64
 }
 
 type producer struct {
@@ -40,7 +38,6 @@ func NewProducer(kafkaClient gKafka.Client,
 			writer,
 			config.Kafka.ProducerBatchSize,
 			config.Kafka.ProducerBatchBytes,
-			config.Metric.AverageWindowSec,
 			logger,
 			errorLogger,
 			dcpCheckpointCommit,

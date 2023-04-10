@@ -7,7 +7,6 @@ import (
 
 	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-dcp-client/models"
-	"github.com/VividCortex/ewma"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -31,7 +30,6 @@ func newProducerBatch(
 	writer *kafka.Writer,
 	batchLimit int,
 	batchBytes int,
-	averageWindowSec float64,
 	logger logger.Logger,
 	errorLogger logger.Logger,
 	dcpCheckpointCommit func(),
@@ -39,9 +37,7 @@ func newProducerBatch(
 	batch := &producerBatch{
 		batchTickerDuration: batchTime,
 		batchTicker:         time.NewTicker(batchTime),
-		metric: &Metric{
-			KafkaConnectorLatency: ewma.NewMovingAverage(averageWindowSec),
-		},
+		metric:              &Metric{},
 		messages:            make([]kafka.Message, 0, batchLimit),
 		Writer:              writer,
 		batchLimit:          batchLimit,
@@ -75,7 +71,7 @@ func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message kafka.Me
 	ctx.Ack()
 	b.flushLock.Unlock()
 
-	b.metric.KafkaConnectorLatency.Add(float64(time.Since(eventTime).Milliseconds()))
+	b.metric.KafkaConnectorLatency = time.Since(eventTime).Milliseconds()
 
 	if len(b.messages) == b.batchLimit || b.currentMessageBytes >= b.batchBytes {
 		b.FlushMessages()

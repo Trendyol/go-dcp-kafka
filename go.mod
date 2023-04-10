@@ -3,7 +3,7 @@ module github.com/Trendyol/go-kafka-connect-couchbase
 go 1.19
 
 require (
-	github.com/Trendyol/go-dcp-client v0.0.45
+	github.com/Trendyol/go-dcp-client v0.0.46
 	github.com/VividCortex/ewma v1.2.0
 	github.com/gookit/config/v2 v2.2.1
 	github.com/json-iterator/go v1.1.12

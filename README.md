@@ -123,22 +123,22 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 
 ### Kafka Specific Configuration
 
-| Variable                            | Type              | Required | Default |                                                             
-|-------------------------------------|-------------------|----------|---------|
-| `kafka.collectionTopicMapping`      | map[string]string | yes      |         |
-| `kafka.brokers`                     | []string          | yes      |         |
-| `kafka.producerBatchSize`           | integer           | yes      |         |
-| `kafka.producerBatchBytes`          | integer           | yes      |         |
-| `kafka.producerBatchTickerDuration` | time.Duration     | yes      |         |
-| `kafka.readTimeout`                 | time.Duration     | no       |         |
-| `kafka.compression`                 | integer           | no       |         |
-| `kafka.writeTimeout`                | time.Duration     | no       |         |
-| `kafka.requiredAcks`                | integer           | no       |         |
-| `kafka.secureConnection`            | bool              | no       |         |
-| `kafka.rootCAPath`                  | string            | no       |         |
-| `kafka.interCAPath`                 | string            | no       |         |
-| `kafka.scramUsername`               | string            | no       |         |
-| `kafka.scramPassword`               | string            | no       |         |
+| Variable                            | Type              | Required | Default  | Description                             |                                                            
+|-------------------------------------|-------------------|----------|----------|-----------------------------------------|
+| `kafka.collectionTopicMapping`      | map[string]string | yes      |          |                                         | 
+| `kafka.brokers`                     | []string          | yes      |          |                                         |
+| `kafka.producerBatchSize`           | integer           | no       | 2000     |                                         |
+| `kafka.producerBatchBytes`          | integer           | no       | 10240    |                                         |
+| `kafka.producerBatchTickerDuration` | time.Duration     | no       | 10s      |                                         |
+| `kafka.readTimeout`                 | time.Duration     | no       | 30s      |                                         |
+| `kafka.writeTimeout`                | time.Duration     | no       | 30s      |                                         |
+| `kafka.compression`                 | integer           | no       | 0        | 0=None, 1=Gzip, 2=Snappy, 3=Lz4, 4=Zstd |
+| `kafka.requiredAcks`                | integer           | no       | 1        |                                         |
+| `kafka.secureConnection`            | bool              | no       | false    |                                         |
+| `kafka.rootCAPath`                  | string            | no       | *not set |                                         |
+| `kafka.interCAPath`                 | string            | no       | *not set |                                         |
+| `kafka.scramUsername`               | string            | no       | *not set |                                         |
+| `kafka.scramPassword`               | string            | no       | *not set |                                         |
 
 ---
 

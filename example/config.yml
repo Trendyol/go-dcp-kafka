@@ -24,18 +24,6 @@ kafka:
     _default: topicname
   brokers:
     - localhost:9092
-  readTimeout: 30s
-  writeTimeout: 30s
-  producerBatchSize: 2000
-  producerBatchBytes: 10000
-  producerBatchTickerDuration: 10s
-  requiredAcks: 1
-  #  0 -> None
-  #  1 -> Gzip
-  #  2 -> Snappy
-  #  3 -> Lz4
-  #  4 -> Zstd
-  compression: 0
   # SSL configurations
   #
   # secureConnection: true

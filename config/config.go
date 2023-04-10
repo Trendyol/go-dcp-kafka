@@ -3,7 +3,6 @@ package config
 import (
 	"time"
 
-	"github.com/Trendyol/go-dcp-client/helpers"
 	"github.com/Trendyol/go-dcp-client/logger"
 
 	"github.com/gookit/config/v2"
@@ -17,12 +16,12 @@ type Kafka struct {
 	ScramPassword               string            `yaml:"scramPassword"`
 	RootCAPath                  string            `yaml:"rootCAPath"`
 	Brokers                     []string          `yaml:"brokers"`
-	ProducerBatchSize           int               `yaml:"producerBatchSize"`
-	ProducerBatchBytes          int               `yaml:"producerBatchBytes"`
+	ProducerBatchSize           int               `yaml:"producerBatchSize" default:"2000"`
+	ProducerBatchBytes          int               `yaml:"producerBatchBytes" default:"10240"`
 	ProducerBatchTickerDuration time.Duration     `yaml:"producerBatchTickerDuration"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
-	RequiredAcks                int               `yaml:"requiredAcks"`
+	RequiredAcks                int               `yaml:"requiredAcks" default:"1"`
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 }
@@ -35,14 +34,28 @@ func (k *Kafka) GetCompression() int8 {
 }
 
 type Config struct {
-	Kafka  *Kafka               `yaml:"kafka"`
-	Metric helpers.ConfigMetric `yaml:"metric"`
+	Kafka Kafka `yaml:"kafka"`
 }
 
 func Options(opts *config.Options) {
 	opts.ParseTime = true
 	opts.Readonly = true
 	opts.EnableCache = true
+	opts.ParseDefault = true
+}
+
+func applyUnhandledDefaults(_config *Config) {
+	if _config.Kafka.ReadTimeout == 0 {
+		_config.Kafka.ReadTimeout = 30 * time.Second
+	}
+
+	if _config.Kafka.WriteTimeout == 0 {
+		_config.Kafka.WriteTimeout = 30 * time.Second
+	}
+
+	if _config.Kafka.ProducerBatchTickerDuration == 0 {
+		_config.Kafka.ProducerBatchTickerDuration = 10 * time.Second
+	}
 }
 
 func NewConfig(name string, filePath string, errorLogger logger.Logger) *Config {
@@ -59,6 +72,8 @@ func NewConfig(name string, filePath string, errorLogger logger.Logger) *Config 
 	if err != nil {
 		errorLogger.Printf("error while reading config %v", err)
 	}
+
+	applyUnhandledDefaults(_config)
 
 	return _config
 }

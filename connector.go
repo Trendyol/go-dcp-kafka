@@ -85,7 +85,7 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 		errorLogger: errorLogger,
 	}
 
-	kafkaClient := kafka.NewClient(c.Kafka, connector.logger, connector.errorLogger)
+	kafkaClient := kafka.NewClient(c, connector.logger, connector.errorLogger)
 
 	var topics []string
 

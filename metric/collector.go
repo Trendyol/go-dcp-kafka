@@ -9,7 +9,7 @@ import (
 type Collector struct {
 	producer producer.Producer
 
-	dcpLatency *prometheus.Desc
+	kafkaConnectorLatency *prometheus.Desc
 }
 
 func (s *Collector) Describe(ch chan<- *prometheus.Desc) {
@@ -20,9 +20,9 @@ func (s *Collector) Collect(ch chan<- prometheus.Metric) {
 	producerMetric := s.producer.GetMetric()
 
 	ch <- prometheus.MustNewConstMetric(
-		s.dcpLatency,
-		prometheus.GaugeValue,
-		producerMetric.KafkaConnectorLatency.Value(),
+		s.kafkaConnectorLatency,
+		prometheus.CounterValue,
+		float64(producerMetric.KafkaConnectorLatency),
 		[]string{}...,
 	)
 }
@@ -31,7 +31,7 @@ func NewMetricCollector(producer producer.Producer) *Collector {
 	return &Collector{
 		producer: producer,
 
-		dcpLatency: prometheus.NewDesc(
+		kafkaConnectorLatency: prometheus.NewDesc(
 			prometheus.BuildFQName(helpers.Name, "kafka_connector_latency_ms", "current"),
 			"Kafka connector latency ms at 10sec windows",
 			[]string{},
