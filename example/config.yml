@@ -17,8 +17,6 @@ dcp:
     name: groupName
     membership:
       type: static
-logging:
-  level: debug
 kafka:
   collectionTopicMapping:
     _default: topicname
