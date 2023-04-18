@@ -2,6 +2,7 @@ package producer
 
 import (
 	"context"
+	"encoding/binary"
 	"sync"
 	"time"
 
@@ -18,7 +19,6 @@ type producerBatch struct {
 	dcpCheckpointCommit func()
 	metric              *Metric
 	messages            []kafka.Message
-	currentMessageBytes int
 	batchTickerDuration time.Duration
 	batchLimit          int
 	batchBytes          int
@@ -67,13 +67,12 @@ func (b *producerBatch) Close() {
 func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message kafka.Message, eventTime time.Time) {
 	b.flushLock.Lock()
 	b.messages = append(b.messages, message)
-	b.currentMessageBytes += len(message.Value)
 	ctx.Ack()
 	b.flushLock.Unlock()
 
 	b.metric.KafkaConnectorLatency = time.Since(eventTime).Milliseconds()
 
-	if len(b.messages) == b.batchLimit || b.currentMessageBytes >= b.batchBytes {
+	if len(b.messages) == b.batchLimit || binary.Size(b.messages) >= b.batchBytes {
 		b.FlushMessages()
 	}
 }
@@ -92,6 +91,5 @@ func (b *producerBatch) FlushMessages() {
 	b.dcpCheckpointCommit()
 
 	b.messages = b.messages[:0]
-	b.currentMessageBytes = 0
 	b.batchTicker.Reset(b.batchTickerDuration)
 }
