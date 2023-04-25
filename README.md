@@ -128,7 +128,7 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 | `kafka.collectionTopicMapping`      | map[string]string | yes      |          |                                         | 
 | `kafka.brokers`                     | []string          | yes      |          |                                         |
 | `kafka.producerBatchSize`           | integer           | no       | 2000     |                                         |
-| `kafka.producerBatchBytes`          | integer           | no       | 10240    |                                         |
+| `kafka.producerBatchBytes`          | integer           | no       | 10485760 |                                         |
 | `kafka.producerBatchTickerDuration` | time.Duration     | no       | 10s      |                                         |
 | `kafka.readTimeout`                 | time.Duration     | no       | 30s      |                                         |
 | `kafka.writeTimeout`                | time.Duration     | no       | 30s      |                                         |

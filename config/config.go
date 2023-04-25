@@ -17,7 +17,7 @@ type Kafka struct {
 	RootCAPath                  string            `yaml:"rootCAPath"`
 	Brokers                     []string          `yaml:"brokers"`
 	ProducerBatchSize           int               `yaml:"producerBatchSize" default:"2000"`
-	ProducerBatchBytes          int               `yaml:"producerBatchBytes" default:"10240"`
+	ProducerBatchBytes          int               `yaml:"producerBatchBytes" default:"10485760"`
 	ProducerBatchTickerDuration time.Duration     `yaml:"producerBatchTickerDuration"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
