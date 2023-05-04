@@ -47,10 +47,14 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 )
 
-func mapper(event couchbase.Event) []*message.KafkaMessage {
+func mapper(event couchbase.Event) []message.KafkaMessage {
 	// return empty if you wish filter the event
-	return []*message.KafkaMessage{
-		message.GetKafkaMessage(event.Key, event.Value, nil),
+	return []message.KafkaMessage{
+		{
+			Headers: nil,
+			Key:     event.Key,
+			Value:   event.Value,
+		},
 	}
 }
 
@@ -78,10 +82,14 @@ import (
 	"os"
 )
 
-func mapper(event couchbase.Event) []*message.KafkaMessage {
+func mapper(event couchbase.Event) []message.KafkaMessage {
 	// return empty if you wish filter the event
-	return []*message.KafkaMessage{
-		message.GetKafkaMessage(event.Key, event.Value, nil),
+	return []message.KafkaMessage{
+		{
+			Headers: nil,
+			Key:     event.Key,
+			Value:   event.Value,
+		},
 	}
 }
 

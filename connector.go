@@ -7,7 +7,6 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 	"github.com/Trendyol/go-kafka-connect-couchbase/metric"
@@ -53,17 +52,14 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 	default:
 		return
 	}
-
-	for _, kafkaMessage := range c.mapper(e) {
-		if kafkaMessage != nil {
-			topic := c.config.Kafka.CollectionTopicMapping[e.CollectionName]
-			if topic == "" {
-				c.errorLogger.Printf("unexpected collection | %s", e.CollectionName)
-				return
-			}
-			c.producer.Produce(ctx, e.EventTime, kafkaMessage.Value, kafkaMessage.Key, kafkaMessage.Headers, topic)
-			message.MessagePool.Put(kafkaMessage)
-		}
+	topic := c.config.Kafka.CollectionTopicMapping[e.CollectionName]
+	if topic == "" {
+		c.errorLogger.Printf("unexpected collection | %s", e.CollectionName)
+		return
+	}
+	kafkaMessages := c.mapper(e)
+	for i := range kafkaMessages {
+		c.producer.Produce(ctx, e.EventTime, kafkaMessages[i].Value, kafkaMessages[i].Key, kafkaMessages[i].Headers, topic)
 	}
 }
 
