@@ -1,6 +1,8 @@
 package gokafkaconnectcouchbase
 
 import (
+	"os"
+
 	"github.com/Trendyol/go-dcp-client"
 	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-dcp-client/models"
@@ -10,6 +12,7 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 	"github.com/Trendyol/go-kafka-connect-couchbase/metric"
+	"gopkg.in/yaml.v3"
 )
 
 var MetadataTypeKafka = "kafka"
@@ -71,8 +74,25 @@ func NewConnectorWithLoggers(configPath string, mapper Mapper, logger logger.Log
 	return newConnector(configPath, mapper, logger, errorLogger)
 }
 
+func newConnectorConfig(path string) (*config.Config, error) {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var c config.Config
+	err = yaml.Unmarshal(file, &c)
+	if err != nil {
+		return nil, err
+	}
+	c.ApplyDefaults()
+	return &c, nil
+}
+
 func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
-	c := config.NewConfig("cbgokafka", configPath, errorLogger)
+	c, err := newConnectorConfig(configPath)
+	if err != nil {
+		return nil, err
+	}
 
 	connector := &connector{
 		mapper:      mapper,
@@ -89,7 +109,7 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 		topics = append(topics, topic)
 	}
 
-	err := kafkaClient.CheckTopics(topics)
+	err = kafkaClient.CheckTopics(topics)
 	if err != nil {
 		connector.errorLogger.Printf("collection topic mapping error: %v", err)
 		return nil, err
