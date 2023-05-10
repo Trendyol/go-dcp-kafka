@@ -3,7 +3,7 @@ module github.com/Trendyol/go-kafka-connect-couchbase
 go 1.19
 
 require (
-	github.com/Trendyol/go-dcp-client v0.0.53
+	github.com/Trendyol/go-dcp-client v0.0.54
 	github.com/json-iterator/go v1.1.12
 	github.com/prometheus/client_golang v1.15.0
 	github.com/segmentio/kafka-go v0.4.39
@@ -59,6 +59,7 @@ require (
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/term v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
