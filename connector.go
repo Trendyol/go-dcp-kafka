@@ -1,15 +1,17 @@
 package gokafkaconnectcouchbase
 
 import (
+	"errors"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 	"os"
 
 	"github.com/Trendyol/go-dcp-client"
+	dcpClientConfig "github.com/Trendyol/go-dcp-client/config"
 	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 	"github.com/Trendyol/go-kafka-connect-couchbase/metric"
 	"gopkg.in/yaml.v3"
@@ -26,7 +28,7 @@ type connector struct {
 	dcp         godcpclient.Dcp
 	mapper      Mapper
 	producer    producer.Producer
-	config      *config.Config
+	config      *config.Connector
 	logger      logger.Logger
 	errorLogger logger.Logger
 }
@@ -66,56 +68,52 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 	}
 }
 
-func NewConnector(configPath string, mapper Mapper) (Connector, error) {
-	return newConnector(configPath, mapper, logger.Log, logger.Log)
+func NewConnector(cfg any, mapper Mapper) (Connector, error) {
+	switch v := cfg.(type) {
+	case *config.Connector:
+		return newConnector(v, mapper, logger.Log, logger.Log)
+	case string:
+		return newConnectorWithPath(v, mapper, logger.Log, logger.Log)
+	default:
+		return nil, errors.New("invalid config")
+	}
 }
 
-func NewConnectorWithLoggers(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
-	return newConnector(configPath, mapper, logger, errorLogger)
+func NewConnectorWithLoggers(configPath string, mapper Mapper, infoLogger logger.Logger, errorLogger logger.Logger) (Connector, error) {
+	logger.SetLogger(infoLogger)
+	logger.SetErrorLogger(errorLogger)
+
+	return NewConnector(configPath, mapper)
 }
 
-func newConnectorConfig(path string) (*config.Config, error) {
-	file, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var c config.Config
-	err = yaml.Unmarshal(file, &c)
-	if err != nil {
-		return nil, err
-	}
-	c.ApplyDefaults()
-	return &c, nil
-}
-
-func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
-	c, err := newConnectorConfig(configPath)
-	if err != nil {
-		return nil, err
-	}
-
+func newConnector(
+	cc *config.Connector,
+	mapper Mapper,
+	logger logger.Logger,
+	errorLogger logger.Logger,
+) (Connector, error) {
 	connector := &connector{
 		mapper:      mapper,
-		config:      c,
+		config:      cc,
 		logger:      logger,
 		errorLogger: errorLogger,
 	}
 
-	kafkaClient := kafka.NewClient(c, connector.logger, connector.errorLogger)
+	kafkaClient := kafka.NewClient(cc, connector.logger, connector.errorLogger)
 
 	var topics []string
 
-	for _, topic := range c.Kafka.CollectionTopicMapping {
+	for _, topic := range cc.Kafka.CollectionTopicMapping {
 		topics = append(topics, topic)
 	}
 
-	err = kafkaClient.CheckTopics(topics)
+	err := kafkaClient.CheckTopics(topics)
 	if err != nil {
 		connector.errorLogger.Printf("collection topic mapping error: %v", err)
 		return nil, err
 	}
 
-	dcp, err := godcpclient.NewDcpWithLoggers(configPath, connector.produce, logger, errorLogger)
+	dcp, err := godcpclient.NewDcpWithLoggers(cc.Dcp, connector.produce, logger, errorLogger)
 	if err != nil {
 		connector.errorLogger.Printf("dcp error: %v", err)
 		return nil, err
@@ -130,7 +128,7 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 
 	connector.dcp = dcp
 
-	connector.producer, err = producer.NewProducer(kafkaClient, c, connector.logger, connector.errorLogger, dcp.Commit)
+	connector.producer, err = producer.NewProducer(kafkaClient, cc, connector.logger, connector.errorLogger, dcp.Commit)
 	if err != nil {
 		connector.errorLogger.Printf("kafka error: %v", err)
 		return nil, err
@@ -140,4 +138,44 @@ func newConnector(configPath string, mapper Mapper, logger logger.Logger, errorL
 	dcp.SetMetricCollectors(metricCollector)
 
 	return connector, nil
+}
+
+func newConnectorWithPath(path string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
+	c, err := newConnectorConfig(path)
+	if err != nil {
+		return nil, err
+	}
+	dcc, err := newDcpConfigWithPath(path)
+	if err != nil {
+		return nil, err
+	}
+	c.Dcp = *dcc
+	return newConnector(c, mapper, logger, errorLogger)
+}
+
+func newConnectorConfig(path string) (*config.Connector, error) {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var c config.Connector
+	err = yaml.Unmarshal(file, &c)
+	if err != nil {
+		return nil, err
+	}
+	c.ApplyDefaults()
+	return &c, nil
+}
+
+func newDcpConfigWithPath(path string) (*dcpClientConfig.Dcp, error) {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var dcc dcpClientConfig.Dcp
+	err = yaml.Unmarshal(file, &dcc)
+	if err != nil {
+		return nil, err
+	}
+	return &dcc, nil
 }

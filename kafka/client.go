@@ -32,7 +32,7 @@ type Client interface {
 type client struct {
 	addr        net.Addr
 	kafkaClient *kafka.Client
-	config      *config.Config
+	config      *config.Connector
 	logger      logger.Logger
 	errorLogger logger.Logger
 	transport   *kafka.Transport
@@ -259,7 +259,7 @@ func (c *client) CreateCompactedTopic(topic string, partition int, replicationFa
 	return nil
 }
 
-func NewClient(config *config.Config, logger logger.Logger, errorLogger logger.Logger) Client {
+func NewClient(config *config.Connector, logger logger.Logger, errorLogger logger.Logger) Client {
 	addr := kafka.TCP(config.Kafka.Brokers...)
 
 	newClient := &client{
