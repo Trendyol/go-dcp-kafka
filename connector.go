@@ -2,8 +2,9 @@ package gokafkaconnectcouchbase
 
 import (
 	"errors"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 	"os"
+
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 
 	"github.com/Trendyol/go-dcp-client"
 	dcpClientConfig "github.com/Trendyol/go-dcp-client/config"

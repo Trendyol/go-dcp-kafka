@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/Trendyol/go-dcp-client/config"
 	"time"
+
+	"github.com/Trendyol/go-dcp-client/config"
 )
 
 type Kafka struct {
