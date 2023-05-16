@@ -30,5 +30,3 @@ kafka:
   # interCAPath: "example/stretch-kafka/interCA.pem"
   # scramUsername: "username"
   # scramPassword: "password"
-checkpoint:
-  type: manual
