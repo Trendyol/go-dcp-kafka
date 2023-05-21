@@ -1,43 +1,29 @@
-# Go Kafka Connect Couchbase [![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-kafka-connect-couchbase.svg)](https://pkg.go.dev/github.com/Trendyol/go-kafka-connect-couchbase) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-kafka-connect-couchbase)](https://goreportcard.com/report/github.com/Trendyol/go-kafka-connect-couchbase)
+# Go Kafka Connect Couchbase
+[![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-kafka-connect-couchbase.svg)](https://pkg.go.dev/github.com/Trendyol/go-kafka-connect-couchbase) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-kafka-connect-couchbase)](https://goreportcard.com/report/github.com/Trendyol/go-kafka-connect-couchbase)
 
-This repository contains the Go implementation of the Couchbase Kafka Connector.
+Go implementation of the [Kafka Connect Couchbase](https://github.com/couchbase/kafka-connect-couchbase).
 
-### Contents
+**Go Kafka Connect Couchbase** streams documents from Couchbase Database Change Protocol (DCP) and publishes Kafka events in near real-time.
 
----
+## Features
 
-* [What is Couchbase Kafka Connector?](#what-is-couchbase-kafka-connector)
-* [Why?](#why)
-* [Features](#features)
-* [Usage](#usage)
-* [Configuration](#configuration)
-* [Examples](#examples)
+* **Less resource usage** and **higher throughput**(see [Benchmarks](#benchmarks)).
+* **Custom Kafka key and headers** implementation(see [Example](#example)).
+* Sending **multiple Kafka events for a DCP event**(see [Example](#example)).
+* Easier to handle different DCP events such as **expiration, deletion and mutation**(see [Example](#example)).
+* **Easier to scale up** and down by custom membership algorithms(Couchbase, KubernetesHa, Kubernetes StatefulSet or Static, see [examples](https://github.com/Trendyol/go-dcp-client#examples))
+* **Easier to configure**.
 
-### What is Couchbase Kafka Connector?
+## Benchmarks
 
-Official Couchbase documentation defines the Couchbase Kafka Connector as follows:
+TODO
+| Package | Time | Time % to zap | Objects Allocated |
+| :------ | :--: | :-----------: | :---------------: |
+| Java Kafka Connect Couchbase | 1744 ns/op | +0% | 5 allocs/op
+| **Go Kafka Connect Couchbase** | 2483 ns/op | +42% | 10 allocs/op
 
-_The Couchbase Kafka connector is a plug-in for the Kafka Connect framework. It provides source and sink components._
-
-The **source connector** streams documents from Couchbase Database Change Protocol (DCP) and publishes each document to
-a Kafka topic in near real-time.
-
-The **sink connector** subscribes to Kafka topics and writes the messages to Couchbase.
-
-**Go Kafka Connect Couchbase is a source connector**. So it sends Couchbase mutations to Kafka as events.
-
----
-
-### Why?
-
-+ Build a Couchbase Kafka Connector by using **Go** to reduce resource usage.
-+ Suggesting more **configurations** so users can make changes to less code.
-+ By presenting the connector as a **library**, ensuring that users do not clone the code they don't need.
-
----
-
-### Example
-
+## Example
+[Basic](example/main.go)
 ```go
 package main
 
@@ -106,24 +92,7 @@ func main() {
 }
 ```
 
----
-
-### Features
-
-- [X] Batch Producer
-- [X] Secure Kafka
-- [X] Kafka Metadata
-
----
-
-### Usage
-
-```
-$ go get github.com/Trendyol/go-kafka-connect-couchbase
-
-```
-
----
+## Configuration
 
 ### Dcp Configuration
 
@@ -148,8 +117,13 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 | `kafka.scramUsername`               | string            | no       | *not set |                                         |
 | `kafka.scramPassword`               | string            | no       | *not set |                                         |
 
----
+## Maintainers
+* [Eray Arslan](https://github.com/erayarslan)
+* [Mehmet Sezer](https://github.com/mhmtszr)
+* [Oğuzhan Yıldırım](https://github.com/oguzyildirim)
 
-### Examples
+## Contributing
+Go Kafka Connect Couchbase is always open for direct contributions. For more information please check our [Contribution Guideline document](./CONTRIBUTING.md).
 
-- [example](example/main.go)
+## License
+Released under the [MIT License](LICENSE).
