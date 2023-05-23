@@ -11,13 +11,16 @@ Go implementation of the [Kafka Connect Couchbase](https://github.com/couchbase/
 * **Custom Kafka key and headers** implementation(see [Example](#example)).
 * Sending **multiple Kafka events for a DCP event**(see [Example](#example)).
 * Easier to handle different DCP events such as **expiration, deletion and mutation**(see [Example](#example)).
-* **Easier to scale up** and down by custom membership algorithms(Couchbase, KubernetesHa, Kubernetes StatefulSet or Static, see [examples](https://github.com/Trendyol/go-dcp-client#examples))
+* **Kafka compression** support(Gzip, Snappy, Lz4, Zstd).
+* **Kafka producer acknowledges** support(fire-and-forget, wait for the leader, wait for the full ISR)
+* **Easier to manage batch configurations** such as maximum batch size, batch bytes, batch ticker durations.
+* **Easier to scale up and down** by custom membership algorithms(Couchbase, KubernetesHa, Kubernetes StatefulSet or Static, see [examples](https://github.com/Trendyol/go-dcp-client#examples))
 * **Easier to configure**.
 
 ## Benchmarks
 
 TODO
-| Package | Time | Time % to zap | Objects Allocated |
+| Package | Time | Time % to | Objects Allocated |
 | :------ | :--: | :-----------: | :---------------: |
 | Java Kafka Connect Couchbase | 1744 ns/op | +0% | 5 allocs/op
 | **Go Kafka Connect Couchbase** | 2483 ns/op | +42% | 10 allocs/op
