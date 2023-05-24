@@ -7,7 +7,6 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 
 	"github.com/Trendyol/go-dcp-client"
-	dcpClientConfig "github.com/Trendyol/go-dcp-client/config"
 	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
@@ -72,7 +71,7 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 func NewConnector(cfg any, mapper Mapper) (Connector, error) {
 	switch v := cfg.(type) {
 	case *config.Connector:
-		return newConnector(v, mapper, logger.Log, logger.Log)
+		return newConnector(cfg, v, mapper, logger.Log, logger.Log)
 	case string:
 		return newConnectorWithPath(v, mapper, logger.Log, logger.Log)
 	default:
@@ -88,6 +87,7 @@ func NewConnectorWithLoggers(configPath string, mapper Mapper, infoLogger logger
 }
 
 func newConnector(
+	cfg any,
 	cc *config.Connector,
 	mapper Mapper,
 	logger logger.Logger,
@@ -114,10 +114,21 @@ func newConnector(
 		return nil, err
 	}
 
-	dcp, err := godcpclient.NewDcpWithLoggers(cc.Dcp, connector.produce, logger, errorLogger)
-	if err != nil {
-		connector.errorLogger.Printf("dcp error: %v", err)
-		return nil, err
+	switch v := cfg.(type) {
+	case *config.Connector:
+		dcp, err := godcpclient.NewDcpWithLoggers(v.Dcp, connector.produce, logger, errorLogger)
+		if err != nil {
+			connector.errorLogger.Printf("dcp error: %v", err)
+			return nil, err
+		}
+	case string:
+		dcp, err := godcpclient.NewDcpWithLoggers(v, connector.produce, logger, errorLogger)
+		if err != nil {
+			connector.errorLogger.Printf("dcp error: %v", err)
+			return nil, err
+		}
+	default:
+		return nil, errors.New("invalid config")
 	}
 
 	dcpConfig := dcp.GetConfig()
@@ -146,11 +157,6 @@ func newConnectorWithPath(path string, mapper Mapper, logger logger.Logger, erro
 	if err != nil {
 		return nil, err
 	}
-	dcc, err := newDcpConfigWithPath(path)
-	if err != nil {
-		return nil, err
-	}
-	c.Dcp = *dcc
 	return newConnector(c, mapper, logger, errorLogger)
 }
 
@@ -168,15 +174,3 @@ func newConnectorConfig(path string) (*config.Connector, error) {
 	return &c, nil
 }
 
-func newDcpConfigWithPath(path string) (*dcpClientConfig.Dcp, error) {
-	file, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var dcc dcpClientConfig.Dcp
-	err = yaml.Unmarshal(file, &dcc)
-	if err != nil {
-		return nil, err
-	}
-	return &dcc, nil
-}
