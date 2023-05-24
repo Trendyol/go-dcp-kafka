@@ -2,19 +2,18 @@ package gokafkaconnectcouchbase
 
 import (
 	"errors"
-	"os"
-
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
-
 	"github.com/Trendyol/go-dcp-client"
+	dcpClientConfig "github.com/Trendyol/go-dcp-client/config"
 	"github.com/Trendyol/go-dcp-client/logger"
 	"github.com/Trendyol/go-dcp-client/models"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
+	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 	"github.com/Trendyol/go-kafka-connect-couchbase/metric"
 	"gopkg.in/yaml.v3"
+	"os"
 )
 
 var MetadataTypeKafka = "kafka"
@@ -71,9 +70,9 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 func NewConnector(cfg any, mapper Mapper) (Connector, error) {
 	switch v := cfg.(type) {
 	case *config.Connector:
-		return newConnector(cfg, v, mapper, logger.Log, logger.Log)
+		return newConnectorFromConfig(cfg, v, mapper)
 	case string:
-		return newConnectorWithPath(v, mapper, logger.Log, logger.Log)
+		return newConnectorFromPath(v, mapper)
 	default:
 		return nil, errors.New("invalid config")
 	}
@@ -86,56 +85,27 @@ func NewConnectorWithLoggers(configPath string, mapper Mapper, infoLogger logger
 	return NewConnector(configPath, mapper)
 }
 
-func newConnector(
-	cfg any,
-	cc *config.Connector,
-	mapper Mapper,
-	logger logger.Logger,
-	errorLogger logger.Logger,
-) (Connector, error) {
+func newConnectorFromConfig(cfg any, cc *config.Connector, mapper Mapper) (Connector, error) {
 	connector := &connector{
 		mapper:      mapper,
 		config:      cc,
-		logger:      logger,
-		errorLogger: errorLogger,
+		logger:      logger.Log,
+		errorLogger: logger.Log,
 	}
 
-	kafkaClient := kafka.NewClient(cc, connector.logger, connector.errorLogger)
-
-	var topics []string
-
-	for _, topic := range cc.Kafka.CollectionTopicMapping {
-		topics = append(topics, topic)
-	}
-
-	err := kafkaClient.CheckTopics(topics)
+	kafkaClient, err := createKafkaClient(cc, connector)
 	if err != nil {
-		connector.errorLogger.Printf("collection topic mapping error: %v", err)
 		return nil, err
 	}
 
-	switch v := cfg.(type) {
-	case *config.Connector:
-		dcp, err := godcpclient.NewDcpWithLoggers(v.Dcp, connector.produce, logger, errorLogger)
-		if err != nil {
-			connector.errorLogger.Printf("dcp error: %v", err)
-			return nil, err
-		}
-	case string:
-		dcp, err := godcpclient.NewDcpWithLoggers(v, connector.produce, logger, errorLogger)
-		if err != nil {
-			connector.errorLogger.Printf("dcp error: %v", err)
-			return nil, err
-		}
-	default:
-		return nil, errors.New("invalid config")
+	dcp, err := createDcp(cfg, connector.produce, connector.logger, connector.errorLogger)
+	if err != nil {
+		connector.errorLogger.Printf("dcp error: %v", err)
+		return nil, err
 	}
 
-	dcpConfig := dcp.GetConfig()
-
-	if dcpConfig.Metadata.Type == MetadataTypeKafka {
-		kafkaMetadata := metadata.NewKafkaMetadata(kafkaClient, dcpConfig.Metadata.Config, connector.logger, connector.errorLogger)
-		dcp.SetMetadata(kafkaMetadata)
+	if dcpConfig := dcp.GetConfig(); dcpConfig.Metadata.Type == MetadataTypeKafka {
+		setKafkaMetadata(kafkaClient, dcpConfig, connector, dcp)
 	}
 
 	connector.dcp = dcp
@@ -146,18 +116,54 @@ func newConnector(
 		return nil, err
 	}
 
-	metricCollector := metric.NewMetricCollector(connector.producer)
-	dcp.SetMetricCollectors(metricCollector)
+	initializeMetricCollector(connector, dcp)
 
 	return connector, nil
 }
 
-func newConnectorWithPath(path string, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
+func createKafkaClient(cc *config.Connector, connector *connector) (kafka.Client, error) {
+	kafkaClient := kafka.NewClient(cc, connector.logger, connector.errorLogger)
+
+	var topics []string
+
+	for _, topic := range cc.Kafka.CollectionTopicMapping {
+		topics = append(topics, topic)
+	}
+
+	if err := kafkaClient.CheckTopics(topics); err != nil {
+		connector.errorLogger.Printf("collection topic mapping error: %v", err)
+		return nil, err
+	}
+	return kafkaClient, nil
+}
+
+func createDcp(cfg any, listener models.Listener, logger logger.Logger, errorLogger logger.Logger) (godcpclient.Dcp, error) {
+	switch v := cfg.(type) {
+	case dcpClientConfig.Dcp:
+		return godcpclient.NewDcpWithLoggers(v.Dcp, listener, logger, errorLogger)
+	case string:
+		return godcpclient.NewDcpWithLoggers(v, listener, logger, errorLogger)
+	default:
+		return nil, errors.New("invalid config")
+	}
+}
+
+func setKafkaMetadata(kafkaClient kafka.Client, dcpConfig *dcpClientConfig.Dcp, connector *connector, dcp godcpclient.Dcp) {
+	kafkaMetadata := metadata.NewKafkaMetadata(kafkaClient, dcpConfig.Metadata.Config, connector.logger, connector.errorLogger)
+	dcp.SetMetadata(kafkaMetadata)
+}
+
+func initializeMetricCollector(connector *connector, dcp godcpclient.Dcp) {
+	metricCollector := metric.NewMetricCollector(connector.producer)
+	dcp.SetMetricCollectors(metricCollector)
+}
+
+func newConnectorFromPath(path string, mapper Mapper) (Connector, error) {
 	c, err := newConnectorConfig(path)
 	if err != nil {
 		return nil, err
 	}
-	return newConnector(c, mapper, logger, errorLogger)
+	return newConnectorFromConfig(path, c, mapper)
 }
 
 func newConnectorConfig(path string) (*config.Connector, error) {
@@ -173,4 +179,3 @@ func newConnectorConfig(path string) (*config.Connector, error) {
 	c.ApplyDefaults()
 	return &c, nil
 }
-
