@@ -2,6 +2,8 @@ package gokafkaconnectcouchbase
 
 import (
 	"errors"
+	"os"
+
 	"github.com/Trendyol/go-dcp-client"
 	dcpClientConfig "github.com/Trendyol/go-dcp-client/config"
 	"github.com/Trendyol/go-dcp-client/logger"
@@ -13,7 +15,6 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 	"github.com/Trendyol/go-kafka-connect-couchbase/metric"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 var MetadataTypeKafka = "kafka"
