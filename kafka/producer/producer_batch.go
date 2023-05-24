@@ -2,6 +2,7 @@ package producer
 
 import (
 	"context"
+	"encoding/binary"
 	"sync"
 	"time"
 
@@ -64,16 +65,16 @@ func (b *producerBatch) Close() {
 	b.FlushMessages()
 }
 
-func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message kafka.Message, eventTime time.Time) {
+func (b *producerBatch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time) {
 	b.flushLock.Lock()
-	b.messages = append(b.messages, message)
-	b.currentMessageBytes += len(message.Value)
+	b.messages = append(b.messages, messages...)
+	b.currentMessageBytes += binary.Size(messages)
 	ctx.Ack()
 	b.flushLock.Unlock()
 
 	b.metric.KafkaConnectorLatency = time.Since(eventTime).Milliseconds()
 
-	if len(b.messages) == b.batchLimit || b.currentMessageBytes >= b.batchBytes {
+	if len(b.messages) >= b.batchLimit || b.currentMessageBytes >= b.batchBytes {
 		b.FlushMessages()
 	}
 }
@@ -81,17 +82,15 @@ func (b *producerBatch) AddMessage(ctx *models.ListenerContext, message kafka.Me
 func (b *producerBatch) FlushMessages() {
 	b.flushLock.Lock()
 	defer b.flushLock.Unlock()
-	if len(b.messages) == 0 {
-		return
-	}
-	err := b.Writer.WriteMessages(context.Background(), b.messages...)
-	if err != nil {
-		b.errorLogger.Printf("batch producer flush error %v", err)
-		return
+	if len(b.messages) > 0 {
+		err := b.Writer.WriteMessages(context.Background(), b.messages...)
+		if err != nil {
+			b.errorLogger.Printf("batch producer flush error %v", err)
+			return
+		}
+		b.messages = b.messages[:0]
+		b.currentMessageBytes = 0
+		b.batchTicker.Reset(b.batchTickerDuration)
 	}
 	b.dcpCheckpointCommit()
-
-	b.messages = b.messages[:0]
-	b.currentMessageBytes = 0
-	b.batchTicker.Reset(b.batchTickerDuration)
 }

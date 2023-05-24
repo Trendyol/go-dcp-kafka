@@ -12,6 +12,7 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
 	"github.com/Trendyol/go-kafka-connect-couchbase/metric"
+	sKafka "github.com/segmentio/kafka-go"
 	"gopkg.in/yaml.v3"
 )
 
@@ -61,9 +62,22 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 		return
 	}
 	kafkaMessages := c.mapper(e)
-	for i := range kafkaMessages {
-		c.producer.Produce(ctx, e.EventTime, kafkaMessages[i].Value, kafkaMessages[i].Key, kafkaMessages[i].Headers, topic)
+
+	if len(kafkaMessages) == 0 {
+		ctx.Ack()
+		return
 	}
+
+	messages := make([]sKafka.Message, 0, len(kafkaMessages))
+	for _, message := range kafkaMessages {
+		messages = append(messages, sKafka.Message{
+			Topic:   topic,
+			Key:     message.Key,
+			Value:   message.Value,
+			Headers: message.Headers,
+		})
+	}
+	c.producer.Produce(ctx, e.EventTime, messages)
 }
 
 func NewConnector(configPath string, mapper Mapper) (Connector, error) {
