@@ -15,7 +15,7 @@ events in near real-time.
 * Easier to handle different DCP events such as **expiration, deletion and mutation**(see [Example](#example)).
 * **Kafka compression** support(Gzip, Snappy, Lz4, Zstd).
 * **Kafka producer acknowledges** support(fire-and-forget, wait for the leader, wait for the full ISR).
-* Metadata can be saved to **Couchbase or Kafka**
+* Metadata can be saved to **Couchbase or Kafka**.
 * **Easier to manage batch configurations** such as maximum batch size, batch bytes, batch ticker durations.
 * **Easier to scale up and down** by custom membership algorithms(Couchbase, KubernetesHa, Kubernetes StatefulSet or
   Static, see [examples](https://github.com/Trendyol/go-dcp-client#examples)).
