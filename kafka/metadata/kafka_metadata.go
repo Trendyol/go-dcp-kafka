@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/Trendyol/go-dcp-client/wrapper"
+
 	"github.com/Trendyol/go-dcp-client/metadata"
 	"github.com/Trendyol/go-dcp-client/models"
 
@@ -49,7 +51,7 @@ func (s *kafkaMetadata) Save(state map[uint16]*models.CheckpointDocument, dirtyO
 func (s *kafkaMetadata) Load( //nolint:funlen
 	vbIDs []uint16,
 	bucketUUID string,
-) (map[uint16]*models.CheckpointDocument, bool, error) {
+) (*wrapper.SyncMap[uint16, *models.CheckpointDocument], bool, error) {
 	partitions, err := s.kafkaClient.GetPartitions(s.topic)
 	if err != nil {
 		return nil, false, err
@@ -93,8 +95,7 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 		}(consumer, endOffset.LastOffset)
 	}
 
-	state := map[uint16]*models.CheckpointDocument{}
-	stateLock := &sync.Mutex{}
+	state := &wrapper.SyncMap[uint16, *models.CheckpointDocument]{}
 	exist := false
 
 	go func() {
@@ -110,9 +111,7 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 
 			vbID, err := strconv.ParseUint(string(m.Key), 0, 16)
 			if err == nil {
-				stateLock.Lock()
-				state[uint16(vbID)] = doc
-				stateLock.Unlock()
+				state.Store(uint16(vbID), doc)
 			} else {
 				s.logger.Printf("cannot load checkpoint, vbID: %d %v", vbID, err)
 				panic(err)
@@ -123,9 +122,7 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 	wg.Wait()
 
 	for _, vbID := range vbIDs {
-		if _, ok := state[vbID]; !ok {
-			state[vbID] = models.NewEmptyCheckpointDocument(bucketUUID)
-		}
+		state.LoadOrStore(vbID, models.NewEmptyCheckpointDocument(bucketUUID))
 	}
 
 	return state, exist, nil

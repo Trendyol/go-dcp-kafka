@@ -105,7 +105,10 @@ func newConnectorFromConfig(cfg any, cc *config.Connector, mapper Mapper) (Conne
 		return nil, err
 	}
 
-	if dcpConfig := dcp.GetConfig(); dcpConfig.Metadata.Type == MetadataTypeKafka {
+	dcpConfig := dcp.GetConfig()
+	dcpConfig.Checkpoint.Type = "manual"
+
+	if dcpConfig.Metadata.Type == MetadataTypeKafka {
 		setKafkaMetadata(kafkaClient, dcpConfig, connector, dcp)
 	}
 
