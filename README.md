@@ -1,42 +1,40 @@
-# Go Kafka Connect Couchbase [![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-kafka-connect-couchbase.svg)](https://pkg.go.dev/github.com/Trendyol/go-kafka-connect-couchbase) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-kafka-connect-couchbase)](https://goreportcard.com/report/github.com/Trendyol/go-kafka-connect-couchbase)
+# Go Kafka Connect Couchbase
 
-This repository contains the Go implementation of the Couchbase Kafka Connector.
+[![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-kafka-connect-couchbase.svg)](https://pkg.go.dev/github.com/Trendyol/go-kafka-connect-couchbase) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-kafka-connect-couchbase)](https://goreportcard.com/report/github.com/Trendyol/go-kafka-connect-couchbase)
 
-### Contents
+Go implementation of the [Kafka Connect Couchbase](https://github.com/couchbase/kafka-connect-couchbase).
 
----
+**Go Kafka Connect Couchbase** streams documents from Couchbase Database Change Protocol (DCP) and publishes Kafka
+events in near real-time.
 
-* [What is Couchbase Kafka Connector?](#what-is-couchbase-kafka-connector)
-* [Why?](#why)
-* [Features](#features)
-* [Usage](#usage)
-* [Configuration](#configuration)
-* [Examples](#examples)
+## Features
 
-### What is Couchbase Kafka Connector?
+* **Less resource usage** and **higher throughput**(see [Benchmarks](#benchmarks)).
+* **Custom Kafka key and headers** implementation(see [Example](#example)).
+* Sending **multiple Kafka events for a DCP event**(see [Example](#example)).
+* Handling different DCP events such as **expiration, deletion and mutation**(see [Example](#example)).
+* **Kafka compression** support(Gzip, Snappy, Lz4, Zstd).
+* **Kafka producer acknowledges** support(fire-and-forget, wait for the leader, wait for the full ISR).
+* Metadata can be saved to **Couchbase or Kafka**.
+* **Managing batch configurations** such as maximum batch size, batch bytes, batch ticker durations.
+* **Scale up and down** by custom membership algorithms(Couchbase, KubernetesHa, Kubernetes StatefulSet or
+  Static, see [examples](https://github.com/Trendyol/go-dcp-client#examples)).
+* **Easily manageable configurations**.
 
-Official Couchbase documentation defines the Couchbase Kafka Connector as follows:
+## Benchmarks
 
-_The Couchbase Kafka connector is a plug-in for the Kafka Connect framework. It provides source and sink components._
+The benchmark was made with the  **1,001,006** Couchbase document, because it is possible to more clearly observe the
+difference in the batch structure between the two packages. **Default configurations** for Java Kafka Connect Couchbase
+used for both connectors.
 
-The **source connector** streams documents from Couchbase Database Change Protocol (DCP) and publishes each document to
-a Kafka topic in near real-time.
+| Package                              | Time to Process Events | Average CPU Usage(Core) | Average Memory Usage |
+|:-------------------------------------|:----------------------:|:-----------------------:|:--------------------:|
+| **Go Kafka Connect Couchbase**(1.19) |        **12s**         |        **0.383**        |      **428MB**       
+| Java Kafka Connect Couchbase(JDK11)  |          19s           |           1.5           |        932MB         
 
-The **sink connector** subscribes to Kafka topics and writes the messages to Couchbase.
+## Example
 
-**Go Kafka Connect Couchbase is a source connector**. So it sends Couchbase mutations to Kafka as events.
-
----
-
-### Why?
-
-+ Build a Couchbase Kafka Connector by using **Go** to reduce resource usage.
-+ Suggesting more **configurations** so users can make changes to less code.
-+ By presenting the connector as a **library**, ensuring that users do not clone the code they don't need.
-
----
-
-### Example
+[Basic](example/main.go)
 
 ```go
 package main
@@ -106,24 +104,7 @@ func main() {
 }
 ```
 
----
-
-### Features
-
-- [X] Batch Producer
-- [X] Secure Kafka
-- [X] Kafka Metadata
-
----
-
-### Usage
-
-```
-$ go get github.com/Trendyol/go-kafka-connect-couchbase
-
-```
-
----
+## Configuration
 
 ### Dcp Configuration
 
@@ -131,25 +112,43 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 
 ### Kafka Specific Configuration
 
-| Variable                            | Type              | Required | Default  | Description                             |                                                            
-|-------------------------------------|-------------------|----------|----------|-----------------------------------------|
-| `kafka.collectionTopicMapping`      | map[string]string | yes      |          |                                         | 
-| `kafka.brokers`                     | []string          | yes      |          |                                         |
-| `kafka.producerBatchSize`           | integer           | no       | 2000     |                                         |
-| `kafka.producerBatchBytes`          | integer           | no       | 10485760 |                                         |
-| `kafka.producerBatchTickerDuration` | time.Duration     | no       | 10s      |                                         |
-| `kafka.readTimeout`                 | time.Duration     | no       | 30s      |                                         |
-| `kafka.writeTimeout`                | time.Duration     | no       | 30s      |                                         |
-| `kafka.compression`                 | integer           | no       | 0        | 0=None, 1=Gzip, 2=Snappy, 3=Lz4, 4=Zstd |
-| `kafka.requiredAcks`                | integer           | no       | 1        |                                         |
-| `kafka.secureConnection`            | bool              | no       | false    |                                         |
-| `kafka.rootCAPath`                  | string            | no       | *not set |                                         |
-| `kafka.interCAPath`                 | string            | no       | *not set |                                         |
-| `kafka.scramUsername`               | string            | no       | *not set |                                         |
-| `kafka.scramPassword`               | string            | no       | *not set |                                         |
+| Variable                            | Type              | Required | Default  | Description                                                                                                                                                                                                                                                                                      |                                                            
+|-------------------------------------|-------------------|----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `kafka.collectionTopicMapping`      | map[string]string | yes      |          | Defines which Couchbase collection events will be sent to which topic                                                                                                                                                                                                                            | 
+| `kafka.brokers`                     | []string          | yes      |          | Broker ip and port information                                                                                                                                                                                                                                                                   |
+| `kafka.producerBatchSize`           | integer           | no       | 2000     | Maximum message count for batch, if exceed flush will be triggered.                                                                                                                                                                                                                              |
+| `kafka.producerBatchBytes`          | integer           | no       | 10485760 | Maximum size(byte) for batch, if exceed flush will be triggered.                                                                                                                                                                                                                                 |
+| `kafka.producerBatchTickerDuration` | time.Duration     | no       | 10s      | Batch is being flushed automatically at specific time intervals for long waiting messages in batch.                                                                                                                                                                                              |
+| `kafka.readTimeout`                 | time.Duration     | no       | 30s      | segmentio/kafka-go - Timeout for read operations                                                                                                                                                                                                                                                 |
+| `kafka.writeTimeout`                | time.Duration     | no       | 30s      | segmentio/kafka-go - Timeout for write operations                                                                                                                                                                                                                                                |
+| `kafka.compression`                 | integer           | no       | 0        | Compression can be used if message size is large, CPU usage may be affected. 0=None, 1=Gzip, 2=Snappy, 3=Lz4, 4=Zstd                                                                                                                                                                             |
+| `kafka.requiredAcks`                | integer           | no       | 1        | segmentio/kafka-go - Number of acknowledges from partition replicas required before receiving a response to a produce request. 0=fire-and-forget, do not wait for acknowledgements from the, 1=wait for the leader to acknowledge the writes, -1=wait for the full ISR to acknowledge the writes |
+| `kafka.secureConnection`            | bool              | no       | false    | Enable secure Kafka.                                                                                                                                                                                                                                                                             |
+| `kafka.rootCAPath`                  | string            | no       | *not set | Define root CA path.                                                                                                                                                                                                                                                                             |
+| `kafka.interCAPath`                 | string            | no       | *not set | Define inter CA path.                                                                                                                                                                                                                                                                            |
+| `kafka.scramUsername`               | string            | no       | *not set | Define scram username.                                                                                                                                                                                                                                                                           |
+| `kafka.scramPassword`               | string            | no       | *not set | Define scram password.                                                                                                                                                                                                                                                                           |
 
----
+## Exposed metrics
 
-### Examples
+| Metric Name                              | Description                            | Labels | Value Type |
+|------------------------------------------|----------------------------------------|--------|------------|
+| kafka_connector_latency_ms               | Time to adding to the batch.           | N/A    | Gauge      |
+| kafka_connector_batch_produce_latency_ms | Time to produce messages in the batch. | N/A    | Gauge      |
 
-- [example](example/main.go)
+For DCP related metrics see [also](https://github.com/Trendyol/go-dcp-client#exposed-metrics).
+
+## Maintainers
+
+* [Eray Arslan](https://github.com/erayarslan)
+* [Mehmet Sezer](https://github.com/mhmtszr)
+* [Oğuzhan Yıldırım](https://github.com/oguzyildirim)
+
+## Contributing
+
+Go Kafka Connect Couchbase is always open for direct contributions. For more information please check
+our [Contribution Guideline document](./CONTRIBUTING.md).
+
+## License
+
+Released under the [MIT License](LICENSE).

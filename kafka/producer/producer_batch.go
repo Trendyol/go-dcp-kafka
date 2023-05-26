@@ -82,11 +82,14 @@ func (b *producerBatch) FlushMessages() {
 	b.flushLock.Lock()
 	defer b.flushLock.Unlock()
 	if len(b.messages) > 0 {
+		startedTime := time.Now()
 		err := b.Writer.WriteMessages(context.Background(), b.messages...)
 		if err != nil {
 			b.errorLogger.Printf("batch producer flush error %v", err)
 			return
 		}
+		b.metric.BatchProduceLatency = time.Since(startedTime).Milliseconds()
+
 		b.messages = b.messages[:0]
 		b.currentMessageBytes = 0
 		b.batchTicker.Reset(b.batchTickerDuration)
