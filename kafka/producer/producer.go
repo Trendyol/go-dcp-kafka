@@ -19,6 +19,7 @@ type Producer interface {
 
 type Metric struct {
 	KafkaConnectorLatency int64
+	BatchProduceLatency   int64
 }
 
 type producer struct {

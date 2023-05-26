@@ -14,7 +14,7 @@ $ go get github.com/Trendyol/go-kafka-connect-couchbase
 
 ## Step 2: Implementing the Mapper
 
-The mapper is a function that takes a `couchbase.Event` as input and returns a slice of `*message.KafkaMessage`. 
+The mapper is a function that takes a `couchbase.Event` as input and returns a slice of `message.KafkaMessage`. 
 The mapper is responsible for converting the Couchbase mutations to Kafka events that will be sent to Kafka.
 
 Here's an example mapper implementation:
@@ -27,10 +27,14 @@ import (
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 )
 
-func mapper(event couchbase.Event) []*message.KafkaMessage {
+func mapper(event couchbase.Event) []message.KafkaMessage {
 	// here you can filter and transform events
-	return []*message.KafkaMessage{
-		message.GetKafkaMessage(event.Key, event.Value, nil),
+	return []message.KafkaMessage{
+		{
+			Headers: nil,
+			Key:     event.Key,
+			Value:   event.Value,
+		},
 	}
 }
 ```

@@ -129,6 +129,15 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 | `kafka.scramUsername`               | string            | no       | *not set | Define scram username.                                                                                                                                                                                                                                                                           |
 | `kafka.scramPassword`               | string            | no       | *not set | Define scram password.                                                                                                                                                                                                                                                                           |
 
+## Exposed metrics
+
+| Metric Name                              | Description                            | Labels | Value Type |
+|------------------------------------------|----------------------------------------|--------|------------|
+| kafka_connector_latency_ms               | Time to adding to the batch.           | N/A    | Gauge      |
+| kafka_connector_batch_produce_latency_ms | Time to produce messages in the batch. | N/A    | Gauge      |
+
+For DCP related metrics see [also](https://github.com/Trendyol/go-dcp-client#exposed-metrics).
+
 ## Maintainers
 
 * [Eray Arslan](https://github.com/erayarslan)
