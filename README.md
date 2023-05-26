@@ -23,11 +23,14 @@ events in near real-time.
 
 ## Benchmarks
 
-TODO
-| Package | Time | Time % to | Objects Allocated |
-| :------ | :--: | :-----------: | :---------------: |
-| Java Kafka Connect Couchbase | 1744 ns/op | +0% | 5 allocs/op
-| **Go Kafka Connect Couchbase** | 2483 ns/op | +42% | 10 allocs/op
+The benchmark was made with the  **1,001,006** Couchbase document, because it is possible to more clearly observe the
+difference in the batch structure between the two packages. **Default configurations** for Java Kafka Connect Couchbase
+used for both connectors.
+
+| Package                              | Time to Process Events | Average CPU Usage(Core) | Average Memory Usage |
+|:-------------------------------------|:----------------------:|:-----------------------:|:--------------------:|
+| **Go Kafka Connect Couchbase**(1.19) |        **12s**         |        **0.383**        |      **428MB**       
+| Java Kafka Connect Couchbase(JDK11)  |          19s           |           1.5           |        932MB         
 
 ## Example
 
