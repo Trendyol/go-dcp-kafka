@@ -33,6 +33,10 @@ type connector struct {
 }
 
 func (c *connector) Start() {
+	go func() {
+		<-c.dcp.WaitUntilReady()
+		c.producer.StartBatch()
+	}()
 	c.dcp.Start()
 }
 

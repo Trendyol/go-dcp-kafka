@@ -14,6 +14,7 @@ type Producer interface {
 	Produce(ctx *models.ListenerContext, eventTime time.Time, messages []kafka.Message)
 	Close() error
 	GetMetric() *Metric
+	StartBatch()
 }
 
 type Metric struct {
@@ -43,6 +44,10 @@ func NewProducer(kafkaClient gKafka.Client,
 			dcpCheckpointCommit,
 		),
 	}, nil
+}
+
+func (p *producer) StartBatch() {
+	p.producerBatch.StartBatchTicker()
 }
 
 func (p *producer) Produce(

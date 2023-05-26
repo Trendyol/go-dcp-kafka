@@ -47,7 +47,6 @@ func newProducerBatch(
 		dcpCheckpointCommit: dcpCheckpointCommit,
 		batchBytes:          batchBytes,
 	}
-	batch.StartBatchTicker()
 	return batch
 }
 
