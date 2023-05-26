@@ -11,9 +11,10 @@ import (
 )
 
 type Producer interface {
-	Produce(ctx *models.ListenerContext, eventTime time.Time, message []byte, key []byte, headers map[string]string, topic string)
+	Produce(ctx *models.ListenerContext, eventTime time.Time, messages []kafka.Message)
 	Close() error
 	GetMetric() *Metric
+	StartBatch()
 }
 
 type Metric struct {
@@ -45,26 +46,16 @@ func NewProducer(kafkaClient gKafka.Client,
 	}, nil
 }
 
+func (p *producer) StartBatch() {
+	p.producerBatch.StartBatchTicker()
+}
+
 func (p *producer) Produce(
 	ctx *models.ListenerContext,
 	eventTime time.Time,
-	message []byte,
-	key []byte,
-	headers map[string]string,
-	topic string,
+	messages []kafka.Message,
 ) {
-	p.producerBatch.AddMessage(ctx, kafka.Message{Key: key, Value: message, Headers: newHeaders(headers), Topic: topic}, eventTime)
-}
-
-func newHeaders(headersMap map[string]string) []kafka.Header {
-	var headers []kafka.Header
-	for key, value := range headersMap {
-		headers = append(headers, kafka.Header{
-			Key:   key,
-			Value: []byte(value),
-		})
-	}
-	return headers
+	p.producerBatch.AddMessages(ctx, messages, eventTime)
 }
 
 func (p *producer) Close() error {
