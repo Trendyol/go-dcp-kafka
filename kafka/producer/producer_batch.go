@@ -89,7 +89,7 @@ func (b *producerBatch) FlushMessages() {
 		startedTime := time.Now()
 		err := b.Writer.WriteMessages(context.Background(), b.messages...)
 		if err != nil {
-			if isPermanentError(err) {
+			if isFatalError(err) {
 				panic(fmt.Errorf("permanent error on Kafka side %e", err))
 			}
 			b.errorLogger.Printf("batch producer flush error %v", err)
@@ -104,7 +104,7 @@ func (b *producerBatch) FlushMessages() {
 	b.dcpCheckpointCommit()
 }
 
-func isPermanentError(err error) bool {
+func isFatalError(err error) bool {
 	e, ok := err.(kafka.Error)
 
 	if (ok && e.Temporary()) ||
