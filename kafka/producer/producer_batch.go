@@ -3,7 +3,11 @@ package producer
 import (
 	"context"
 	"encoding/binary"
+	"errors"
+	"fmt"
+	"io"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/Trendyol/go-dcp-client/logger"
@@ -85,6 +89,9 @@ func (b *producerBatch) FlushMessages() {
 		startedTime := time.Now()
 		err := b.Writer.WriteMessages(context.Background(), b.messages...)
 		if err != nil {
+			if isPermanentError(err) {
+				panic(fmt.Errorf("permanent error on Kafka side %e", err))
+			}
 			b.errorLogger.Printf("batch producer flush error %v", err)
 			return
 		}
@@ -95,4 +102,11 @@ func (b *producerBatch) FlushMessages() {
 		b.batchTicker.Reset(b.batchTickerDuration)
 	}
 	b.dcpCheckpointCommit()
+}
+
+func isPermanentError(err error) bool {
+	return !(err.(kafka.Error).Temporary() || errors.Is(err, io.ErrUnexpectedEOF) ||
+		errors.Is(err, syscall.ECONNREFUSED) ||
+		errors.Is(err, syscall.ECONNRESET) ||
+		errors.Is(err, syscall.EPIPE))
 }
