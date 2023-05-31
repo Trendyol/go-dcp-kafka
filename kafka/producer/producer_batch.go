@@ -105,8 +105,14 @@ func (b *producerBatch) FlushMessages() {
 }
 
 func isPermanentError(err error) bool {
-	return !(err.(kafka.Error).Temporary() || errors.Is(err, io.ErrUnexpectedEOF) ||
+	e, ok := err.(kafka.Error)
+
+	if (ok && e.Temporary()) ||
+		errors.Is(err, io.ErrUnexpectedEOF) ||
 		errors.Is(err, syscall.ECONNREFUSED) ||
 		errors.Is(err, syscall.ECONNRESET) ||
-		errors.Is(err, syscall.EPIPE))
+		errors.Is(err, syscall.EPIPE) {
+		return false
+	}
+	return true
 }
