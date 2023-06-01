@@ -138,12 +138,6 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 
 For DCP related metrics see [also](https://github.com/Trendyol/go-dcp-client#exposed-metrics).
 
-## Maintainers
-
-* [Eray Arslan](https://github.com/erayarslan)
-* [Mehmet Sezer](https://github.com/mhmtszr)
-* [Oğuzhan Yıldırım](https://github.com/oguzyildirim)
-
 ## Contributing
 
 Go Kafka Connect Couchbase is always open for direct contributions. For more information please check
