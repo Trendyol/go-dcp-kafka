@@ -38,48 +38,47 @@ used for both connectors.
 
 ```go
 func mapper(event couchbase.Event) []message.KafkaMessage {
-  // return nil if you wish to discard the event
-  return []message.KafkaMessage{
-    {
-      Headers: nil,
-      Key:     event.Key,
-      Value:   event.Value,
-    },
-  }
+// return nil if you wish to discard the event
+return []message.KafkaMessage{
+{
+Headers: nil,
+Key:     event.Key,
+Value:   event.Value,
+},
+}
 }
 
 func main() {
-  c, err := dcpkafka.NewConnector(&config.Connector{
-    Dcp: dcpClientConfig.Dcp{
-      Hosts:      []string{"localhost:8091"},
-      Username:   "user",
-      Password:   "password",
-      BucketName: "dcp-test",
-      Dcp: dcpClientConfig.ExternalDcp{
-        Group: dcpClientConfig.DCPGroup{
-          Name: "groupName",
-          Membership: dcpClientConfig.DCPGroupMembership{
-            RebalanceDelay: 3 * time.Second,
-          },
-        },
-      },
-      Debug: true},
-    Kafka: config.Kafka{
-      CollectionTopicMapping: map[string]string{"_default": "topic"},
-      Brokers:                []string{"localhost:9092"},
-    },
-  }, mapper)
-  if err != nil {
-    panic(err)
-  }
+c, err := dcpkafka.NewConnector(&config.Connector{
+Dcp: dcpClientConfig.Dcp{
+Hosts:      []string{"localhost:8091"},
+Username:   "user",
+Password:   "password",
+BucketName: "dcp-test",
+Dcp: dcpClientConfig.ExternalDcp{
+Group: dcpClientConfig.DCPGroup{
+Name: "groupName",
+Membership: dcpClientConfig.DCPGroupMembership{
+RebalanceDelay: 3 * time.Second,
+},
+},
+},
+Debug: true},
+Kafka: config.Kafka{
+CollectionTopicMapping: map[string]string{"_default": "topic"},
+Brokers:                []string{"localhost:9092"},
+},
+}, mapper)
+if err != nil {
+panic(err)
+}
 
-  defer c.Close()
-  c.Start()
+defer c.Close()
+c.Start()
 }
 ```
 
 [File Config](example/simple/main.go)
-
 
 ## Configuration
 
@@ -105,6 +104,14 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 | `kafka.interCAPath`                 | string            | no       | *not set | Define inter CA path.                                                                                                                                                                                                                                                                            |
 | `kafka.scramUsername`               | string            | no       | *not set | Define scram username.                                                                                                                                                                                                                                                                           |
 | `kafka.scramPassword`               | string            | no       | *not set | Define scram password.                                                                                                                                                                                                                                                                           |
+
+### Kafka Metadata Configuration(Use it if you want to store the checkpoint data in Kafka)
+
+| Variable            | Type              | Description                                                                        |                                                            
+|---------------------|-------------------|------------------------------------------------------------------------------------|
+| `metadata.type`     | string            | Metadata storing types.  `kafka`,`file` or `couchbase`.                            |
+| `metadata.readOnly` | bool              | Set this for debugging state purposes.                                             |
+| `metadata.config`   | map[string]string | Set key-values of config. `topic`,`partition`,`replicationFactor` for `kafka` type |
 
 ## Exposed metrics
 
