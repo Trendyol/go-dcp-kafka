@@ -35,6 +35,14 @@ func main() {
 					},
 				},
 			},
+			Metadata: dcpClientConfig.Metadata{
+				Config: map[string]string{
+					"bucket":     "checkpoint-bucket-name",
+					"scope":      "_default",
+					"collection": "_default",
+				},
+				Type: "couchbase",
+			},
 			Debug: true},
 		Kafka: config.Kafka{
 			CollectionTopicMapping: map[string]string{"_default": "topic"},
