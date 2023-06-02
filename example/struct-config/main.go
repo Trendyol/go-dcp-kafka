@@ -2,7 +2,7 @@ package main
 
 import (
 	dcpClientConfig "github.com/Trendyol/go-dcp-client/config"
-	gokafkaconnectcouchbase "github.com/Trendyol/go-kafka-connect-couchbase"
+	dcpkafka "github.com/Trendyol/go-kafka-connect-couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/config"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
@@ -21,7 +21,7 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 }
 
 func main() {
-	connector, err := gokafkaconnectcouchbase.NewConnector(&config.Connector{
+	connector, err := dcpkafka.NewConnector(&config.Connector{
 		Dcp: dcpClientConfig.Dcp{
 			Hosts:      []string{"localhost:8091"},
 			Username:   "user",

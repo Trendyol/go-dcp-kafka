@@ -69,32 +69,20 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 }
 
 func NewConnector(cfg any, mapper Mapper) (Connector, error) {
-	switch v := cfg.(type) {
-	case *config.Connector:
-		return newConnectorFromConfig(cfg, v, mapper)
-	case string:
-		return newConnectorFromPath(v, mapper)
-	default:
-		return nil, errors.New("invalid config")
+	c, err := newConfig(cfg)
+	if err != nil {
+		return nil, err
 	}
-}
+	c.ApplyDefaults()
 
-func NewConnectorWithLoggers(configPath string, mapper Mapper, infoLogger logger.Logger, errorLogger logger.Logger) (Connector, error) {
-	logger.SetLogger(infoLogger)
-	logger.SetErrorLogger(errorLogger)
-
-	return NewConnector(configPath, mapper)
-}
-
-func newConnectorFromConfig(cfg any, cc *config.Connector, mapper Mapper) (Connector, error) {
 	connector := &connector{
 		mapper:      mapper,
-		config:      cc,
+		config:      c,
 		logger:      logger.Log,
 		errorLogger: logger.Log,
 	}
 
-	kafkaClient, err := createKafkaClient(cc, connector)
+	kafkaClient, err := createKafkaClient(c, connector)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +102,7 @@ func newConnectorFromConfig(cfg any, cc *config.Connector, mapper Mapper) (Conne
 
 	connector.dcp = dcp
 
-	connector.producer, err = producer.NewProducer(kafkaClient, cc, connector.logger, connector.errorLogger, dcp.Commit)
+	connector.producer, err = producer.NewProducer(kafkaClient, c, connector.logger, connector.errorLogger, dcp.Commit)
 	if err != nil {
 		connector.errorLogger.Printf("kafka error: %v", err)
 		return nil, err
@@ -123,6 +111,26 @@ func newConnectorFromConfig(cfg any, cc *config.Connector, mapper Mapper) (Conne
 	initializeMetricCollector(connector, dcp)
 
 	return connector, nil
+}
+
+func newConfig(cf any) (*config.Connector, error) {
+	switch v := cf.(type) {
+	case *config.Connector:
+		return v, nil
+	case config.Connector:
+		return &v, nil
+	case string:
+		return newConnectorConfigFromPath(v)
+	default:
+		return nil, errors.New("invalid config")
+	}
+}
+
+func NewConnectorWithLoggers(configPath string, mapper Mapper, infoLogger logger.Logger, errorLogger logger.Logger) (Connector, error) {
+	logger.SetLogger(infoLogger)
+	logger.SetErrorLogger(errorLogger)
+
+	return NewConnector(configPath, mapper)
 }
 
 func createKafkaClient(cc *config.Connector, connector *connector) (kafka.Client, error) {
@@ -162,15 +170,7 @@ func initializeMetricCollector(connector *connector, dcp godcpclient.Dcp) {
 	dcp.SetMetricCollectors(metricCollector)
 }
 
-func newConnectorFromPath(path string, mapper Mapper) (Connector, error) {
-	c, err := newConnectorConfig(path)
-	if err != nil {
-		return nil, err
-	}
-	return newConnectorFromConfig(path, c, mapper)
-}
-
-func newConnectorConfig(path string) (*config.Connector, error) {
+func newConnectorConfigFromPath(path string) (*config.Connector, error) {
 	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err

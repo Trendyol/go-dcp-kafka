@@ -31,8 +31,8 @@ func (k *Kafka) GetCompression() int8 {
 }
 
 type Connector struct {
-	Kafka Kafka `yaml:"kafka"`
-	Dcp   config.Dcp
+	Kafka Kafka      `yaml:"kafka"`
+	Dcp   config.Dcp `yaml:",inline"`
 }
 
 func (c *Connector) ApplyDefaults() {
