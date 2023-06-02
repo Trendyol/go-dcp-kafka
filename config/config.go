@@ -2,6 +2,8 @@ package config
 
 import (
 	"time"
+
+	"github.com/Trendyol/go-dcp-client/config"
 )
 
 type Kafka struct {
@@ -28,11 +30,12 @@ func (k *Kafka) GetCompression() int8 {
 	return k.Compression
 }
 
-type Config struct {
-	Kafka Kafka `yaml:"kafka"`
+type Connector struct {
+	Kafka Kafka      `yaml:"kafka"`
+	Dcp   config.Dcp `yaml:",inline"`
 }
 
-func (c *Config) ApplyDefaults() {
+func (c *Connector) ApplyDefaults() {
 	if c.Kafka.ReadTimeout == 0 {
 		c.Kafka.ReadTimeout = 30 * time.Second
 	}

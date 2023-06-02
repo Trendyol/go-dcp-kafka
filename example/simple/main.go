@@ -1,7 +1,7 @@
 package main
 
 import (
-	gokafkaconnectcouchbase "github.com/Trendyol/go-kafka-connect-couchbase"
+	dcpkafka "github.com/Trendyol/go-kafka-connect-couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
 	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
 )
@@ -18,7 +18,7 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 }
 
 func main() {
-	connector, err := gokafkaconnectcouchbase.NewConnector("config.yml", mapper)
+	connector, err := dcpkafka.NewConnector("config.yml", mapper)
 	if err != nil {
 		panic(err)
 	}

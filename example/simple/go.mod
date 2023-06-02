@@ -2,7 +2,7 @@ module example
 
 go 1.19
 
-replace github.com/Trendyol/go-kafka-connect-couchbase => ../.
+replace github.com/Trendyol/go-kafka-connect-couchbase => ./../..
 
 require github.com/Trendyol/go-kafka-connect-couchbase v0.0.0
 

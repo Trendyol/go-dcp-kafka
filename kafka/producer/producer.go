@@ -27,7 +27,7 @@ type producer struct {
 }
 
 func NewProducer(kafkaClient gKafka.Client,
-	config *config.Config,
+	config *config.Connector,
 	logger logger.Logger,
 	errorLogger logger.Logger,
 	dcpCheckpointCommit func(),
