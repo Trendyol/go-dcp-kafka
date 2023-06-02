@@ -10,7 +10,7 @@ import (
 )
 
 func mapper(event couchbase.Event) []message.KafkaMessage {
-	// return empty if you wish filter the event
+	// return nil if you wish to discard the event
 	return []message.KafkaMessage{
 		{
 			Headers: nil,
@@ -21,7 +21,7 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 }
 
 func main() {
-	connector, err := dcpkafka.NewConnector(&config.Connector{
+	c, err := dcpkafka.NewConnector(&config.Connector{
 		Dcp: dcpClientConfig.Dcp{
 			Hosts:      []string{"localhost:8091"},
 			Username:   "user",
@@ -45,6 +45,6 @@ func main() {
 		panic(err)
 	}
 
-	defer connector.Close()
-	connector.Start()
+	defer c.Close()
+	c.Start()
 }

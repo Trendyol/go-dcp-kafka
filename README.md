@@ -34,75 +34,52 @@ used for both connectors.
 
 ## Example
 
-[Basic](example/main.go)
+[Struct Config](example/struct-config/main.go)
 
 ```go
-package main
-
-import (
-	gokafkaconnectcouchbase "github.com/Trendyol/go-kafka-connect-couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
-)
-
 func mapper(event couchbase.Event) []message.KafkaMessage {
-	// return empty if you wish filter the event
-	return []message.KafkaMessage{
-		{
-			Headers: nil,
-			Key:     event.Key,
-			Value:   event.Value,
-		},
-	}
+  // return nil if you wish to discard the event
+  return []message.KafkaMessage{
+    {
+      Headers: nil,
+      Key:     event.Key,
+      Value:   event.Value,
+    },
+  }
 }
 
 func main() {
-	connector, err := gokafkaconnectcouchbase.NewConnector("./example/config.yml", mapper)
-	if err != nil {
-		panic(err)
-	}
+  c, err := dcpkafka.NewConnector(&config.Connector{
+    Dcp: dcpClientConfig.Dcp{
+      Hosts:      []string{"localhost:8091"},
+      Username:   "user",
+      Password:   "password",
+      BucketName: "dcp-test",
+      Dcp: dcpClientConfig.ExternalDcp{
+        Group: dcpClientConfig.DCPGroup{
+          Name: "groupName",
+          Membership: dcpClientConfig.DCPGroupMembership{
+            RebalanceDelay: 3 * time.Second,
+          },
+        },
+      },
+      Debug: true},
+    Kafka: config.Kafka{
+      CollectionTopicMapping: map[string]string{"_default": "topic"},
+      Brokers:                []string{"localhost:9092"},
+    },
+  }, mapper)
+  if err != nil {
+    panic(err)
+  }
 
-	defer connector.Close()
-	connector.Start()
+  defer c.Close()
+  c.Start()
 }
 ```
 
-Custom log structures can be used with the connector
+[File Config](example/simple/main.go)
 
-```go
-package main
-
-import (
-	gokafkaconnectcouchbase "github.com/Trendyol/go-kafka-connect-couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
-	"log"
-	"os"
-)
-
-func mapper(event couchbase.Event) []message.KafkaMessage {
-	// return empty if you wish filter the event
-	return []message.KafkaMessage{
-		{
-			Headers: nil,
-			Key:     event.Key,
-			Value:   event.Value,
-		},
-	}
-}
-
-func main() {
-	logger := log.New(os.Stdout, "cb2kafka: ", log.Ldate|log.Ltime|log.Llongfile)
-
-	connector, err := gokafkaconnectcouchbase.NewConnectorWithLoggers("./example/config.yml", mapper, logger, logger)
-	if err != nil {
-		panic(err)
-	}
-
-	defer connector.Close()
-	connector.Start()
-}
-```
 
 ## Configuration
 
