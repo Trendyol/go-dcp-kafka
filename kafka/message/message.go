@@ -6,4 +6,5 @@ type KafkaMessage struct {
 	Headers []kafka.Header
 	Key     []byte
 	Value   []byte
+	Topic   *string
 }

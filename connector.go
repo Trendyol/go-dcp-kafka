@@ -2,6 +2,7 @@ package gokafkaconnectcouchbase
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/Trendyol/go-dcp-client"
@@ -62,11 +63,7 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 	default:
 		return
 	}
-	topic := c.config.Kafka.CollectionTopicMapping[e.CollectionName]
-	if topic == "" {
-		c.errorLogger.Printf("unexpected collection | %s", e.CollectionName)
-		return
-	}
+
 	kafkaMessages := c.mapper(e)
 
 	if len(kafkaMessages) == 0 {
@@ -77,13 +74,25 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 	messages := make([]sKafka.Message, 0, len(kafkaMessages))
 	for _, message := range kafkaMessages {
 		messages = append(messages, sKafka.Message{
-			Topic:   topic,
+			Topic:   c.getTopicName(e.CollectionName, message.Topic),
 			Key:     message.Key,
 			Value:   message.Value,
 			Headers: message.Headers,
 		})
 	}
 	c.producer.Produce(ctx, e.EventTime, messages)
+}
+
+func (c *connector) getTopicName(collectionName string, messageTopic *string) string {
+	if messageTopic != nil {
+		return *messageTopic
+	}
+
+	topic := c.config.Kafka.CollectionTopicMapping[collectionName]
+	if topic == "" {
+		panic(fmt.Sprintf("there is no topic mapping for collection: %s on your configuration", collectionName))
+	}
+	return topic
 }
 
 func NewConnector(cfg any, mapper Mapper) (Connector, error) {
