@@ -5,7 +5,7 @@ go 1.19
 replace github.com/Trendyol/go-kafka-connect-couchbase => ./../..
 
 require (
-	github.com/Trendyol/go-dcp-client v0.0.61
+	github.com/Trendyol/go-dcp-client v0.0.62
 	github.com/Trendyol/go-kafka-connect-couchbase v0.0.0
 )
 

@@ -83,9 +83,9 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 	c.producer.Produce(ctx, e.EventTime, messages)
 }
 
-func (c *connector) getTopicName(collectionName string, messageTopic *string) string {
-	if messageTopic != nil {
-		return *messageTopic
+func (c *connector) getTopicName(collectionName string, messageTopic string) string {
+	if messageTopic != "" {
+		return messageTopic
 	}
 
 	topic := c.config.Kafka.CollectionTopicMapping[collectionName]
