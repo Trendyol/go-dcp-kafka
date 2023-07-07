@@ -179,7 +179,7 @@ func (c *client) CheckTopics(topics []string) error {
 }
 
 func (c *client) Producer() *kafka.Writer {
-	writer := &kafka.Writer{
+	return &kafka.Writer{
 		Addr:         kafka.TCP(c.config.Kafka.Brokers...),
 		Balancer:     &kafka.Hash{},
 		BatchSize:    c.config.Kafka.ProducerBatchSize,
@@ -192,14 +192,8 @@ func (c *client) Producer() *kafka.Writer {
 		Logger:       c.logger,
 		ErrorLogger:  c.errorLogger,
 		Compression:  kafka.Compression(c.config.Kafka.GetCompression()),
-		Transport:    c.kafkaClient.Transport,
+		Transport:    c.transport,
 	}
-
-	if c.transport != nil {
-		writer.Transport = c.transport
-	}
-
-	return writer
 }
 
 func (c *client) Consumer(topic string, partition int, startOffset int64) *kafka.Reader {
@@ -272,6 +266,11 @@ func NewClient(config *config.Connector, logger logger.Logger, errorLogger logge
 		errorLogger: errorLogger,
 	}
 
+	newClient.transport = &kafka.Transport{
+		MetadataTTL:    config.Kafka.MetadataTTL,
+		MetadataTopics: config.Kafka.MetadataTopics,
+	}
+
 	if config.Kafka.SecureConnection {
 		tlsContent, err := newTLSContent(
 			config.Kafka.ScramUsername,
@@ -284,12 +283,8 @@ func NewClient(config *config.Connector, logger logger.Logger, errorLogger logge
 			panic(err)
 		}
 
-		transport := &kafka.Transport{
-			TLS:  tlsContent.config,
-			SASL: tlsContent.sasl,
-		}
-
-		newClient.transport = transport
+		newClient.transport.TLS = tlsContent.config
+		newClient.transport.SASL = tlsContent.sasl
 
 		newClient.dialer = &kafka.Dialer{
 			Timeout:       10 * time.Second,
@@ -297,9 +292,7 @@ func NewClient(config *config.Connector, logger logger.Logger, errorLogger logge
 			TLS:           tlsContent.config,
 			SASLMechanism: tlsContent.sasl,
 		}
-
-		newClient.kafkaClient.Transport = transport
 	}
-
+	newClient.kafkaClient.Transport = newClient.transport
 	return newClient
 }
