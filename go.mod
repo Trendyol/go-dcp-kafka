@@ -6,7 +6,7 @@ require (
 	github.com/Trendyol/go-dcp-client v0.0.62
 	github.com/json-iterator/go v1.1.12
 	github.com/prometheus/client_golang v1.15.1
-	github.com/segmentio/kafka-go v0.4.41
+	github.com/segmentio/kafka-go v0.4.42
 	gopkg.in/yaml.v3 v3.0.1
 )
 
