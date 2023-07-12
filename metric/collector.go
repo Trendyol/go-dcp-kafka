@@ -1,8 +1,8 @@
 package metric
 
 import (
-	"github.com/Trendyol/go-dcp-client/helpers"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
+	"github.com/Trendyol/go-dcp-kafka/kafka/producer"
+	"github.com/Trendyol/go-dcp/helpers"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

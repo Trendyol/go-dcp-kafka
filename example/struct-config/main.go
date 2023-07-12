@@ -1,11 +1,11 @@
 package main
 
 import (
-	dcpClientConfig "github.com/Trendyol/go-dcp-client/config"
-	dcpkafka "github.com/Trendyol/go-kafka-connect-couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/config"
-	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
+	"github.com/Trendyol/go-dcp-kafka"
+	"github.com/Trendyol/go-dcp-kafka/config"
+	"github.com/Trendyol/go-dcp-kafka/couchbase"
+	"github.com/Trendyol/go-dcp-kafka/kafka/message"
+	dcpConfig "github.com/Trendyol/go-dcp/config"
 	"time"
 )
 
@@ -22,20 +22,20 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 
 func main() {
 	c, err := dcpkafka.NewConnector(&config.Connector{
-		Dcp: dcpClientConfig.Dcp{
+		Dcp: dcpConfig.Dcp{
 			Hosts:      []string{"localhost:8091"},
 			Username:   "user",
 			Password:   "password",
 			BucketName: "dcp-test",
-			Dcp: dcpClientConfig.ExternalDcp{
-				Group: dcpClientConfig.DCPGroup{
+			Dcp: dcpConfig.ExternalDcp{
+				Group: dcpConfig.DCPGroup{
 					Name: "groupName",
-					Membership: dcpClientConfig.DCPGroupMembership{
+					Membership: dcpConfig.DCPGroupMembership{
 						RebalanceDelay: 3 * time.Second,
 					},
 				},
 			},
-			Metadata: dcpClientConfig.Metadata{
+			Metadata: dcpConfig.Metadata{
 				Config: map[string]string{
 					"bucket":     "checkpoint-bucket-name",
 					"scope":      "_default",

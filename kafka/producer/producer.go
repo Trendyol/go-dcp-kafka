@@ -3,10 +3,10 @@ package producer
 import (
 	"time"
 
-	"github.com/Trendyol/go-dcp-client/logger"
-	"github.com/Trendyol/go-dcp-client/models"
-	"github.com/Trendyol/go-kafka-connect-couchbase/config"
-	gKafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka"
+	"github.com/Trendyol/go-dcp-kafka/config"
+	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
+	"github.com/Trendyol/go-dcp/logger"
+	"github.com/Trendyol/go-dcp/models"
 	"github.com/segmentio/kafka-go"
 )
 

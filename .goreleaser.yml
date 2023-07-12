@@ -1,8 +1,8 @@
-project_name: go-kafka-connect-couchbase
+project_name: go-dcp-kafka
 
 release:
   github:
-    name: go-kafka-connect-couchbase
+    name: go-dcp-kafka
     owner: Trendyol
 
 before:

@@ -1,10 +1,10 @@
-# Go Kafka Connect Couchbase
+# Go Dcp Kafka
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-kafka-connect-couchbase.svg)](https://pkg.go.dev/github.com/Trendyol/go-kafka-connect-couchbase) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-kafka-connect-couchbase)](https://goreportcard.com/report/github.com/Trendyol/go-kafka-connect-couchbase)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-dcp-kafka.svg)](https://pkg.go.dev/github.com/Trendyol/go-dcp-kafka) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-dcp-kafka)](https://goreportcard.com/report/github.com/Trendyol/go-dcp-kafka)
 
 Go implementation of the [Kafka Connect Couchbase](https://github.com/couchbase/kafka-connect-couchbase).
 
-**Go Kafka Connect Couchbase** streams documents from Couchbase Database Change Protocol (DCP) and publishes Kafka
+**Go Dcp Kafka** streams documents from Couchbase Database Change Protocol (DCP) and publishes Kafka
 events in near real-time.
 
 ## Features
@@ -18,7 +18,7 @@ events in near real-time.
 * Metadata can be saved to **Couchbase or Kafka**.
 * **Managing batch configurations** such as maximum batch size, batch bytes, batch ticker durations.
 * **Scale up and down** by custom membership algorithms(Couchbase, KubernetesHa, Kubernetes StatefulSet or
-  Static, see [examples](https://github.com/Trendyol/go-dcp-client#examples)).
+  Static, see [examples](https://github.com/Trendyol/go-dcp#examples)).
 * **Easily manageable configurations**.
 
 ## Benchmarks
@@ -29,7 +29,7 @@ used for both connectors.
 
 | Package                              | Time to Process Events | Average CPU Usage(Core) | Average Memory Usage |
 |:-------------------------------------|:----------------------:|:-----------------------:|:--------------------:|
-| **Go Kafka Connect Couchbase**(1.19) |        **12s**         |        **0.383**        |      **428MB**       
+| **Go Dcp Kafka**(1.19) |        **12s**         |        **0.383**        |      **428MB**       
 | Java Kafka Connect Couchbase(JDK11)  |          19s           |           1.5           |        932MB         
 
 ## Example
@@ -38,53 +38,52 @@ used for both connectors.
 
 ```go
 func mapper(event couchbase.Event) []message.KafkaMessage {
-  // return nil if you wish to discard the event
-  return []message.KafkaMessage{
-    {
-      Headers: nil,
-      Key:     event.Key,
-      Value:   event.Value,
-    },
-  }
+	// return nil if you wish to discard the event
+	return []message.KafkaMessage{
+		{
+			Headers: nil,
+			Key:     event.Key,
+			Value:   event.Value,
+		},
+	}
 }
 
 func main() {
-  c, err := dcpkafka.NewConnector(&config.Connector{
-    Dcp: dcpClientConfig.Dcp{
-      Hosts:      []string{"localhost:8091"},
-      Username:   "user",
-      Password:   "password",
-      BucketName: "dcp-test",
-      Dcp: dcpClientConfig.ExternalDcp{
-        Group: dcpClientConfig.DCPGroup{
-          Name: "groupName",
-          Membership: dcpClientConfig.DCPGroupMembership{
-            RebalanceDelay: 3 * time.Second,
-          },
-        },
-      },
-      Metadata: dcpClientConfig.Metadata{
-        Config: map[string]string{
-          "bucket":     "checkpoint-bucket-name",
-          "scope":      "_default",
-          "collection": "_default",
-        },
-        Type: "couchbase",
-      },
-      Debug: true},
-    Kafka: config.Kafka{
-      CollectionTopicMapping: map[string]string{"_default": "topic"},
-      Brokers:                []string{"localhost:9092"},
-    },
-  }, mapper)
-  if err != nil {
-    panic(err)
-  }
+	c, err := dcpkafka.NewConnector(&config.Connector{
+		Dcp: dcpConfig.Dcp{
+			Hosts:      []string{"localhost:8091"},
+			Username:   "user",
+			Password:   "password",
+			BucketName: "dcp-test",
+			Dcp: dcpConfig.ExternalDcp{
+				Group: dcpConfig.DCPGroup{
+					Name: "groupName",
+					Membership: dcpConfig.DCPGroupMembership{
+						RebalanceDelay: 3 * time.Second,
+					},
+				},
+			},
+			Metadata: dcpConfig.Metadata{
+				Config: map[string]string{
+					"bucket":     "checkpoint-bucket-name",
+					"scope":      "_default",
+					"collection": "_default",
+				},
+				Type: "couchbase",
+			},
+			Debug: true},
+		Kafka: config.Kafka{
+			CollectionTopicMapping: map[string]string{"_default": "topic"},
+			Brokers:                []string{"localhost:9092"},
+		},
+	}, mapper)
+	if err != nil {
+		panic(err)
+	}
 
-  defer c.Close()
-  c.Start()
+	defer c.Close()
+	c.Start()
 }
-
 ```
 
 [File Config](example/simple/main.go)
@@ -93,7 +92,7 @@ func main() {
 
 ### Dcp Configuration
 
-Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configuration)
+Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 
 ### Kafka Specific Configuration
 
@@ -129,11 +128,11 @@ Check out on [go-dcp-client](https://github.com/Trendyol/go-dcp-client#configura
 | kafka_connector_latency_ms               | Time to adding to the batch.           | N/A    | Gauge      |
 | kafka_connector_batch_produce_latency_ms | Time to produce messages in the batch. | N/A    | Gauge      |
 
-For DCP related metrics see [also](https://github.com/Trendyol/go-dcp-client#exposed-metrics).
+For DCP related metrics see [also](https://github.com/Trendyol/go-dcp#exposed-metrics).
 
 ## Contributing
 
-Go Kafka Connect Couchbase is always open for direct contributions. For more information please check
+Go Dcp Kafka is always open for direct contributions. For more information please check
 our [Contribution Guideline document](./CONTRIBUTING.md).
 
 ## License

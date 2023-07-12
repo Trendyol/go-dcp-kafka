@@ -1,14 +1,14 @@
 # How to Create a New Connector
 
-If you want to create a new connector that streams mutations from Couchbase to Kafka, you can use the `go-kafka-connect-couchbase` library. 
+If you want to create a new connector that streams mutations from Couchbase to Kafka, you can use the `go-dcp-kafka` library. 
 This library provides a simple and flexible way to implement connectors that can be customized to your needs.
 
 ## Step 1: Installing the Library
 
-To use the `go-kafka-connect-couchbase` library, you first need to install it. You can do this using the `go get` command:
+To use the `go-dcp-kafka` library, you first need to install it. You can do this using the `go get` command:
 
 ```
-$ go get github.com/Trendyol/go-kafka-connect-couchbase
+$ go get github.com/Trendyol/go-dcp-kafka
 
 ```
 
@@ -23,8 +23,8 @@ Here's an example mapper implementation:
 package main
 
 import (
-	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
+	"github.com/Trendyol/go-dcp-kafka/couchbase"
+	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 )
 
 func mapper(event couchbase.Event) []message.KafkaMessage {
@@ -41,13 +41,13 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 
 ## Step 3: Configuring the Connector
 
-The configuration for the connector is provided via a YAML file. Here's an example [configuration](https://github.com/Trendyol/go-kafka-connect-couchbase/blob/master/example/config.yml):
+The configuration for the connector is provided via a YAML file. Here's an example [configuration](https://github.com/Trendyol/go-dcp-kafka/blob/master/example/config.yml):
 
-You can find explanation of [configurations](https://github.com/Trendyol/go-dcp-client#configuration)
+You can find explanation of [configurations](https://github.com/Trendyol/go-dcp#configuration)
 
 You can pass this configuration file to the connector by providing the path to the file when creating the connector:
 ```go
-connector, err := gokafkaconnectcouchbase.NewConnector("path-to-config.yml", mapper)
+connector, err := dcpkafka.NewConnector("path-to-config.yml", mapper)
 if err != nil {
 panic(err)
 }
@@ -68,4 +68,4 @@ This will start the connector, which will continuously listen for Couchbase muta
 
 The connector features an API that allows for management and observation, and it also exposes multiple metrics to facilitate these tasks.
 
-You can find explanation [here](https://github.com/Trendyol/go-dcp-client#monitoring)
+You can find explanation [here](https://github.com/Trendyol/go-dcp#monitoring)

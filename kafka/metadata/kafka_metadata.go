@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/Trendyol/go-dcp-client/wrapper"
+	"github.com/Trendyol/go-dcp/wrapper"
 
-	"github.com/Trendyol/go-dcp-client/metadata"
-	"github.com/Trendyol/go-dcp-client/models"
+	"github.com/Trendyol/go-dcp/metadata"
+	"github.com/Trendyol/go-dcp/models"
 
-	"github.com/Trendyol/go-dcp-client/logger"
-	gKafka "github.com/Trendyol/go-kafka-connect-couchbase/kafka"
+	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
+	"github.com/Trendyol/go-dcp/logger"
 	"github.com/json-iterator/go"
 	"github.com/segmentio/kafka-go"
 )
