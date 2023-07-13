@@ -1,20 +1,21 @@
-package gokafkaconnectcouchbase
+package dcpkafka
 
 import (
 	"errors"
 	"fmt"
 	"os"
 
-	"github.com/Trendyol/go-dcp-client"
-	dcpClientConfig "github.com/Trendyol/go-dcp-client/config"
-	"github.com/Trendyol/go-dcp-client/logger"
-	"github.com/Trendyol/go-dcp-client/models"
-	"github.com/Trendyol/go-kafka-connect-couchbase/config"
-	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/metadata"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/producer"
-	"github.com/Trendyol/go-kafka-connect-couchbase/metric"
+	"github.com/Trendyol/go-dcp"
+
+	"github.com/Trendyol/go-dcp-kafka/config"
+	"github.com/Trendyol/go-dcp-kafka/couchbase"
+	"github.com/Trendyol/go-dcp-kafka/kafka"
+	"github.com/Trendyol/go-dcp-kafka/kafka/metadata"
+	"github.com/Trendyol/go-dcp-kafka/kafka/producer"
+	"github.com/Trendyol/go-dcp-kafka/metric"
+	dcpConfig "github.com/Trendyol/go-dcp/config"
+	"github.com/Trendyol/go-dcp/logger"
+	"github.com/Trendyol/go-dcp/models"
 	sKafka "github.com/segmentio/kafka-go"
 	"gopkg.in/yaml.v3"
 )
@@ -27,7 +28,7 @@ type Connector interface {
 }
 
 type connector struct {
-	dcp         godcpclient.Dcp
+	dcp         dcp.Dcp
 	mapper      Mapper
 	producer    producer.Producer
 	config      *config.Connector
@@ -114,28 +115,28 @@ func NewConnector(cfg any, mapper Mapper) (Connector, error) {
 		return nil, err
 	}
 
-	dcp, err := createDcp(cfg, connector.produce, connector.logger, connector.errorLogger)
+	dcpClient, err := createDcp(cfg, connector.produce, connector.logger, connector.errorLogger)
 	if err != nil {
 		connector.errorLogger.Printf("dcp error: %v", err)
 		return nil, err
 	}
 
-	dcpConfig := dcp.GetConfig()
-	dcpConfig.Checkpoint.Type = "manual"
+	conf := dcpClient.GetConfig()
+	conf.Checkpoint.Type = "manual"
 
-	if dcpConfig.Metadata.Type == MetadataTypeKafka {
-		setKafkaMetadata(kafkaClient, dcpConfig, connector, dcp)
+	if conf.Metadata.Type == MetadataTypeKafka {
+		setKafkaMetadata(kafkaClient, conf, connector, dcpClient)
 	}
 
-	connector.dcp = dcp
+	connector.dcp = dcpClient
 
-	connector.producer, err = producer.NewProducer(kafkaClient, c, connector.logger, connector.errorLogger, dcp.Commit)
+	connector.producer, err = producer.NewProducer(kafkaClient, c, connector.logger, connector.errorLogger, dcpClient.Commit)
 	if err != nil {
 		connector.errorLogger.Printf("kafka error: %v", err)
 		return nil, err
 	}
 
-	initializeMetricCollector(connector, dcp)
+	initializeMetricCollector(connector, dcpClient)
 
 	return connector, nil
 }
@@ -176,23 +177,23 @@ func createKafkaClient(cc *config.Connector, connector *connector) (kafka.Client
 	return kafkaClient, nil
 }
 
-func createDcp(cfg any, listener models.Listener, logger logger.Logger, errorLogger logger.Logger) (godcpclient.Dcp, error) {
+func createDcp(cfg any, listener models.Listener, logger logger.Logger, errorLogger logger.Logger) (dcp.Dcp, error) {
 	switch v := cfg.(type) {
-	case dcpClientConfig.Dcp:
-		return godcpclient.NewDcpWithLoggers(v.Dcp, listener, logger, errorLogger)
+	case dcpConfig.Dcp:
+		return dcp.NewDcpWithLoggers(v.Dcp, listener, logger, errorLogger)
 	case string:
-		return godcpclient.NewDcpWithLoggers(v, listener, logger, errorLogger)
+		return dcp.NewDcpWithLoggers(v, listener, logger, errorLogger)
 	default:
 		return nil, errors.New("invalid config")
 	}
 }
 
-func setKafkaMetadata(kafkaClient kafka.Client, dcpConfig *dcpClientConfig.Dcp, connector *connector, dcp godcpclient.Dcp) {
+func setKafkaMetadata(kafkaClient kafka.Client, dcpConfig *dcpConfig.Dcp, connector *connector, dcp dcp.Dcp) {
 	kafkaMetadata := metadata.NewKafkaMetadata(kafkaClient, dcpConfig.Metadata.Config, connector.logger, connector.errorLogger)
 	dcp.SetMetadata(kafkaMetadata)
 }
 
-func initializeMetricCollector(connector *connector, dcp godcpclient.Dcp) {
+func initializeMetricCollector(connector *connector, dcp dcp.Dcp) {
 	metricCollector := metric.NewMetricCollector(connector.producer)
 	dcp.SetMetricCollectors(metricCollector)
 }

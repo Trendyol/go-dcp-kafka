@@ -1,9 +1,9 @@
 package main
 
 import (
-	dcpkafka "github.com/Trendyol/go-kafka-connect-couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/couchbase"
-	"github.com/Trendyol/go-kafka-connect-couchbase/kafka/message"
+	"github.com/Trendyol/go-dcp-kafka"
+	"github.com/Trendyol/go-dcp-kafka/couchbase"
+	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 )
 
 func mapper(event couchbase.Event) []message.KafkaMessage {

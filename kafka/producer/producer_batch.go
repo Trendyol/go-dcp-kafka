@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Trendyol/go-dcp-client/logger"
-	"github.com/Trendyol/go-dcp-client/models"
+	"github.com/Trendyol/go-dcp/logger"
+	"github.com/Trendyol/go-dcp/models"
 	"github.com/segmentio/kafka-go"
 )
 

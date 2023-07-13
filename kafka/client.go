@@ -13,8 +13,8 @@ import (
 
 	"github.com/segmentio/kafka-go/sasl"
 
-	"github.com/Trendyol/go-dcp-client/logger"
-	"github.com/Trendyol/go-kafka-connect-couchbase/config"
+	"github.com/Trendyol/go-dcp-kafka/config"
+	"github.com/Trendyol/go-dcp/logger"
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/scram"
 )
