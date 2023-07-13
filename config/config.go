@@ -61,4 +61,8 @@ func (c *Connector) ApplyDefaults() {
 	if c.Kafka.RequiredAcks == 0 {
 		c.Kafka.RequiredAcks = 1
 	}
+
+	if c.Kafka.MetadataTTL == 0 {
+		c.Kafka.MetadataTTL = 60 * time.Second
+	}
 }
