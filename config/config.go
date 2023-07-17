@@ -12,15 +12,16 @@ type Kafka struct {
 	ScramUsername               string            `yaml:"scramUsername"`
 	ScramPassword               string            `yaml:"scramPassword"`
 	RootCAPath                  string            `yaml:"rootCAPath"`
+	ClientID                    string            `yaml:"clientID"`
 	Brokers                     []string          `yaml:"brokers"`
 	MetadataTopics              []string          `yaml:"metadataTopics"`
-	ProducerBatchTickerDuration time.Duration     `yaml:"producerBatchTickerDuration"`
 	ProducerBatchBytes          int               `yaml:"producerBatchBytes"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
 	RequiredAcks                int               `yaml:"requiredAcks"`
 	ProducerBatchSize           int               `yaml:"producerBatchSize"`
 	MetadataTTL                 time.Duration     `yaml:"metadataTTL"`
+	ProducerBatchTickerDuration time.Duration     `yaml:"producerBatchTickerDuration"`
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 }

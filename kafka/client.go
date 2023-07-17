@@ -269,6 +269,7 @@ func NewClient(config *config.Connector, logger logger.Logger, errorLogger logge
 	newClient.transport = &kafka.Transport{
 		MetadataTTL:    config.Kafka.MetadataTTL,
 		MetadataTopics: config.Kafka.MetadataTopics,
+		ClientID:       config.Kafka.ClientID,
 	}
 
 	if config.Kafka.SecureConnection {
