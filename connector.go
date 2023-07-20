@@ -136,6 +136,10 @@ func NewConnector(cfg any, mapper Mapper) (Connector, error) {
 		return nil, err
 	}
 
+	connector.dcp.SetEventHandler(&DcpEventHandler{
+		producerBatch: connector.producer.ProducerBatch,
+	})
+
 	initializeMetricCollector(connector, dcpClient)
 
 	return connector, nil

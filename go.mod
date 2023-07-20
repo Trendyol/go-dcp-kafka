@@ -3,7 +3,7 @@ module github.com/Trendyol/go-dcp-kafka
 go 1.19
 
 require (
-	github.com/Trendyol/go-dcp v0.0.66
+	github.com/Trendyol/go-dcp v0.0.67
 	github.com/json-iterator/go v1.1.12
 	github.com/prometheus/client_golang v1.15.1
 	github.com/segmentio/kafka-go v0.4.42
