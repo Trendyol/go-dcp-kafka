@@ -105,6 +105,9 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 func (b *Batch) FlushMessages() {
 	b.flushLock.Lock()
 	defer b.flushLock.Unlock()
+	if b.isDcpRebalancing {
+		return
+	}
 	if len(b.messages) > 0 {
 		startedTime := time.Now()
 		err := b.Writer.WriteMessages(context.Background(), b.messages...)
