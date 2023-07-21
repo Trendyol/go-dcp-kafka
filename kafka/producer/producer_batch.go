@@ -88,6 +88,8 @@ func (b *Batch) PrepareEndRebalancing() {
 func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time) {
 	b.flushLock.Lock()
 	if b.isDcpRebalancing {
+		b.errorLogger.Printf("could not add new message to batch while rebalancing")
+		b.flushLock.Unlock()
 		return
 	}
 	b.messages = append(b.messages, messages...)
