@@ -10,20 +10,13 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type Producer interface {
-	Produce(ctx *models.ListenerContext, eventTime time.Time, messages []kafka.Message)
-	Close() error
-	GetMetric() *Metric
-	StartBatch()
-}
-
 type Metric struct {
 	KafkaConnectorLatency int64
 	BatchProduceLatency   int64
 }
 
-type producer struct {
-	producerBatch *producerBatch
+type Producer struct {
+	ProducerBatch *Batch
 }
 
 func NewProducer(kafkaClient gKafka.Client,
@@ -34,8 +27,8 @@ func NewProducer(kafkaClient gKafka.Client,
 ) (Producer, error) {
 	writer := kafkaClient.Producer()
 
-	return &producer{
-		producerBatch: newProducerBatch(
+	return Producer{
+		ProducerBatch: newBatch(
 			config.Kafka.ProducerBatchTickerDuration,
 			writer,
 			config.Kafka.ProducerBatchSize,
@@ -47,23 +40,23 @@ func NewProducer(kafkaClient gKafka.Client,
 	}, nil
 }
 
-func (p *producer) StartBatch() {
-	p.producerBatch.StartBatchTicker()
+func (p *Producer) StartBatch() {
+	p.ProducerBatch.StartBatchTicker()
 }
 
-func (p *producer) Produce(
+func (p *Producer) Produce(
 	ctx *models.ListenerContext,
 	eventTime time.Time,
 	messages []kafka.Message,
 ) {
-	p.producerBatch.AddMessages(ctx, messages, eventTime)
+	p.ProducerBatch.AddMessages(ctx, messages, eventTime)
 }
 
-func (p *producer) Close() error {
-	p.producerBatch.Close()
-	return p.producerBatch.Writer.Close()
+func (p *Producer) Close() error {
+	p.ProducerBatch.Close()
+	return p.ProducerBatch.Writer.Close()
 }
 
-func (p *producer) GetMetric() *Metric {
-	return p.producerBatch.metric
+func (p *Producer) GetMetric() *Metric {
+	return p.ProducerBatch.metric
 }

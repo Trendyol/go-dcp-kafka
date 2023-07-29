@@ -15,7 +15,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type producerBatch struct {
+type Batch struct {
 	logger              logger.Logger
 	errorLogger         logger.Logger
 	batchTicker         *time.Ticker
@@ -28,9 +28,10 @@ type producerBatch struct {
 	batchLimit          int
 	batchBytes          int
 	flushLock           sync.Mutex
+	isDcpRebalancing    bool
 }
 
-func newProducerBatch(
+func newBatch(
 	batchTime time.Duration,
 	writer *kafka.Writer,
 	batchLimit int,
@@ -38,8 +39,8 @@ func newProducerBatch(
 	logger logger.Logger,
 	errorLogger logger.Logger,
 	dcpCheckpointCommit func(),
-) *producerBatch {
-	batch := &producerBatch{
+) *Batch {
+	batch := &Batch{
 		batchTickerDuration: batchTime,
 		batchTicker:         time.NewTicker(batchTime),
 		metric:              &Metric{},
@@ -54,7 +55,7 @@ func newProducerBatch(
 	return batch
 }
 
-func (b *producerBatch) StartBatchTicker() {
+func (b *Batch) StartBatchTicker() {
 	go func() {
 		for {
 			<-b.batchTicker.C
@@ -63,13 +64,34 @@ func (b *producerBatch) StartBatchTicker() {
 	}()
 }
 
-func (b *producerBatch) Close() {
+func (b *Batch) Close() {
 	b.batchTicker.Stop()
 	b.FlushMessages()
 }
 
-func (b *producerBatch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time) {
+func (b *Batch) PrepareStartRebalancing() {
 	b.flushLock.Lock()
+	defer b.flushLock.Unlock()
+
+	b.isDcpRebalancing = true
+	b.messages = b.messages[:0]
+	b.currentMessageBytes = 0
+}
+
+func (b *Batch) PrepareEndRebalancing() {
+	b.flushLock.Lock()
+	defer b.flushLock.Unlock()
+
+	b.isDcpRebalancing = false
+}
+
+func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time) {
+	b.flushLock.Lock()
+	if b.isDcpRebalancing {
+		b.errorLogger.Printf("could not add new message to batch while rebalancing")
+		b.flushLock.Unlock()
+		return
+	}
 	b.messages = append(b.messages, messages...)
 	b.currentMessageBytes += binary.Size(messages)
 	ctx.Ack()
@@ -82,9 +104,12 @@ func (b *producerBatch) AddMessages(ctx *models.ListenerContext, messages []kafk
 	}
 }
 
-func (b *producerBatch) FlushMessages() {
+func (b *Batch) FlushMessages() {
 	b.flushLock.Lock()
 	defer b.flushLock.Unlock()
+	if b.isDcpRebalancing {
+		return
+	}
 	if len(b.messages) > 0 {
 		startedTime := time.Now()
 		err := b.Writer.WriteMessages(context.Background(), b.messages...)
