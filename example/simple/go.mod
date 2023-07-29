@@ -7,7 +7,7 @@ replace github.com/Trendyol/go-dcp-kafka => ./../..
 require github.com/Trendyol/go-dcp-kafka v0.0.0
 
 require (
-	github.com/Trendyol/go-dcp v0.0.69 // indirect
+	github.com/Trendyol/go-dcp v0.0.70 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/ansrivas/fiberprometheus/v2 v2.6.0 // indirect
