@@ -1,0 +1,34 @@
+hosts:
+  - localhost:8091
+username: user
+password: 123456
+bucketName: dcp-test
+rollbackMitigation:
+  disabled: true
+checkpoint:
+  type: manual
+dcp:
+  group:
+    name: groupName
+    membership:
+      type: static
+metadata:
+  type: couchbase
+  readOnly: true
+  config:
+    bucket: dcp-test
+    scope: _default
+    collection: _default
+kafka:
+  collectionTopicMapping:
+    _default: test
+  brokers:
+    - "localhost:9092"
+  readTimeout: 30s
+  writeTimeout: 30s
+  producerBatchSize: 100
+  producerBatchBytes: 104857600
+  producerBatchTickerDuration: 5s
+  metadataTTL: 2400s
+  metadataTopics:
+    - "test"
