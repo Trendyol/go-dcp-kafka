@@ -77,7 +77,7 @@ func TestKafka(t *testing.T) {
 	}()
 
 	wg.Wait()
-	t.Log("done done done")
+	t.Log("done")
 }
 
 type CountResponse struct {

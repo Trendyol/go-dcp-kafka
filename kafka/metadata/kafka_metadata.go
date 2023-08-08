@@ -51,7 +51,7 @@ func (s *kafkaMetadata) Save(state map[uint16]*models.CheckpointDocument, dirtyO
 func (s *kafkaMetadata) Load( //nolint:funlen
 	vbIDs []uint16,
 	bucketUUID string,
-) (*wrapper.SyncMap[uint16, *models.CheckpointDocument], bool, error) {
+) (*wrapper.ConcurrentSwissMap[uint16, *models.CheckpointDocument], bool, error) {
 	partitions, err := s.kafkaClient.GetPartitions(s.topic)
 	if err != nil {
 		return nil, false, err
@@ -95,7 +95,7 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 		}(consumer, endOffset.LastOffset)
 	}
 
-	state := &wrapper.SyncMap[uint16, *models.CheckpointDocument]{}
+	state := wrapper.CreateConcurrentSwissMap[uint16, *models.CheckpointDocument](1024)
 	exist := false
 
 	go func() {
@@ -122,7 +122,10 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 	wg.Wait()
 
 	for _, vbID := range vbIDs {
-		state.LoadOrStore(vbID, models.NewEmptyCheckpointDocument(bucketUUID))
+		_, ok := state.Load(vbID)
+		if !ok {
+			state.Store(vbID, models.NewEmptyCheckpointDocument(bucketUUID))
+		}
 	}
 
 	return state, exist, nil
