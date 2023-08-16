@@ -40,6 +40,7 @@ github.com/Trendyol/go-dcp v0.0.70 h1:OeTd8HDKS5VjyiLXFaPGdeORLv5wD58APeOsJkCQqF
 github.com/Trendyol/go-dcp v0.0.70/go.mod h1:5He/eINdwCvn7B/LDQkQsMTETeSY3AdW1bTA3rEcXF4=
 github.com/Trendyol/go-dcp v0.0.71/go.mod h1:9ac8V2pla3v70DOXfOggZ4QByS5eqC5brN0pRvBU7ms=
 github.com/Trendyol/go-dcp v0.0.73/go.mod h1:L9FW5kQ5CFTBTjK3QmpQ2qkkUS06BYsaQu37hBkUzE0=
+github.com/Trendyol/go-dcp v1.0.0/go.mod h1:L9FW5kQ5CFTBTjK3QmpQ2qkkUS06BYsaQu37hBkUzE0=
 github.com/VividCortex/ewma v1.2.0 h1:f58SaIzcDXrSy3kWaHNvuJgJ3Nmz59Zji6XoJR/q1ow=
 github.com/VividCortex/ewma v1.2.0/go.mod h1:nz4BbCtbLyFDeC9SUHbtcT5644juEuWfUAUnGx7j5l4=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=

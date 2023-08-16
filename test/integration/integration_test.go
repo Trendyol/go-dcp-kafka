@@ -3,8 +3,10 @@ package integration
 import (
 	"context"
 	dcpkafka "github.com/Trendyol/go-dcp-kafka"
+	"github.com/Trendyol/go-dcp-kafka/config"
 	"github.com/Trendyol/go-dcp-kafka/couchbase"
 	"github.com/Trendyol/go-dcp-kafka/kafka/message"
+	dcpConfig "github.com/Trendyol/go-dcp/config"
 	"github.com/segmentio/kafka-go"
 	"sync"
 	"testing"
@@ -31,7 +33,44 @@ func TestKafka(t *testing.T) {
 		t.Fatalf("error while creating topic %s", err)
 	}
 
-	connector, err := dcpkafka.NewConnector("config.yml", mapper)
+	connector, err := dcpkafka.NewConnector(&config.Connector{
+		Dcp: dcpConfig.Dcp{
+			Hosts:      []string{"localhost:8091"},
+			Username:   "user",
+			Password:   "123456",
+			BucketName: "dcp-test",
+			RollbackMitigation: dcpConfig.RollbackMitigation{
+				Disabled: true,
+			},
+			Dcp: dcpConfig.ExternalDcp{
+				Group: dcpConfig.DCPGroup{
+					Name: "groupName",
+					Membership: dcpConfig.DCPGroupMembership{
+						Type: "static",
+					},
+				},
+			},
+			Metadata: dcpConfig.Metadata{
+				ReadOnly: true,
+				Config: map[string]string{
+					"bucket":     "dcp-test",
+					"scope":      "_default",
+					"collection": "_default",
+				},
+				Type: "couchbase",
+			},
+			Debug: true},
+		Kafka: config.Kafka{
+			CollectionTopicMapping: map[string]string{"_default": "test"},
+			Brokers:                []string{"localhost:9092"},
+			ProducerBatchBytes:     104857600,
+			ProducerBatchSize:      100,
+			ReadTimeout:            30 * time.Second,
+			WriteTimeout:           30 * time.Second,
+			MetadataTTL:            2400 * time.Second,
+			MetadataTopics:         []string{"test"},
+		},
+	}, mapper)
 	if err != nil {
 		return
 	}

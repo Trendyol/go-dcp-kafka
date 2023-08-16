@@ -115,7 +115,7 @@ func NewConnector(cfg any, mapper Mapper) (Connector, error) {
 		return nil, err
 	}
 
-	dcpClient, err := createDcp(cfg, connector.produce, connector.logger, connector.errorLogger)
+	dcpClient, err := dcp.NewDcpWithLoggers(&c.Dcp, connector.produce, connector.logger, connector.errorLogger)
 	if err != nil {
 		connector.errorLogger.Printf("dcp error: %v", err)
 		return nil, err
@@ -179,17 +179,6 @@ func createKafkaClient(cc *config.Connector, connector *connector) (kafka.Client
 		return nil, err
 	}
 	return kafkaClient, nil
-}
-
-func createDcp(cfg any, listener models.Listener, logger logger.Logger, errorLogger logger.Logger) (dcp.Dcp, error) {
-	switch v := cfg.(type) {
-	case dcpConfig.Dcp:
-		return dcp.NewDcpWithLoggers(v.Dcp, listener, logger, errorLogger)
-	case string:
-		return dcp.NewDcpWithLoggers(v, listener, logger, errorLogger)
-	default:
-		return nil, errors.New("invalid config")
-	}
 }
 
 func setKafkaMetadata(kafkaClient kafka.Client, dcpConfig *dcpConfig.Dcp, connector *connector, dcp dcp.Dcp) {
