@@ -131,7 +131,8 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 | kafka_connector_latency_ms               | Time to adding to the batch.           | N/A    | Gauge      |
 | kafka_connector_batch_produce_latency_ms | Time to produce messages in the batch. | N/A    | Gauge      |
 
-For DCP related metrics see [also](https://github.com/Trendyol/go-dcp#exposed-metrics).
+You can also use all DCP-related metrics explained [here](https://github.com/Trendyol/go-dcp#exposed-metrics).
+All DCP-related metrics are automatically injected. It means you don't need to do anything. 
 
 ## Contributing
 
