@@ -6,3 +6,16 @@ import (
 )
 
 type Mapper func(event couchbase.Event) []message.KafkaMessage
+
+func DefaultMapper(event couchbase.Event) []message.KafkaMessage {
+	if event.IsExpired || event.IsDeleted {
+		return nil
+	}
+	return []message.KafkaMessage{
+		{
+			Headers: nil,
+			Key:     event.Key,
+			Value:   event.Value,
+		},
+	}
+}

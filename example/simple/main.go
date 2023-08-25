@@ -18,7 +18,7 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 }
 
 func main() {
-	c, err := dcpkafka.NewConnector("config.yml", mapper)
+	c, err := dcpkafka.NewConnectorBuilder("config.yml").SetMapper(mapper).Build()
 	if err != nil {
 		panic(err)
 	}

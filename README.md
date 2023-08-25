@@ -88,6 +88,8 @@ func main() {
 
 [File Config](example/simple/main.go)
 
+[File Config](example/default-mapper/main.go)
+
 ## Configuration
 
 ### Dcp Configuration

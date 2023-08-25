@@ -96,7 +96,7 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 	return topic
 }
 
-func NewConnector(cfg any, mapper Mapper) (Connector, error) {
+func newConnector(cfg any, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -106,8 +106,8 @@ func NewConnector(cfg any, mapper Mapper) (Connector, error) {
 	connector := &connector{
 		mapper:      mapper,
 		config:      c,
-		logger:      logger.Log,
-		errorLogger: logger.Log,
+		logger:      logger,
+		errorLogger: errorLogger,
 	}
 
 	kafkaClient, err := createKafkaClient(c, connector)
@@ -158,13 +158,6 @@ func newConfig(cf any) (*config.Connector, error) {
 	}
 }
 
-func NewConnectorWithLoggers(configPath string, mapper Mapper, infoLogger logger.Logger, errorLogger logger.Logger) (Connector, error) {
-	logger.SetLogger(infoLogger)
-	logger.SetErrorLogger(errorLogger)
-
-	return NewConnector(configPath, mapper)
-}
-
 func createKafkaClient(cc *config.Connector, connector *connector) (kafka.Client, error) {
 	kafkaClient := kafka.NewClient(cc, connector.logger, connector.errorLogger)
 
@@ -203,4 +196,39 @@ func newConnectorConfigFromPath(path string) (*config.Connector, error) {
 	}
 	c.ApplyDefaults()
 	return &c, nil
+}
+
+type ConnectorBuilder struct {
+	logger      logger.Logger
+	errorLogger logger.Logger
+	mapper      Mapper
+	config      any
+}
+
+func NewConnectorBuilder(config any) ConnectorBuilder {
+	return ConnectorBuilder{
+		config:      config,
+		mapper:      DefaultMapper,
+		logger:      logger.Log,
+		errorLogger: logger.Log,
+	}
+}
+
+func (c ConnectorBuilder) SetMapper(mapper Mapper) ConnectorBuilder {
+	c.mapper = mapper
+	return c
+}
+
+func (c ConnectorBuilder) SetLogger(logger logger.Logger) ConnectorBuilder {
+	c.logger = logger
+	return c
+}
+
+func (c ConnectorBuilder) SetErrorLogger(errorLogger logger.Logger) ConnectorBuilder {
+	c.errorLogger = errorLogger
+	return c
+}
+
+func (c ConnectorBuilder) Build() (Connector, error) {
+	return newConnector(c.config, c.mapper, c.logger, c.errorLogger)
 }
