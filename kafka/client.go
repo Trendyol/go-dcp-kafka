@@ -180,19 +180,20 @@ func (c *client) CheckTopics(topics []string) error {
 
 func (c *client) Producer() *kafka.Writer {
 	return &kafka.Writer{
-		Addr:         kafka.TCP(c.config.Kafka.Brokers...),
-		Balancer:     &kafka.Hash{},
-		BatchSize:    c.config.Kafka.ProducerBatchSize,
-		BatchBytes:   math.MaxInt,
-		BatchTimeout: 500 * time.Microsecond,
-		MaxAttempts:  math.MaxInt,
-		ReadTimeout:  c.config.Kafka.ReadTimeout,
-		WriteTimeout: c.config.Kafka.WriteTimeout,
-		RequiredAcks: kafka.RequiredAcks(c.config.Kafka.RequiredAcks),
-		Logger:       c.logger,
-		ErrorLogger:  c.errorLogger,
-		Compression:  kafka.Compression(c.config.Kafka.GetCompression()),
-		Transport:    c.transport,
+		Addr:                   kafka.TCP(c.config.Kafka.Brokers...),
+		Balancer:               &kafka.Hash{},
+		BatchSize:              c.config.Kafka.ProducerBatchSize,
+		BatchBytes:             math.MaxInt,
+		BatchTimeout:           500 * time.Microsecond,
+		MaxAttempts:            math.MaxInt,
+		ReadTimeout:            c.config.Kafka.ReadTimeout,
+		WriteTimeout:           c.config.Kafka.WriteTimeout,
+		RequiredAcks:           kafka.RequiredAcks(c.config.Kafka.RequiredAcks),
+		Logger:                 c.logger,
+		ErrorLogger:            c.errorLogger,
+		Compression:            kafka.Compression(c.config.Kafka.GetCompression()),
+		Transport:              c.transport,
+		AllowAutoTopicCreation: true,
 	}
 }
 
