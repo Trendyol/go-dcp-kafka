@@ -174,10 +174,13 @@ func createKafkaClient(cc *config.Connector, connector *connector) (kafka.Client
 		topics = append(topics, topic)
 	}
 
-	if err := kafkaClient.CheckTopics(topics); err != nil {
-		connector.errorLogger.Printf("collection topic mapping error: %v", err)
-		return nil, err
+	if !cc.Kafka.AllowAutoTopicCreation {
+		if err := kafkaClient.CheckTopics(topics); err != nil {
+			connector.errorLogger.Printf("collection topic mapping error: %v", err)
+			return nil, err
+		}
 	}
+
 	return kafkaClient, nil
 }
 
