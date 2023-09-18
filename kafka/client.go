@@ -193,7 +193,7 @@ func (c *client) Producer() *kafka.Writer {
 		ErrorLogger:            c.errorLogger,
 		Compression:            kafka.Compression(c.config.Kafka.GetCompression()),
 		Transport:              c.transport,
-		AllowAutoTopicCreation: true,
+		AllowAutoTopicCreation: c.config.Kafka.AllowAutoTopicCreation,
 	}
 }
 
