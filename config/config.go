@@ -24,6 +24,7 @@ type Kafka struct {
 	ProducerBatchTickerDuration time.Duration     `yaml:"producerBatchTickerDuration"`
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
+	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
 }
 
 func (k *Kafka) GetCompression() int8 {
