@@ -36,6 +36,7 @@ github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 h1:UQHMgLO+TxOEl
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migciow=
+github.com/Trendyol/go-dcp v0.0.0-refactor-logging-impl/go.mod h1:L9FW5kQ5CFTBTjK3QmpQ2qkkUS06BYsaQu37hBkUzE0=
 github.com/Trendyol/go-dcp v1.0.1 h1:VDBBA9xgyk0EukyeOKrOZLecb2n4VZcKw3+IpcLdlg4=
 github.com/Trendyol/go-dcp v1.0.1/go.mod h1:L9FW5kQ5CFTBTjK3QmpQ2qkkUS06BYsaQu37hBkUzE0=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
