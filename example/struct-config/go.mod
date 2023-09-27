@@ -5,7 +5,7 @@ go 1.19
 replace github.com/Trendyol/go-dcp-kafka => ./../..
 
 require (
-	github.com/Trendyol/go-dcp v1.0.1
+	github.com/Trendyol/go-dcp v1.1.0
 	github.com/Trendyol/go-dcp-kafka v0.0.0
 )
 
