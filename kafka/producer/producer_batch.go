@@ -11,13 +11,12 @@ import (
 	"time"
 
 	"github.com/Trendyol/go-dcp/logger"
+
 	"github.com/Trendyol/go-dcp/models"
 	"github.com/segmentio/kafka-go"
 )
 
 type Batch struct {
-	logger              logger.Logger
-	errorLogger         logger.Logger
 	batchTicker         *time.Ticker
 	Writer              *kafka.Writer
 	dcpCheckpointCommit func()
@@ -36,8 +35,6 @@ func newBatch(
 	writer *kafka.Writer,
 	batchLimit int,
 	batchBytes int,
-	logger logger.Logger,
-	errorLogger logger.Logger,
 	dcpCheckpointCommit func(),
 ) *Batch {
 	batch := &Batch{
@@ -47,8 +44,6 @@ func newBatch(
 		messages:            make([]kafka.Message, 0, batchLimit),
 		Writer:              writer,
 		batchLimit:          batchLimit,
-		logger:              logger,
-		errorLogger:         errorLogger,
 		dcpCheckpointCommit: dcpCheckpointCommit,
 		batchBytes:          batchBytes,
 	}
@@ -88,7 +83,7 @@ func (b *Batch) PrepareEndRebalancing() {
 func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time) {
 	b.flushLock.Lock()
 	if b.isDcpRebalancing {
-		b.errorLogger.Printf("could not add new message to batch while rebalancing")
+		logger.Log.Error("could not add new message to batch while rebalancing")
 		b.flushLock.Unlock()
 		return
 	}
@@ -117,7 +112,7 @@ func (b *Batch) FlushMessages() {
 			if isFatalError(err) {
 				panic(fmt.Errorf("permanent error on Kafka side %e", err))
 			}
-			b.errorLogger.Printf("batch producer flush error %v", err)
+			logger.Log.Error("batch producer flush error %v", err)
 			return
 		}
 		b.metric.BatchProduceLatency = time.Since(startedTime).Milliseconds()

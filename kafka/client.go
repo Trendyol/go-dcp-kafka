@@ -33,8 +33,6 @@ type client struct {
 	addr        net.Addr
 	kafkaClient *kafka.Client
 	config      *config.Connector
-	logger      logger.Logger
-	errorLogger logger.Logger
 	transport   *kafka.Transport
 	dialer      *kafka.Dialer
 }
@@ -49,7 +47,6 @@ func newTLSContent(
 	scramPassword,
 	rootCAPath,
 	interCAPath string,
-	errorLogger logger.Logger,
 ) (*tlsContent, error) {
 	mechanism, err := scram.Mechanism(scram.SHA512, scramUsername, scramPassword)
 	if err != nil {
@@ -58,13 +55,13 @@ func newTLSContent(
 
 	caCert, err := os.ReadFile(os.ExpandEnv(rootCAPath))
 	if err != nil {
-		errorLogger.Printf("an error occurred while reading ca.pem file! Error: %s", err.Error())
+		logger.Log.Error("an error occurred while reading ca.pem file! Error: %s", err.Error())
 		return nil, err
 	}
 
 	intCert, err := os.ReadFile(os.ExpandEnv(interCAPath))
 	if err != nil {
-		errorLogger.Printf("an error occurred while reading int.pem file! Error: %s", err.Error())
+		logger.Log.Error("an error occurred while reading int.pem file! Error: %s", err.Error())
 		return nil, err
 	}
 
@@ -189,8 +186,6 @@ func (c *client) Producer() *kafka.Writer {
 		ReadTimeout:            c.config.Kafka.ReadTimeout,
 		WriteTimeout:           c.config.Kafka.WriteTimeout,
 		RequiredAcks:           kafka.RequiredAcks(c.config.Kafka.RequiredAcks),
-		Logger:                 c.logger,
-		ErrorLogger:            c.errorLogger,
 		Compression:            kafka.Compression(c.config.Kafka.GetCompression()),
 		Transport:              c.transport,
 		AllowAutoTopicCreation: c.config.Kafka.AllowAutoTopicCreation,
@@ -254,7 +249,7 @@ func (c *client) CreateCompactedTopic(topic string, partition int, replicationFa
 	return nil
 }
 
-func NewClient(config *config.Connector, logger logger.Logger, errorLogger logger.Logger) Client {
+func NewClient(config *config.Connector) Client {
 	addr := kafka.TCP(config.Kafka.Brokers...)
 
 	newClient := &client{
@@ -262,9 +257,7 @@ func NewClient(config *config.Connector, logger logger.Logger, errorLogger logge
 		kafkaClient: &kafka.Client{
 			Addr: addr,
 		},
-		config:      config,
-		logger:      logger,
-		errorLogger: errorLogger,
+		config: config,
 	}
 
 	newClient.transport = &kafka.Transport{
@@ -279,7 +272,6 @@ func NewClient(config *config.Connector, logger logger.Logger, errorLogger logge
 			config.Kafka.ScramPassword,
 			config.Kafka.RootCAPath,
 			config.Kafka.InterCAPath,
-			errorLogger,
 		)
 		if err != nil {
 			panic(err)

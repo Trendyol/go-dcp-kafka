@@ -19,8 +19,6 @@ import (
 
 type kafkaMetadata struct {
 	kafkaClient gKafka.Client
-	logger      logger.Logger
-	errorLogger logger.Logger
 	writer      *kafka.Writer
 	topic       string
 }
@@ -88,7 +86,7 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 			}
 
 			if err := consumer.Close(); err != nil {
-				s.logger.Printf("failed to close consumer %v", err)
+				logger.Log.Error("failed to close consumer %v", err)
 			}
 
 			wg.Done()
@@ -113,7 +111,7 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 			if err == nil {
 				state.Store(uint16(vbID), doc)
 			} else {
-				s.logger.Printf("cannot load checkpoint, vbID: %d %v", vbID, err)
+				logger.Log.Error("cannot load checkpoint, vbID: %d %v", vbID, err)
 				panic(err)
 			}
 		}
@@ -138,8 +136,6 @@ func (s *kafkaMetadata) Clear(_ []uint16) error {
 func NewKafkaMetadata(
 	kafkaClient gKafka.Client,
 	kafkaMetadataConfig map[string]string,
-	logger logger.Logger,
-	errorLogger logger.Logger,
 ) metadata.Metadata {
 	var topic string
 	var partition int
@@ -179,8 +175,6 @@ func NewKafkaMetadata(
 		kafkaClient: kafkaClient,
 		writer:      kafkaClient.Producer(),
 		topic:       topic,
-		logger:      logger,
-		errorLogger: errorLogger,
 	}
 
 	err := kafkaClient.CreateCompactedTopic(topic, partition, replicationFactor)
