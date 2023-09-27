@@ -5,11 +5,12 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/Trendyol/go-dcp/logger"
 	"io"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Trendyol/go-dcp/logger"
 
 	"github.com/Trendyol/go-dcp/models"
 	"github.com/segmentio/kafka-go"

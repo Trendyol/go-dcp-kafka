@@ -3,8 +3,9 @@ package dcpkafka
 import (
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/Trendyol/go-dcp"
 
