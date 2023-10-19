@@ -1,6 +1,7 @@
 package config
 
 import (
+	"math"
 	"time"
 
 	"github.com/Trendyol/go-dcp/config"
@@ -15,7 +16,8 @@ type Kafka struct {
 	ClientID                    string            `yaml:"clientID"`
 	Brokers                     []string          `yaml:"brokers"`
 	MetadataTopics              []string          `yaml:"metadataTopics"`
-	ProducerBatchBytes          int               `yaml:"producerBatchBytes"`
+	ProducerBatchBytes          int64             `yaml:"producerBatchBytes"`
+	ProducerBatchTimeout        time.Duration     `yaml:"producerBatchTimeout"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
 	RequiredAcks                int               `yaml:"requiredAcks"`
@@ -25,6 +27,7 @@ type Kafka struct {
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
+	MaxAttempts                 int               `yaml:"maxAttempts"`
 }
 
 func (k *Kafka) GetCompression() int8 {
@@ -57,7 +60,7 @@ func (c *Connector) ApplyDefaults() {
 	}
 
 	if c.Kafka.ProducerBatchBytes == 0 {
-		c.Kafka.ProducerBatchBytes = 10485760
+		c.Kafka.ProducerBatchBytes = math.MaxInt64
 	}
 
 	if c.Kafka.RequiredAcks == 0 {
@@ -66,5 +69,13 @@ func (c *Connector) ApplyDefaults() {
 
 	if c.Kafka.MetadataTTL == 0 {
 		c.Kafka.MetadataTTL = 60 * time.Second
+	}
+
+	if c.Kafka.MaxAttempts == 0 {
+		c.Kafka.MaxAttempts = math.MaxInt
+	}
+
+	if c.Kafka.ProducerBatchTimeout == 0 {
+		c.Kafka.ProducerBatchTimeout = 500 * time.Microsecond
 	}
 }
