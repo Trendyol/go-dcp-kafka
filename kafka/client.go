@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"math"
 	"net"
 	"os"
 	"time"
@@ -180,9 +179,9 @@ func (c *client) Producer() *kafka.Writer {
 		Addr:                   kafka.TCP(c.config.Kafka.Brokers...),
 		Balancer:               &kafka.Hash{},
 		BatchSize:              c.config.Kafka.ProducerBatchSize,
-		BatchBytes:             math.MaxInt,
-		BatchTimeout:           500 * time.Microsecond,
-		MaxAttempts:            math.MaxInt,
+		BatchBytes:             c.config.Kafka.ProducerBatchBytes,
+		BatchTimeout:           c.config.Kafka.ProducerBatchTimeout,
+		MaxAttempts:            c.config.Kafka.MaxAttempts,
 		ReadTimeout:            c.config.Kafka.ReadTimeout,
 		WriteTimeout:           c.config.Kafka.WriteTimeout,
 		RequiredAcks:           kafka.RequiredAcks(c.config.Kafka.RequiredAcks),

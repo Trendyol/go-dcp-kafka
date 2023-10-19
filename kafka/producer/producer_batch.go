@@ -22,10 +22,10 @@ type Batch struct {
 	dcpCheckpointCommit func()
 	metric              *Metric
 	messages            []kafka.Message
-	currentMessageBytes int
+	currentMessageBytes int64
 	batchTickerDuration time.Duration
 	batchLimit          int
-	batchBytes          int
+	batchBytes          int64
 	flushLock           sync.Mutex
 	isDcpRebalancing    bool
 }
@@ -34,7 +34,7 @@ func newBatch(
 	batchTime time.Duration,
 	writer *kafka.Writer,
 	batchLimit int,
-	batchBytes int,
+	batchBytes int64,
 	dcpCheckpointCommit func(),
 ) *Batch {
 	batch := &Batch{
@@ -88,7 +88,7 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 		return
 	}
 	b.messages = append(b.messages, messages...)
-	b.currentMessageBytes += binary.Size(messages)
+	b.currentMessageBytes += int64(binary.Size(messages))
 	ctx.Ack()
 	b.flushLock.Unlock()
 
