@@ -181,7 +181,7 @@ func (c *client) Producer() *kafka.Writer {
 		BatchSize:              c.config.Kafka.ProducerBatchSize,
 		BatchBytes:             c.config.Kafka.ProducerBatchBytes,
 		BatchTimeout:           c.config.Kafka.ProducerBatchTimeout,
-		MaxAttempts:            c.config.Kafka.MaxAttempts,
+		MaxAttempts:            c.config.Kafka.ProducerMaxAttempts,
 		ReadTimeout:            c.config.Kafka.ReadTimeout,
 		WriteTimeout:           c.config.Kafka.WriteTimeout,
 		RequiredAcks:           kafka.RequiredAcks(c.config.Kafka.RequiredAcks),
