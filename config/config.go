@@ -18,6 +18,7 @@ type Kafka struct {
 	MetadataTopics              []string          `yaml:"metadataTopics"`
 	ProducerBatchBytes          int64             `yaml:"producerBatchBytes"`
 	ProducerBatchTimeout        time.Duration     `yaml:"producerBatchTimeout"`
+	ProducerMaxAttempts         int               `yaml:"producerMaxAttempts"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
 	RequiredAcks                int               `yaml:"requiredAcks"`
@@ -27,7 +28,6 @@ type Kafka struct {
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
-	MaxAttempts                 int               `yaml:"maxAttempts"`
 }
 
 func (k *Kafka) GetCompression() int8 {
@@ -60,7 +60,7 @@ func (c *Connector) ApplyDefaults() {
 	}
 
 	if c.Kafka.ProducerBatchBytes == 0 {
-		c.Kafka.ProducerBatchBytes = math.MaxInt64
+		c.Kafka.ProducerBatchBytes = 10485760
 	}
 
 	if c.Kafka.RequiredAcks == 0 {
@@ -71,11 +71,11 @@ func (c *Connector) ApplyDefaults() {
 		c.Kafka.MetadataTTL = 60 * time.Second
 	}
 
-	if c.Kafka.MaxAttempts == 0 {
-		c.Kafka.MaxAttempts = math.MaxInt
+	if c.Kafka.ProducerMaxAttempts == 0 {
+		c.Kafka.ProducerMaxAttempts = math.MaxInt
 	}
 
 	if c.Kafka.ProducerBatchTimeout == 0 {
-		c.Kafka.ProducerBatchTimeout = 500 * time.Microsecond
+		c.Kafka.ProducerBatchTimeout = time.Nanosecond
 	}
 }
