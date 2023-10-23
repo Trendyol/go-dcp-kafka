@@ -60,7 +60,7 @@ func (c *Connector) ApplyDefaults() {
 	}
 
 	if c.Kafka.ProducerBatchBytes == 0 {
-		c.Kafka.ProducerBatchBytes = 10485760
+		c.Kafka.ProducerBatchBytes = math.MaxInt64
 	}
 
 	if c.Kafka.RequiredAcks == 0 {
