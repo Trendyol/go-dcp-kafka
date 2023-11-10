@@ -1,6 +1,7 @@
 package config
 
 import (
+	"math"
 	"time"
 
 	"github.com/Trendyol/go-dcp/config"
@@ -15,7 +16,9 @@ type Kafka struct {
 	ClientID                    string            `yaml:"clientID"`
 	Brokers                     []string          `yaml:"brokers"`
 	MetadataTopics              []string          `yaml:"metadataTopics"`
-	ProducerBatchBytes          int               `yaml:"producerBatchBytes"`
+	ProducerBatchBytes          int64             `yaml:"producerBatchBytes"`
+	ProducerBatchTimeout        time.Duration     `yaml:"producerBatchTimeout"`
+	ProducerMaxAttempts         int               `yaml:"producerMaxAttempts"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
 	RequiredAcks                int               `yaml:"requiredAcks"`
@@ -24,6 +27,7 @@ type Kafka struct {
 	ProducerBatchTickerDuration time.Duration     `yaml:"producerBatchTickerDuration"`
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
+	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
 }
 
 func (k *Kafka) GetCompression() int8 {
@@ -65,5 +69,13 @@ func (c *Connector) ApplyDefaults() {
 
 	if c.Kafka.MetadataTTL == 0 {
 		c.Kafka.MetadataTTL = 60 * time.Second
+	}
+
+	if c.Kafka.ProducerMaxAttempts == 0 {
+		c.Kafka.ProducerMaxAttempts = math.MaxInt
+	}
+
+	if c.Kafka.ProducerBatchTimeout == 0 {
+		c.Kafka.ProducerBatchTimeout = time.Nanosecond
 	}
 }

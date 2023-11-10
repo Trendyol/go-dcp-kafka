@@ -103,7 +103,9 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 | `kafka.collectionTopicMapping`      | map[string]string | yes      |          | Defines which Couchbase collection events will be sent to which topic,:warning: **If topic information is entered in the mapper, it will OVERWRITE this config**.                                                                                                                                | 
 | `kafka.brokers`                     | []string          | yes      |          | Broker ip and port information                                                                                                                                                                                                                                                                   |
 | `kafka.producerBatchSize`           | integer           | no       | 2000     | Maximum message count for batch, if exceed flush will be triggered.                                                                                                                                                                                                                              |
-| `kafka.producerBatchBytes`          | integer           | no       | 10485760 | Maximum size(byte) for batch, if exceed flush will be triggered.                                                                                                                                                                                                                                 |
+| `kafka.producerBatchBytes`          | 64 bit integer     | no       | 10485760 | Maximum size(byte) for batch, if exceed flush will be triggered.                                                                                                                                                                                                                                 |
+| `kafka.producerBatchTimeout`          | time.duration     | no       | 1 nano second | Time limit on how often incomplete message batches will be flushed.                                                                                                                                                                                                                                 |
+| `kafka.producerMaxAttempts`          | int          | no       | math.MaxInt | Limit on how many attempts will be made to deliver a message.                                                                                                                                                                                                                                 |
 | `kafka.producerBatchTickerDuration` | time.Duration     | no       | 10s      | Batch is being flushed automatically at specific time intervals for long waiting messages in batch.                                                                                                                                                                                              |
 | `kafka.readTimeout`                 | time.Duration     | no       | 30s      | segmentio/kafka-go - Timeout for read operations                                                                                                                                                                                                                                                 |
 | `kafka.writeTimeout`                | time.Duration     | no       | 30s      | segmentio/kafka-go - Timeout for write operations                                                                                                                                                                                                                                                |
@@ -117,6 +119,7 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 | `kafka.metadataTTL`                 | time.Duration     | no       | 60s      | TTL for the metadata cached by segmentio, increase it to reduce network requests. For more detail please check [docs](https://pkg.go.dev/github.com/segmentio/kafka-go#Transport.MetadataTTL).                                                                                                   |
 | `kafka.metadataTopics`              | []string          | no       |          | Topic names for the metadata cached by segmentio, define topics here that the connector may produce. In large Kafka clusters, this will reduce memory usage. For more detail please check [docs](https://pkg.go.dev/github.com/segmentio/kafka-go#Transport.MetadataTopics).                     |
 | `kafka.clientID`                    | string            | no       |          | Unique identifier that the transport communicates to the brokers when it sends requests. For more detail please check [docs](https://pkg.go.dev/github.com/segmentio/kafka-go#Transport.ClientID).                                                                                               |
+| `kafka.allowAutoTopicCreation`      | bool              | no       | false    | Create topic if missing. For more detail please check [docs](https://pkg.go.dev/github.com/segmentio/kafka-go#Writer.AllowAutoTopicCreation).                                                                                                                                                    |
 
 ### Kafka Metadata Configuration(Use it if you want to store the checkpoint data in Kafka)
 
@@ -135,6 +138,12 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 
 You can also use all DCP-related metrics explained [here](https://github.com/Trendyol/go-dcp#exposed-metrics).
 All DCP-related metrics are automatically injected. It means you don't need to do anything. 
+
+## Breaking Changes
+
+| Date taking effect | Date announced | Change | How to check    |
+|--------------------| ---- |---- |-----------------| 
+| November 11, 2023  | November 11, 2023 |  Creating connector via builder | Compile project |
 
 ## Contributing
 

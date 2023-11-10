@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/Trendyol/go-dcp"
 
 	"github.com/Trendyol/go-dcp-kafka/config"
@@ -28,12 +30,10 @@ type Connector interface {
 }
 
 type connector struct {
-	dcp         dcp.Dcp
-	mapper      Mapper
-	producer    producer.Producer
-	config      *config.Connector
-	logger      logger.Logger
-	errorLogger logger.Logger
+	dcp      dcp.Dcp
+	mapper   Mapper
+	producer producer.Producer
+	config   *config.Connector
 }
 
 func (c *connector) Start() {
@@ -48,7 +48,7 @@ func (c *connector) Close() {
 	c.dcp.Close()
 	err := c.producer.Close()
 	if err != nil {
-		c.errorLogger.Printf("error | %v", err)
+		logger.Log.Error("error | %v", err)
 	}
 }
 
@@ -96,7 +96,7 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 	return topic
 }
 
-func newConnector(cfg any, mapper Mapper, logger logger.Logger, errorLogger logger.Logger) (Connector, error) {
+func newConnector(cfg any, mapper Mapper) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -104,35 +104,33 @@ func newConnector(cfg any, mapper Mapper, logger logger.Logger, errorLogger logg
 	c.ApplyDefaults()
 
 	connector := &connector{
-		mapper:      mapper,
-		config:      c,
-		logger:      logger,
-		errorLogger: errorLogger,
+		mapper: mapper,
+		config: c,
 	}
 
-	kafkaClient, err := createKafkaClient(c, connector)
+	dcpClient, err := dcp.NewDcp(&c.Dcp, connector.produce)
 	if err != nil {
-		return nil, err
-	}
-
-	dcpClient, err := dcp.NewDcpWithLoggers(&c.Dcp, connector.produce, connector.logger, connector.errorLogger)
-	if err != nil {
-		connector.errorLogger.Printf("dcp error: %v", err)
+		logger.Log.Error("dcp error: %v", err)
 		return nil, err
 	}
 
 	conf := dcpClient.GetConfig()
 	conf.Checkpoint.Type = "manual"
 
+	kafkaClient, err := createKafkaClient(c)
+	if err != nil {
+		return nil, err
+	}
+
 	if conf.Metadata.Type == MetadataTypeKafka {
-		setKafkaMetadata(kafkaClient, conf, connector, dcpClient)
+		setKafkaMetadata(kafkaClient, conf, dcpClient)
 	}
 
 	connector.dcp = dcpClient
 
-	connector.producer, err = producer.NewProducer(kafkaClient, c, connector.logger, connector.errorLogger, dcpClient.Commit)
+	connector.producer, err = producer.NewProducer(kafkaClient, c, dcpClient.Commit)
 	if err != nil {
-		connector.errorLogger.Printf("kafka error: %v", err)
+		logger.Log.Error("kafka error: %v", err)
 		return nil, err
 	}
 
@@ -158,8 +156,8 @@ func newConfig(cf any) (*config.Connector, error) {
 	}
 }
 
-func createKafkaClient(cc *config.Connector, connector *connector) (kafka.Client, error) {
-	kafkaClient := kafka.NewClient(cc, connector.logger, connector.errorLogger)
+func createKafkaClient(cc *config.Connector) (kafka.Client, error) {
+	kafkaClient := kafka.NewClient(cc)
 
 	var topics []string
 
@@ -167,15 +165,18 @@ func createKafkaClient(cc *config.Connector, connector *connector) (kafka.Client
 		topics = append(topics, topic)
 	}
 
-	if err := kafkaClient.CheckTopics(topics); err != nil {
-		connector.errorLogger.Printf("collection topic mapping error: %v", err)
-		return nil, err
+	if !cc.Kafka.AllowAutoTopicCreation {
+		if err := kafkaClient.CheckTopics(topics); err != nil {
+			logger.Log.Error("collection topic mapping error: %v", err)
+			return nil, err
+		}
 	}
+
 	return kafkaClient, nil
 }
 
-func setKafkaMetadata(kafkaClient kafka.Client, dcpConfig *dcpConfig.Dcp, connector *connector, dcp dcp.Dcp) {
-	kafkaMetadata := metadata.NewKafkaMetadata(kafkaClient, dcpConfig.Metadata.Config, connector.logger, connector.errorLogger)
+func setKafkaMetadata(kafkaClient kafka.Client, dcpConfig *dcpConfig.Dcp, dcp dcp.Dcp) {
+	kafkaMetadata := metadata.NewKafkaMetadata(kafkaClient, dcpConfig.Metadata.Config)
 	dcp.SetMetadata(kafkaMetadata)
 }
 
@@ -199,18 +200,14 @@ func newConnectorConfigFromPath(path string) (*config.Connector, error) {
 }
 
 type ConnectorBuilder struct {
-	logger      logger.Logger
-	errorLogger logger.Logger
-	mapper      Mapper
-	config      any
+	mapper Mapper
+	config any
 }
 
 func NewConnectorBuilder(config any) ConnectorBuilder {
 	return ConnectorBuilder{
-		config:      config,
-		mapper:      DefaultMapper,
-		logger:      logger.Log,
-		errorLogger: logger.Log,
+		config: config,
+		mapper: DefaultMapper,
 	}
 }
 
@@ -219,16 +216,13 @@ func (c ConnectorBuilder) SetMapper(mapper Mapper) ConnectorBuilder {
 	return c
 }
 
-func (c ConnectorBuilder) SetLogger(logger logger.Logger) ConnectorBuilder {
-	c.logger = logger
-	return c
-}
-
-func (c ConnectorBuilder) SetErrorLogger(errorLogger logger.Logger) ConnectorBuilder {
-	c.errorLogger = errorLogger
-	return c
-}
-
 func (c ConnectorBuilder) Build() (Connector, error) {
-	return newConnector(c.config, c.mapper, c.logger, c.errorLogger)
+	return newConnector(c.config, c.mapper)
+}
+
+func (c ConnectorBuilder) SetLogger(l *logrus.Logger) ConnectorBuilder {
+	logger.Log = &logger.Loggers{
+		Logrus: l,
+	}
+	return c
 }

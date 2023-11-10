@@ -5,7 +5,6 @@ import (
 
 	"github.com/Trendyol/go-dcp-kafka/config"
 	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
-	"github.com/Trendyol/go-dcp/logger"
 	"github.com/Trendyol/go-dcp/models"
 	"github.com/segmentio/kafka-go"
 )
@@ -21,8 +20,6 @@ type Producer struct {
 
 func NewProducer(kafkaClient gKafka.Client,
 	config *config.Connector,
-	logger logger.Logger,
-	errorLogger logger.Logger,
 	dcpCheckpointCommit func(),
 ) (Producer, error) {
 	writer := kafkaClient.Producer()
@@ -33,8 +30,6 @@ func NewProducer(kafkaClient gKafka.Client,
 			writer,
 			config.Kafka.ProducerBatchSize,
 			config.Kafka.ProducerBatchBytes,
-			logger,
-			errorLogger,
 			dcpCheckpointCommit,
 		),
 	}, nil
