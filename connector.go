@@ -96,7 +96,7 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 	return topic
 }
 
-func NewConnector(cfg any, mapper Mapper) (Connector, error) {
+func newConnector(cfg any, mapper Mapper) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -156,13 +156,6 @@ func newConfig(cf any) (*config.Connector, error) {
 	}
 }
 
-func NewConnectorWithLoggers(configPath string, mapper Mapper, logrus *logrus.Logger) (Connector, error) {
-	logger.Log = &logger.Loggers{
-		Logrus: logrus,
-	}
-	return NewConnector(configPath, mapper)
-}
-
 func createKafkaClient(cc *config.Connector) (kafka.Client, error) {
 	kafkaClient := kafka.NewClient(cc)
 
@@ -204,4 +197,32 @@ func newConnectorConfigFromPath(path string) (*config.Connector, error) {
 	}
 	c.ApplyDefaults()
 	return &c, nil
+}
+
+type ConnectorBuilder struct {
+	mapper Mapper
+	config any
+}
+
+func NewConnectorBuilder(config any) ConnectorBuilder {
+	return ConnectorBuilder{
+		config: config,
+		mapper: DefaultMapper,
+	}
+}
+
+func (c ConnectorBuilder) SetMapper(mapper Mapper) ConnectorBuilder {
+	c.mapper = mapper
+	return c
+}
+
+func (c ConnectorBuilder) Build() (Connector, error) {
+	return newConnector(c.config, c.mapper)
+}
+
+func (c ConnectorBuilder) SetLogger(l *logrus.Logger) ConnectorBuilder {
+	logger.Log = &logger.Loggers{
+		Logrus: l,
+	}
+	return c
 }

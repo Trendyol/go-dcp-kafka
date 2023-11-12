@@ -33,7 +33,7 @@ func TestKafka(t *testing.T) {
 		t.Fatalf("error while creating topic %s", err)
 	}
 
-	connector, err := dcpkafka.NewConnector(&config.Connector{
+	connector, err := dcpkafka.NewConnectorBuilder(&config.Connector{
 		Dcp: dcpConfig.Dcp{
 			Hosts:      []string{"localhost:8091"},
 			Username:   "user",
@@ -70,7 +70,7 @@ func TestKafka(t *testing.T) {
 			MetadataTTL:            2400 * time.Second,
 			MetadataTopics:         []string{"test"},
 		},
-	}, mapper)
+	}).SetMapper(mapper).Build()
 	if err != nil {
 		return
 	}

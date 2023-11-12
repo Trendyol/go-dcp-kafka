@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Trendyol/go-dcp-kafka"
+	dcpkafka "github.com/Trendyol/go-dcp-kafka"
 	"github.com/Trendyol/go-dcp-kafka/couchbase"
 	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 	"github.com/sirupsen/logrus"
@@ -21,7 +21,10 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 func main() {
 	logger := createLogger()
 
-	c, err := dcpkafka.NewConnectorWithLoggers("config.yml", mapper, logger)
+	c, err := dcpkafka.NewConnectorBuilder("config.yml").
+		SetMapper(mapper).
+		SetLogger(logger).
+		Build()
 	if err != nil {
 		panic(err)
 	}

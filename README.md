@@ -88,6 +88,8 @@ func main() {
 
 [File Config](example/simple/main.go)
 
+[File Config](example/default-mapper/main.go)
+
 ## Configuration
 
 ### Dcp Configuration
@@ -136,6 +138,12 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 
 You can also use all DCP-related metrics explained [here](https://github.com/Trendyol/go-dcp#exposed-metrics).
 All DCP-related metrics are automatically injected. It means you don't need to do anything. 
+
+## Breaking Changes
+
+| Date taking effect | Date announced | Change | How to check    |
+|--------------------| ---- |---- |-----------------| 
+| November 11, 2023  | November 11, 2023 |  Creating connector via builder | Compile project |
 
 ## Contributing
 

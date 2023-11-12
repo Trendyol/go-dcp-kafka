@@ -21,7 +21,7 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 }
 
 func main() {
-	c, err := dcpkafka.NewConnector(&config.Connector{
+	c, err := dcpkafka.NewConnectorBuilder(&config.Connector{
 		Dcp: dcpConfig.Dcp{
 			Hosts:      []string{"localhost:8091"},
 			Username:   "user",
@@ -48,7 +48,8 @@ func main() {
 			CollectionTopicMapping: map[string]string{"_default": "topic"},
 			Brokers:                []string{"localhost:9092"},
 		},
-	}, mapper)
+	}).SetMapper(mapper).
+		Build()
 	if err != nil {
 		panic(err)
 	}
