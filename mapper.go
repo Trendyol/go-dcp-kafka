@@ -13,9 +13,8 @@ func DefaultMapper(event couchbase.Event) []message.KafkaMessage {
 	}
 	return []message.KafkaMessage{
 		{
-			Headers: nil,
-			Key:     event.Key,
-			Value:   event.Value,
+			Key:   event.Key,
+			Value: event.Value,
 		},
 	}
 }
