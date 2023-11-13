@@ -135,14 +135,14 @@ func (s *kafkaMetadata) Clear(_ []uint16) error {
 
 func NewKafkaMetadata(
 	kafkaClient gKafka.Client,
-	kafkaMetadataConfig map[string]string,
+	kafkaMetadataConfig map[string]any,
 ) metadata.Metadata {
 	var topic string
 	var partition int
 	var replicationFactor int
 
 	if _, ok := kafkaMetadataConfig["topic"]; ok {
-		topic = kafkaMetadataConfig["topic"]
+		topic = kafkaMetadataConfig["topic"].(string)
 	} else {
 		panic(errors.New("topic is not defined"))
 	}
@@ -152,7 +152,7 @@ func NewKafkaMetadata(
 	}
 
 	if _, ok := kafkaMetadataConfig["partition"]; ok {
-		partition, _ = strconv.Atoi(kafkaMetadataConfig["partition"])
+		partition, _ = strconv.Atoi(kafkaMetadataConfig["partition"].(string))
 	} else {
 		partition = 25
 	}
@@ -162,7 +162,7 @@ func NewKafkaMetadata(
 	}
 
 	if _, ok := kafkaMetadataConfig["replicationFactor"]; ok {
-		replicationFactor, _ = strconv.Atoi(kafkaMetadataConfig["replicationFactor"])
+		replicationFactor, _ = strconv.Atoi(kafkaMetadataConfig["replicationFactor"].(string))
 	} else {
 		replicationFactor = 3
 	}
