@@ -38,3 +38,10 @@ services:
       - 9092:9092
       - 28082:28082
       - 29092:29092
+  redpanda-topic-create:
+    image: docker.redpanda.com/redpandadata/redpanda
+    container_name: redpanda-topic-create
+    entrypoint: [ "bash", "-c", "sleep 5 && rpk topic create test --brokers redpanda:29092" ]
+    depends_on:
+      - redpanda
+    restart: "no"
