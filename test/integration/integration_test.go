@@ -52,7 +52,7 @@ func TestKafka(t *testing.T) {
 			},
 			Metadata: dcpConfig.Metadata{
 				ReadOnly: true,
-				Config: map[string]string{
+				Config: map[string]any{
 					"bucket":     "dcp-test",
 					"scope":      "_default",
 					"collection": "_default",
