@@ -36,7 +36,7 @@ func main() {
 				},
 			},
 			Metadata: dcpConfig.Metadata{
-				Config: map[string]any{
+				Config: map[string]string{
 					"bucket":     "checkpoint-bucket-name",
 					"scope":      "_default",
 					"collection": "_default",
