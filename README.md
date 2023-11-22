@@ -27,10 +27,10 @@ The benchmark was made with the  **1,001,006** Couchbase document, because it is
 difference in the batch structure between the two packages. **Default configurations** for Java Kafka Connect Couchbase
 used for both connectors.
 
-| Package                              | Time to Process Events | Average CPU Usage(Core) | Average Memory Usage |
-|:-------------------------------------|:----------------------:|:-----------------------:|:--------------------:|
-| **Go Dcp Kafka**(1.19) |        **12s**         |        **0.383**        |      **428MB**       
-| Java Kafka Connect Couchbase(JDK11)  |          19s           |           1.5           |        932MB         
+| Package                             | Time to Process Events | Average CPU Usage(Core) | Average Memory Usage |
+|:------------------------------------|:----------------------:|:-----------------------:|:--------------------:|
+| **Go Dcp Kafka**(1.20)              |        **12s**         |        **0.383**        |      **428MB**       
+| Java Kafka Connect Couchbase(JDK11) |          19s           |           1.5           |        932MB         
 
 ## Example
 
