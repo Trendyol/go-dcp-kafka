@@ -4,10 +4,13 @@ import (
 	"math"
 	"time"
 
+	"github.com/Trendyol/go-dcp/helpers"
+
 	"github.com/Trendyol/go-dcp/config"
 )
 
 type Kafka struct {
+	ProducerBatchBytes          any               `yaml:"producerBatchBytes"`
 	CollectionTopicMapping      map[string]string `yaml:"collectionTopicMapping"`
 	InterCAPath                 string            `yaml:"interCAPath"`
 	ScramUsername               string            `yaml:"scramUsername"`
@@ -16,9 +19,8 @@ type Kafka struct {
 	ClientID                    string            `yaml:"clientID"`
 	Brokers                     []string          `yaml:"brokers"`
 	MetadataTopics              []string          `yaml:"metadataTopics"`
-	ProducerBatchBytes          int64             `yaml:"producerBatchBytes"`
-	ProducerBatchTimeout        time.Duration     `yaml:"producerBatchTimeout"`
 	ProducerMaxAttempts         int               `yaml:"producerMaxAttempts"`
+	ProducerBatchTimeout        time.Duration     `yaml:"producerBatchTimeout"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
 	RequiredAcks                int               `yaml:"requiredAcks"`
@@ -60,7 +62,7 @@ func (c *Connector) ApplyDefaults() {
 	}
 
 	if c.Kafka.ProducerBatchBytes == 0 {
-		c.Kafka.ProducerBatchBytes = 10485760
+		c.Kafka.ProducerBatchBytes = helpers.ResolveUnionIntOrStringValue("10mb")
 	}
 
 	if c.Kafka.RequiredAcks == 0 {
