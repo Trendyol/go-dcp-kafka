@@ -3,6 +3,8 @@ package producer
 import (
 	"time"
 
+	"github.com/Trendyol/go-dcp/helpers"
+
 	"github.com/Trendyol/go-dcp-kafka/config"
 	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
 	"github.com/Trendyol/go-dcp/models"
@@ -29,7 +31,7 @@ func NewProducer(kafkaClient gKafka.Client,
 			config.Kafka.ProducerBatchTickerDuration,
 			writer,
 			config.Kafka.ProducerBatchSize,
-			config.Kafka.ProducerBatchBytes,
+			int64(helpers.ResolveUnionIntOrStringValue(config.Kafka.ProducerBatchBytes)),
 			dcpCheckpointCommit,
 		),
 	}, nil
