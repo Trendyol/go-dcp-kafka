@@ -27,6 +27,8 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 }
 
 func TestKafka(t *testing.T) {
+	time.Sleep(time.Minute)
+
 	// Create topic
 	_, err := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", "test", 0)
 	if err != nil {
@@ -83,8 +85,6 @@ func TestKafka(t *testing.T) {
 	}()
 
 	go func() {
-		time.Sleep(20 * time.Second)
-
 		r := kafka.NewReader(kafka.ReaderConfig{
 			Brokers:       []string{"localhost:9092"},
 			Topic:         "test",
@@ -116,7 +116,6 @@ func TestKafka(t *testing.T) {
 	}()
 
 	wg.Wait()
-	t.Log("done")
 }
 
 type CountResponse struct {
