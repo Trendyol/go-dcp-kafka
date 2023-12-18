@@ -1,6 +1,7 @@
 package producer
 
 import (
+	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 	"time"
 
 	"github.com/Trendyol/go-dcp/helpers"
@@ -20,9 +21,15 @@ type Producer struct {
 	ProducerBatch *Batch
 }
 
+type Callback interface {
+	OnSuccess(message message.KafkaMessage)
+	OnError(message message.KafkaMessage)
+}
+
 func NewProducer(kafkaClient gKafka.Client,
 	config *config.Connector,
 	dcpCheckpointCommit func(),
+	callback Callback,
 ) (Producer, error) {
 	writer := kafkaClient.Producer()
 
@@ -33,6 +40,7 @@ func NewProducer(kafkaClient gKafka.Client,
 			config.Kafka.ProducerBatchSize,
 			int64(helpers.ResolveUnionIntOrStringValue(config.Kafka.ProducerBatchBytes)),
 			dcpCheckpointCommit,
+			callback,
 		),
 	}, nil
 }

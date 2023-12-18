@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Trendyol/go-dcp-kafka/kafka/message"
+
 	"github.com/Trendyol/go-dcp/logger"
 
 	"github.com/Trendyol/go-dcp/models"
@@ -28,6 +30,7 @@ type Batch struct {
 	batchBytes          int64
 	flushLock           sync.Mutex
 	isDcpRebalancing    bool
+	callback            Callback
 }
 
 func newBatch(
@@ -36,6 +39,7 @@ func newBatch(
 	batchLimit int,
 	batchBytes int64,
 	dcpCheckpointCommit func(),
+	callback Callback,
 ) *Batch {
 	batch := &Batch{
 		batchTickerDuration: batchTime,
@@ -46,6 +50,7 @@ func newBatch(
 		batchLimit:          batchLimit,
 		dcpCheckpointCommit: dcpCheckpointCommit,
 		batchBytes:          batchBytes,
+		callback:            callback,
 	}
 	return batch
 }
@@ -100,6 +105,7 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 }
 
 func (b *Batch) FlushMessages() {
+	var writeErrors kafka.WriteErrors
 	b.flushLock.Lock()
 	defer b.flushLock.Unlock()
 	if b.isDcpRebalancing {
@@ -112,11 +118,19 @@ func (b *Batch) FlushMessages() {
 			if isFatalError(err) {
 				panic(fmt.Errorf("permanent error on Kafka side %v", err))
 			}
-			logger.Log.Error("batch producer flush error %v", err)
-			return
+			if !errors.As(err, &writeErrors) {
+				logger.Log.Error("batch producer flush error %v", err)
+				return
+			}
 		}
 		b.metric.BatchProduceLatency = time.Since(startedTime).Milliseconds()
-
+		if b.callback != nil {
+			if err != nil {
+				b.handleCallbackSuccess()
+			} else {
+				b.handleWriteError(writeErrors)
+			}
+		}
 		b.messages = b.messages[:0]
 		b.currentMessageBytes = 0
 		b.batchTicker.Reset(b.batchTickerDuration)
@@ -135,4 +149,29 @@ func isFatalError(err error) bool {
 		return false
 	}
 	return true
+}
+
+func (b *Batch) handleWriteError(writeErrors kafka.WriteErrors) {
+	for i := range writeErrors {
+		if writeErrors[i] != nil {
+			b.callback.OnError(convertKafkaMessage(b.messages[i]))
+		} else {
+			b.callback.OnSuccess(convertKafkaMessage(b.messages[i]))
+		}
+	}
+}
+
+func (b *Batch) handleCallbackSuccess() {
+	for _, msg := range b.messages {
+		b.callback.OnSuccess(convertKafkaMessage(msg))
+	}
+}
+
+func convertKafkaMessage(src kafka.Message) message.KafkaMessage {
+	return message.KafkaMessage{
+		Topic:   src.Topic,
+		Headers: src.Headers,
+		Key:     src.Key,
+		Value:   src.Value,
+	}
 }

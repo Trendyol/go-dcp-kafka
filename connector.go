@@ -96,7 +96,7 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 	return topic
 }
 
-func newConnector(cfg any, mapper Mapper) (Connector, error) {
+func newConnector(cfg any, mapper Mapper, callback producer.Callback) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func newConnector(cfg any, mapper Mapper) (Connector, error) {
 
 	connector.dcp = dcpClient
 
-	connector.producer, err = producer.NewProducer(kafkaClient, c, dcpClient.Commit)
+	connector.producer, err = producer.NewProducer(kafkaClient, c, dcpClient.Commit, callback)
 	if err != nil {
 		logger.Log.Error("kafka error: %v", err)
 		return nil, err
@@ -200,14 +200,16 @@ func newConnectorConfigFromPath(path string) (*config.Connector, error) {
 }
 
 type ConnectorBuilder struct {
-	mapper Mapper
-	config any
+	mapper   Mapper
+	config   any
+	callback producer.Callback
 }
 
 func NewConnectorBuilder(config any) ConnectorBuilder {
 	return ConnectorBuilder{
-		config: config,
-		mapper: DefaultMapper,
+		config:   config,
+		mapper:   DefaultMapper,
+		callback: nil,
 	}
 }
 
@@ -216,8 +218,13 @@ func (c ConnectorBuilder) SetMapper(mapper Mapper) ConnectorBuilder {
 	return c
 }
 
+func (c ConnectorBuilder) SetCallback(callback producer.Callback) ConnectorBuilder {
+	c.callback = callback
+	return c
+}
+
 func (c ConnectorBuilder) Build() (Connector, error) {
-	return newConnector(c.config, c.mapper)
+	return newConnector(c.config, c.mapper, c.callback)
 }
 
 func (c ConnectorBuilder) SetLogger(l *logrus.Logger) ConnectorBuilder {
