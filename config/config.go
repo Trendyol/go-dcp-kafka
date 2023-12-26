@@ -61,7 +61,7 @@ func (c *Connector) ApplyDefaults() {
 		c.Kafka.ProducerBatchSize = 2000
 	}
 
-	if c.Kafka.ProducerBatchBytes == 0 {
+	if c.Kafka.ProducerBatchBytes == nil {
 		c.Kafka.ProducerBatchBytes = helpers.ResolveUnionIntOrStringValue("10mb")
 	}
 
