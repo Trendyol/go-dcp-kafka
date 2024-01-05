@@ -23,6 +23,7 @@ type Producer struct {
 func NewProducer(kafkaClient gKafka.Client,
 	config *config.Connector,
 	dcpCheckpointCommit func(),
+	sinkResponseHandler gKafka.SinkResponseHandler,
 ) (Producer, error) {
 	writer := kafkaClient.Producer()
 
@@ -33,6 +34,7 @@ func NewProducer(kafkaClient gKafka.Client,
 			config.Kafka.ProducerBatchSize,
 			int64(helpers.ResolveUnionIntOrStringValue(config.Kafka.ProducerBatchBytes)),
 			dcpCheckpointCommit,
+			sinkResponseHandler,
 		),
 	}, nil
 }

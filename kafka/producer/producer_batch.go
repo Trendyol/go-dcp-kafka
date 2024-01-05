@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
+	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 	"github.com/Trendyol/go-dcp/logger"
 
 	"github.com/Trendyol/go-dcp/models"
@@ -17,6 +19,7 @@ import (
 )
 
 type Batch struct {
+	sinkResponseHandler gKafka.SinkResponseHandler
 	batchTicker         *time.Ticker
 	Writer              *kafka.Writer
 	dcpCheckpointCommit func()
@@ -36,6 +39,7 @@ func newBatch(
 	batchLimit int,
 	batchBytes int64,
 	dcpCheckpointCommit func(),
+	sinkResponseHandler gKafka.SinkResponseHandler,
 ) *Batch {
 	batch := &Batch{
 		batchTickerDuration: batchTime,
@@ -46,6 +50,7 @@ func newBatch(
 		batchLimit:          batchLimit,
 		dcpCheckpointCommit: dcpCheckpointCommit,
 		batchBytes:          batchBytes,
+		sinkResponseHandler: sinkResponseHandler,
 	}
 	return batch
 }
@@ -108,15 +113,31 @@ func (b *Batch) FlushMessages() {
 	if len(b.messages) > 0 {
 		startedTime := time.Now()
 		err := b.Writer.WriteMessages(context.Background(), b.messages...)
-		if err != nil {
+
+		if err != nil && b.sinkResponseHandler == nil {
 			if isFatalError(err) {
 				panic(fmt.Errorf("permanent error on Kafka side %v", err))
 			}
 			logger.Log.Error("batch producer flush error %v", err)
 			return
 		}
+
 		b.metric.BatchProduceLatency = time.Since(startedTime).Milliseconds()
 
+		if b.sinkResponseHandler != nil {
+			switch e := err.(type) {
+			case nil:
+				b.handleResponseSuccess()
+			case kafka.WriteErrors:
+				b.handleWriteError(e)
+			case kafka.MessageTooLargeError:
+				b.handleMessageTooLargeError(e)
+				return
+			default:
+				logger.Log.Error("batch producer flush error %v", err)
+				return
+			}
+		}
 		b.messages = b.messages[:0]
 		b.currentMessageBytes = 0
 		b.batchTicker.Reset(b.batchTickerDuration)
@@ -135,4 +156,45 @@ func isFatalError(err error) bool {
 		return false
 	}
 	return true
+}
+
+func (b *Batch) handleWriteError(writeErrors kafka.WriteErrors) {
+	for i := range writeErrors {
+		if writeErrors[i] != nil {
+			b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
+				Message: convertKafkaMessage(b.messages[i]),
+				Err:     writeErrors[i],
+			})
+		} else {
+			b.sinkResponseHandler.OnSuccess(&gKafka.SinkResponseHandlerContext{
+				Message: convertKafkaMessage(b.messages[i]),
+				Err:     nil,
+			})
+		}
+	}
+}
+
+func (b *Batch) handleResponseSuccess() {
+	for _, msg := range b.messages {
+		b.sinkResponseHandler.OnSuccess(&gKafka.SinkResponseHandlerContext{
+			Message: convertKafkaMessage(msg),
+			Err:     nil,
+		})
+	}
+}
+
+func (b *Batch) handleMessageTooLargeError(mTooLargeError kafka.MessageTooLargeError) {
+	b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
+		Message: convertKafkaMessage(mTooLargeError.Message),
+		Err:     mTooLargeError,
+	})
+}
+
+func convertKafkaMessage(src kafka.Message) *message.KafkaMessage {
+	return &message.KafkaMessage{
+		Topic:   src.Topic,
+		Headers: src.Headers,
+		Key:     src.Key,
+		Value:   src.Value,
+	}
 }
