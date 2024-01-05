@@ -39,7 +39,25 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 }
 ```
 
-## Step 3: Configuring the Connector
+## Step 3: Implementing the SinkResponseHandler
+
+This function is called after the event is published and takes `message.KafkaMessage` as a parameter.
+Here's an example SinkResponseHandler implementation:
+
+```go
+type sinkResponseHandler struct {
+}
+
+func (s *sinkResponseHandler) OnSuccess(ctx *kafka.SinkResponseHandlerContext) {
+fmt.Printf("OnSuccess %v\n", string(ctx.Message.Value))
+}
+
+func (s *sinkResponseHandler) OnError(ctx *kafka.SinkResponseHandlerContext) {
+fmt.Printf("OnError %v\n", string(ctx.Message.Value))
+}
+```
+
+## Step 4: Configuring the Connector
 
 The configuration for the connector is provided via a YAML file. Here's an example [configuration](https://github.com/Trendyol/go-dcp-kafka/blob/master/example/config.yml):
 
@@ -47,13 +65,17 @@ You can find explanation of [configurations](https://github.com/Trendyol/go-dcp#
 
 You can pass this configuration file to the connector by providing the path to the file when creating the connector:
 ```go
-connector, err := dcpkafka.NewConnector("path-to-config.yml", mapper)
+connector, err := dcpkafka.NewConnectorBuilder("config.yml").
+    SetMapper(mapper).
+	SetSinkResponseHandler(&sinkResponseHandler{}). // if you want to add callback func
+    Build()
+
 if err != nil {
-panic(err)
+	panic(err)
 }
 ```
 
-## Step 4: Starting and Closing the Connector
+## Step 5: Starting and Closing the Connector
 
 Once you have implemented the mapper and configured the connector, you can start/stop the connector:
 

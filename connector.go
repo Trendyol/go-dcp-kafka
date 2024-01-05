@@ -96,7 +96,7 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 	return topic
 }
 
-func newConnector(cfg any, mapper Mapper) (Connector, error) {
+func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponseHandler) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -128,7 +128,8 @@ func newConnector(cfg any, mapper Mapper) (Connector, error) {
 
 	connector.dcp = dcpClient
 
-	connector.producer, err = producer.NewProducer(kafkaClient, c, dcpClient.Commit)
+	connector.producer, err = producer.NewProducer(kafkaClient, c, dcpClient.Commit, sinkResponseHandler)
+
 	if err != nil {
 		logger.Log.Error("kafka error: %v", err)
 		return nil, err
@@ -200,14 +201,16 @@ func newConnectorConfigFromPath(path string) (*config.Connector, error) {
 }
 
 type ConnectorBuilder struct {
-	mapper Mapper
-	config any
+	mapper              Mapper
+	config              any
+	sinkResponseHandler kafka.SinkResponseHandler
 }
 
 func NewConnectorBuilder(config any) *ConnectorBuilder {
 	return &ConnectorBuilder{
-		config: config,
-		mapper: DefaultMapper,
+		config:              config,
+		mapper:              DefaultMapper,
+		sinkResponseHandler: nil,
 	}
 }
 
@@ -216,8 +219,13 @@ func (c *ConnectorBuilder) SetMapper(mapper Mapper) *ConnectorBuilder {
 	return c
 }
 
+func (c *ConnectorBuilder) SetSinkResponseHandler(sinkResponseHandler kafka.SinkResponseHandler) *ConnectorBuilder {
+	c.sinkResponseHandler = sinkResponseHandler
+	return c
+}
+
 func (c *ConnectorBuilder) Build() (Connector, error) {
-	return newConnector(c.config, c.mapper)
+	return newConnector(c.config, c.mapper, c.sinkResponseHandler)
 }
 
 func (c *ConnectorBuilder) SetLogger(l *logrus.Logger) *ConnectorBuilder {
