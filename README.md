@@ -131,10 +131,10 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 
 ## Exposed metrics
 
-| Metric Name                              | Description                            | Labels | Value Type |
-|------------------------------------------|----------------------------------------|--------|------------|
-| kafka_connector_latency_ms               | Time to adding to the batch.           | N/A    | Gauge      |
-| kafka_connector_batch_produce_latency_ms | Time to produce messages in the batch. | N/A    | Gauge      |
+| Metric Name                              		| Description                            | Labels | Value Type |
+|-------------------------------------------------------|----------------------------------------|--------|------------|
+| cbgo_kafka_connector_latency_ms_current  		| Time to adding to the batch.           | N/A    | Gauge      |
+| cbgo_kafka_connector_batch_produce_latency_ms_current | Time to produce messages in the batch. | N/A    | Gauge      |
 
 You can also use all DCP-related metrics explained [here](https://github.com/Trendyol/go-dcp#exposed-metrics).
 All DCP-related metrics are automatically injected. It means you don't need to do anything. 
