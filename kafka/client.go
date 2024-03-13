@@ -178,7 +178,7 @@ func (c *client) CheckTopics(topics []string) error {
 func (c *client) Producer() *kafka.Writer {
 	return &kafka.Writer{
 		Addr:                   kafka.TCP(c.config.Kafka.Brokers...),
-		Balancer:               &kafka.Hash{},
+		Balancer:               c.config.Kafka.GetBalancer(),
 		BatchSize:              c.config.Kafka.ProducerBatchSize,
 		BatchBytes:             math.MaxInt,
 		BatchTimeout:           c.config.Kafka.ProducerBatchTimeout,

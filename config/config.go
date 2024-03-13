@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/segmentio/kafka-go"
 	"math"
 	"time"
 
@@ -8,6 +9,16 @@ import (
 
 	"github.com/Trendyol/go-dcp/config"
 )
+
+var balancerMap = map[string]kafka.Balancer{
+	"":                &kafka.Hash{},
+	"Hash":            &kafka.Hash{},
+	"RoundRobin":      &kafka.RoundRobin{},
+	"LeastBytes":      &kafka.LeastBytes{},
+	"ReferenceHash":   &kafka.ReferenceHash{},
+	"CRC32Balancer":   &kafka.CRC32Balancer{},
+	"Murmur2Balancer": &kafka.Murmur2Balancer{},
+}
 
 type Kafka struct {
 	ProducerBatchBytes          any               `yaml:"producerBatchBytes"`
@@ -17,6 +28,7 @@ type Kafka struct {
 	ScramPassword               string            `yaml:"scramPassword"`
 	RootCAPath                  string            `yaml:"rootCAPath"`
 	ClientID                    string            `yaml:"clientID"`
+	Balancer                    string            `yaml:"balancer"`
 	Brokers                     []string          `yaml:"brokers"`
 	MetadataTopics              []string          `yaml:"metadataTopics"`
 	ProducerMaxAttempts         int               `yaml:"producerMaxAttempts"`
@@ -30,6 +42,13 @@ type Kafka struct {
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
+}
+
+func (k *Kafka) GetBalancer() kafka.Balancer {
+	if balancer, ok := balancerMap[k.Balancer]; ok {
+		return balancer
+	}
+	panic("Invalid kafka balancer method")
 }
 
 func (k *Kafka) GetCompression() int8 {
