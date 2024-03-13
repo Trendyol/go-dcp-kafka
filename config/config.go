@@ -2,22 +2,13 @@ package config
 
 import (
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/Trendyol/go-dcp/config"
 	"github.com/Trendyol/go-dcp/helpers"
 	"github.com/segmentio/kafka-go"
 )
-
-var balancerMap = map[string]kafka.Balancer{
-	"":                &kafka.Hash{},
-	"Hash":            &kafka.Hash{},
-	"RoundRobin":      &kafka.RoundRobin{},
-	"LeastBytes":      &kafka.LeastBytes{},
-	"ReferenceHash":   &kafka.ReferenceHash{},
-	"CRC32Balancer":   &kafka.CRC32Balancer{},
-	"Murmur2Balancer": &kafka.Murmur2Balancer{},
-}
 
 type Kafka struct {
 	ProducerBatchBytes          any               `yaml:"producerBatchBytes"`
@@ -44,15 +35,27 @@ type Kafka struct {
 }
 
 func (k *Kafka) GetBalancer() kafka.Balancer {
-	if balancer, ok := balancerMap[k.Balancer]; ok {
-		return balancer
+	switch k.Balancer {
+	case "", "Hash":
+		return &kafka.Hash{}
+	case "LeastBytes":
+		return &kafka.LeastBytes{}
+	case "RoundRobin":
+		return &kafka.RoundRobin{}
+	case "ReferenceHash":
+		return &kafka.ReferenceHash{}
+	case "CRC32Balancer":
+		return kafka.CRC32Balancer{}
+	case "Murmur2Balancer":
+		return kafka.Murmur2Balancer{}
+	default:
+		panic("invalid kafka balancer method, given: " + k.Balancer)
 	}
-	panic("Invalid kafka balancer method")
 }
 
 func (k *Kafka) GetCompression() int8 {
 	if k.Compression < 0 || k.Compression > 4 {
-		panic("Invalid kafka compression method")
+		panic("invalid kafka compression method, given: " + strconv.Itoa(int(k.Compression)))
 	}
 	return k.Compression
 }
