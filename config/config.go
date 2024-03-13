@@ -1,13 +1,12 @@
 package config
 
 import (
-	"github.com/segmentio/kafka-go"
 	"math"
 	"time"
 
-	"github.com/Trendyol/go-dcp/helpers"
-
 	"github.com/Trendyol/go-dcp/config"
+	"github.com/Trendyol/go-dcp/helpers"
+	"github.com/segmentio/kafka-go"
 )
 
 var balancerMap = map[string]kafka.Balancer{
