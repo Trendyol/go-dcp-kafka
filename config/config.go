@@ -2,11 +2,12 @@ package config
 
 import (
 	"math"
+	"strconv"
 	"time"
 
-	"github.com/Trendyol/go-dcp/helpers"
-
 	"github.com/Trendyol/go-dcp/config"
+	"github.com/Trendyol/go-dcp/helpers"
+	"github.com/segmentio/kafka-go"
 )
 
 type Kafka struct {
@@ -17,6 +18,7 @@ type Kafka struct {
 	ScramPassword               string            `yaml:"scramPassword"`
 	RootCAPath                  string            `yaml:"rootCAPath"`
 	ClientID                    string            `yaml:"clientID"`
+	Balancer                    string            `yaml:"balancer"`
 	Brokers                     []string          `yaml:"brokers"`
 	MetadataTopics              []string          `yaml:"metadataTopics"`
 	ProducerMaxAttempts         int               `yaml:"producerMaxAttempts"`
@@ -32,9 +34,28 @@ type Kafka struct {
 	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
 }
 
+func (k *Kafka) GetBalancer() kafka.Balancer {
+	switch k.Balancer {
+	case "", "Hash":
+		return &kafka.Hash{}
+	case "LeastBytes":
+		return &kafka.LeastBytes{}
+	case "RoundRobin":
+		return &kafka.RoundRobin{}
+	case "ReferenceHash":
+		return &kafka.ReferenceHash{}
+	case "CRC32Balancer":
+		return kafka.CRC32Balancer{}
+	case "Murmur2Balancer":
+		return kafka.Murmur2Balancer{}
+	default:
+		panic("invalid kafka balancer method, given: " + k.Balancer)
+	}
+}
+
 func (k *Kafka) GetCompression() int8 {
 	if k.Compression < 0 || k.Compression > 4 {
-		panic("Invalid kafka compression method")
+		panic("invalid kafka compression method, given: " + strconv.Itoa(int(k.Compression)))
 	}
 	return k.Compression
 }

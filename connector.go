@@ -129,7 +129,6 @@ func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponse
 	connector.dcp = dcpClient
 
 	connector.producer, err = producer.NewProducer(kafkaClient, c, dcpClient.Commit, sinkResponseHandler)
-
 	if err != nil {
 		logger.Log.Error("kafka error: %v", err)
 		return nil, err
