@@ -85,7 +85,7 @@ func (b *Batch) PrepareEndRebalancing() {
 	b.isDcpRebalancing = false
 }
 
-func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time) {
+func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time, isLastChunk bool) {
 	b.flushLock.Lock()
 	if b.isDcpRebalancing {
 		logger.Log.Error("could not add new message to batch while rebalancing")
@@ -94,10 +94,14 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 	}
 	b.messages = append(b.messages, messages...)
 	b.currentMessageBytes += int64(binary.Size(messages))
-	ctx.Ack()
+	if isLastChunk {
+		ctx.Ack()
+	}
 	b.flushLock.Unlock()
 
-	b.metric.KafkaConnectorLatency = time.Since(eventTime).Milliseconds()
+	if isLastChunk {
+		b.metric.KafkaConnectorLatency = time.Since(eventTime).Milliseconds()
+	}
 
 	if len(b.messages) >= b.batchLimit || b.currentMessageBytes >= b.batchBytes {
 		b.FlushMessages()

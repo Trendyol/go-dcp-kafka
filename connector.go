@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Trendyol/go-dcp/helpers"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/Trendyol/go-dcp"
@@ -81,7 +83,17 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 			Headers: message.Headers,
 		})
 	}
-	c.producer.Produce(ctx, e.EventTime, messages)
+
+	batchSizeLimit := c.config.Kafka.ProducerBatchSize
+	if len(messages) > batchSizeLimit {
+		chunks := helpers.ChunkSliceWithSize[sKafka.Message](messages, batchSizeLimit)
+		lastChunkIndex := len(chunks) - 1
+		for idx, chunk := range chunks {
+			c.producer.Produce(ctx, e.EventTime, chunk, idx == lastChunkIndex)
+		}
+	} else {
+		c.producer.Produce(ctx, e.EventTime, messages, true)
+	}
 }
 
 func (c *connector) getTopicName(collectionName string, messageTopic string) string {

@@ -47,8 +47,9 @@ func (p *Producer) Produce(
 	ctx *models.ListenerContext,
 	eventTime time.Time,
 	messages []kafka.Message,
+	isLastChunk bool,
 ) {
-	p.ProducerBatch.AddMessages(ctx, messages, eventTime)
+	p.ProducerBatch.AddMessages(ctx, messages, eventTime, isLastChunk)
 }
 
 func (p *Producer) Close() error {
