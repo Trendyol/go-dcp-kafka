@@ -156,6 +156,7 @@ func isFatalError(err error) bool {
 		errors.Is(err, io.ErrUnexpectedEOF) ||
 		errors.Is(err, syscall.ECONNREFUSED) ||
 		errors.Is(err, syscall.ECONNRESET) ||
+		errors.Is(err, kafka.UnknownTopicOrPartition) ||
 		errors.Is(err, syscall.EPIPE) {
 		return false
 	}
