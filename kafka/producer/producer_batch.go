@@ -151,7 +151,9 @@ func (b *Batch) FlushMessages() {
 
 func isFatalError(err error) bool {
 	e, ok := err.(kafka.Error)
-
+	if ok && errors.Is(err, kafka.UnknownTopicOrPartition) {
+		return true
+	}
 	if (ok && e.Temporary()) ||
 		errors.Is(err, io.ErrUnexpectedEOF) ||
 		errors.Is(err, syscall.ECONNREFUSED) ||
