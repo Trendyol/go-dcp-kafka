@@ -12,9 +12,14 @@ type Event struct {
 	IsDeleted      bool
 	IsExpired      bool
 	IsMutated      bool
+	SeqNo          uint64
+	RevNo          uint64
 }
 
-func NewDeleteEvent(key []byte, value []byte, collectionName string, eventTime time.Time, cas uint64, vbID uint16) Event {
+func NewDeleteEvent(
+	key []byte, value []byte,
+	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64,
+) Event {
 	return Event{
 		Key:            key,
 		Value:          value,
@@ -23,10 +28,15 @@ func NewDeleteEvent(key []byte, value []byte, collectionName string, eventTime t
 		EventTime:      eventTime,
 		Cas:            cas,
 		VbID:           vbID,
+		SeqNo:          seqNo,
+		RevNo:          revNo,
 	}
 }
 
-func NewExpireEvent(key []byte, value []byte, collectionName string, eventTime time.Time, cas uint64, vbID uint16) Event {
+func NewExpireEvent(
+	key []byte, value []byte,
+	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64,
+) Event {
 	return Event{
 		Key:            key,
 		Value:          value,
@@ -35,10 +45,15 @@ func NewExpireEvent(key []byte, value []byte, collectionName string, eventTime t
 		EventTime:      eventTime,
 		Cas:            cas,
 		VbID:           vbID,
+		SeqNo:          seqNo,
+		RevNo:          revNo,
 	}
 }
 
-func NewMutateEvent(key []byte, value []byte, collectionName string, eventTime time.Time, cas uint64, vbID uint16) Event {
+func NewMutateEvent(
+	key []byte, value []byte,
+	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64,
+) Event {
 	return Event{
 		Key:            key,
 		Value:          value,
@@ -47,5 +62,7 @@ func NewMutateEvent(key []byte, value []byte, collectionName string, eventTime t
 		EventTime:      eventTime,
 		Cas:            cas,
 		VbID:           vbID,
+		SeqNo:          seqNo,
+		RevNo:          revNo,
 	}
 }
