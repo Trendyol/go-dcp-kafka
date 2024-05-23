@@ -138,6 +138,7 @@ func (b *Batch) FlushMessages() {
 				b.handleMessageTooLargeError(e)
 				return
 			default:
+				b.handleResponseError(e)
 				logger.Log.Error("batch producer flush error %v", err)
 				return
 			}
@@ -177,6 +178,15 @@ func (b *Batch) handleWriteError(writeErrors kafka.WriteErrors) {
 				Err:     nil,
 			})
 		}
+	}
+}
+
+func (b *Batch) handleResponseError(err error) {
+	for _, msg := range b.messages {
+		b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
+			Message: convertKafkaMessage(msg),
+			Err:     err,
+		})
 	}
 }
 
