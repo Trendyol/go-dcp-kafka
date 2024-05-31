@@ -79,8 +79,7 @@ func newTLSContent(
 }
 
 func (c *client) GetEndOffsets(topic string, partitions []int) ([]kafka.PartitionOffsets, error) {
-	var offsetRequests []kafka.OffsetRequest
-
+	offsetRequests := make([]kafka.OffsetRequest, 0, len(partitions))
 	for _, partition := range partitions {
 		offsetRequests = append(offsetRequests, kafka.LastOffsetOf(partition))
 	}

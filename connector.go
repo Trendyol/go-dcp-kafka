@@ -180,8 +180,7 @@ func newConfig(cf any) (*config.Connector, error) {
 func createKafkaClient(cc *config.Connector) (kafka.Client, error) {
 	kafkaClient := kafka.NewClient(cc)
 
-	var topics []string
-
+	topics := make([]string, 0, len(cc.Kafka.CollectionTopicMapping))
 	for _, topic := range cc.Kafka.CollectionTopicMapping {
 		topics = append(topics, topic)
 	}

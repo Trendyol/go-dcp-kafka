@@ -24,8 +24,7 @@ type kafkaMetadata struct {
 }
 
 func (s *kafkaMetadata) Save(state map[uint16]*models.CheckpointDocument, dirtyOffsets map[uint16]bool, _ string) error {
-	var messages []kafka.Message
-
+	messages := make([]kafka.Message, 0, len(state))
 	for vbID, document := range state {
 		if !dirtyOffsets[vbID] {
 			continue
