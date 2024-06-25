@@ -1,13 +1,13 @@
 package config
 
 import (
-	"github.com/segmentio/kafka-go"
 	"math"
 	"strconv"
 	"time"
 
 	"github.com/Trendyol/go-dcp/config"
 	"github.com/Trendyol/go-dcp/helpers"
+	"github.com/segmentio/kafka-go"
 )
 
 type Kafka struct {
