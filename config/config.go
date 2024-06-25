@@ -22,7 +22,6 @@ type Kafka struct {
 	Brokers                     []string          `yaml:"brokers"`
 	MetadataTopics              []string          `yaml:"metadataTopics"`
 	ProducerMaxAttempts         int               `yaml:"producerMaxAttempts"`
-	ProducerBatchTimeout        time.Duration     `yaml:"producerBatchTimeout"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
 	RequiredAcks                int               `yaml:"requiredAcks"`
@@ -96,9 +95,5 @@ func (c *Connector) ApplyDefaults() {
 
 	if c.Kafka.ProducerMaxAttempts == 0 {
 		c.Kafka.ProducerMaxAttempts = math.MaxInt
-	}
-
-	if c.Kafka.ProducerBatchTimeout == 0 {
-		c.Kafka.ProducerBatchTimeout = time.Nanosecond
 	}
 }
