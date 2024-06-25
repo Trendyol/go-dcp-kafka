@@ -180,7 +180,7 @@ func (c *client) Producer() *kafka.Writer {
 		Balancer:               c.config.Kafka.GetBalancer(),
 		BatchSize:              c.config.Kafka.ProducerBatchSize,
 		BatchBytes:             math.MaxInt,
-		BatchTimeout:           c.config.Kafka.ProducerBatchTimeout,
+		BatchTimeout:           time.Nanosecond,
 		MaxAttempts:            c.config.Kafka.ProducerMaxAttempts,
 		ReadTimeout:            c.config.Kafka.ReadTimeout,
 		WriteTimeout:           c.config.Kafka.WriteTimeout,
