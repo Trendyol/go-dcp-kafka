@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	dcpCouchbase "github.com/Trendyol/go-dcp/couchbase"
+
 	"github.com/Trendyol/go-dcp/helpers"
 
 	"github.com/sirupsen/logrus"
@@ -29,6 +31,7 @@ var MetadataTypeKafka = "kafka"
 type Connector interface {
 	Start()
 	Close()
+	GetDcpClient() dcpCouchbase.Client
 }
 
 type connector struct {
@@ -52,6 +55,10 @@ func (c *connector) Close() {
 	if err != nil {
 		logger.Log.Error("error | %v", err)
 	}
+}
+
+func (c *connector) GetDcpClient() dcpCouchbase.Client {
+	return c.dcp.GetClient()
 }
 
 func (c *connector) produce(ctx *models.ListenerContext) {
