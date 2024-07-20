@@ -2,7 +2,6 @@ package producer
 
 import (
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -93,7 +92,7 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 		return
 	}
 	b.messages = append(b.messages, messages...)
-	b.currentMessageBytes += int64(binary.Size(messages))
+	b.currentMessageBytes += totalSizeOfMessages(messages)
 	if isLastChunk {
 		ctx.Ack()
 	}
@@ -213,4 +212,17 @@ func convertKafkaMessage(src kafka.Message) *message.KafkaMessage {
 		Key:     src.Key,
 		Value:   src.Value,
 	}
+}
+
+func totalSizeOfMessages(messages []kafka.Message) int64 {
+	var size int
+	for _, m := range messages {
+		headerSize := 0
+		for _, header := range m.Headers {
+			headerSize += 2 + len(header.Key)
+			headerSize += len(header.Value)
+		}
+		size += 14 + (4 + len(m.Key)) + (4 + len(m.Value)) + headerSize
+	}
+	return int64(size)
 }
