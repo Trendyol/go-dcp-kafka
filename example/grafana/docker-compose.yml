@@ -1,0 +1,90 @@
+version: '3.9'
+
+volumes:
+  prometheus_data: { }
+  grafana_data: { }
+
+services:
+  go-dcp-kafka:
+    build: .
+    ports:
+      - "8080:8080"
+    expose:
+      - 8080
+    depends_on:
+      - couchbase
+      - redpanda
+
+  couchbase:
+    build: ./couchbase
+    ports:
+      - "8091-8094:8091-8094"
+      - "11210:11210"
+    expose:
+      - 8091
+    environment:
+      - COUCHBASE_ADMINISTRATOR_USERNAME=user
+      - COUCHBASE_ADMINISTRATOR_PASSWORD=password
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda
+    container_name: redpanda
+    command:
+      - redpanda
+      - start
+      - --smp
+      - '1'
+      - --reserve-memory
+      - 0M
+      - --overprovisioned
+      - --node-id
+      - '0'
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
+      - --pandaproxy-addr
+      - PLAINTEXT://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082
+      - --advertise-pandaproxy-addr
+      - PLAINTEXT://redpanda:28082,OUTSIDE://localhost:8082
+    ports:
+      - 8081:8081
+      - 8082:8082
+      - 9092:9092
+      - 28082:28082
+      - 29092:29092
+  redpanda-topic-create:
+    image: docker.redpanda.com/redpandadata/redpanda
+    container_name: redpanda-topic-create
+    entrypoint: [ "bash", "-c", "sleep 5 && rpk topic create topic-test --brokers redpanda:29092" ]
+    depends_on:
+      - redpanda
+    restart: "no"
+
+  prometheus:
+    image: prom/prometheus:v2.53.1
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    expose:
+      - 9090
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    ports:
+      - "3000:3000"
+    expose:
+      - 3000
+    depends_on:
+      - prometheus
