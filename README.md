@@ -145,6 +145,10 @@ All DCP-related metrics are automatically injected. It means you don't need to d
 |--------------------| ---- |---- |-----------------| 
 | November 11, 2023  | November 11, 2023 |  Creating connector via builder | Compile project |
 
+## Grafana Metric Dashboard
+
+[Grafana & Prometheus Example](example/grafana)
+
 ## Contributing
 
 Go Dcp Kafka is always open for direct contributions. For more information please check
