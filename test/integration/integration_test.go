@@ -74,6 +74,7 @@ func TestKafka(t *testing.T) {
 		},
 	}).SetMapper(mapper).Build()
 	if err != nil {
+		t.Fatal(err)
 		return
 	}
 
