@@ -1,9 +1,13 @@
 package dcpkafka
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+
+	jsoniter "github.com/json-iterator/go"
 
 	dcpCouchbase "github.com/Trendyol/go-dcp/couchbase"
 
@@ -142,6 +146,9 @@ func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponse
 		return nil, err
 	}
 
+	copyOfConfig := c.Kafka
+	printConfiguration(copyOfConfig)
+
 	conf := dcpClient.GetConfig()
 	conf.Checkpoint.Type = "manual"
 
@@ -259,4 +266,17 @@ func (c *ConnectorBuilder) SetLogger(l *logrus.Logger) *ConnectorBuilder {
 		Logrus: l,
 	}
 	return c
+}
+
+func printConfiguration(config config.Kafka) {
+	config.ScramPassword = "*****"
+	configJSON, _ := jsoniter.Marshal(config)
+
+	dst := &bytes.Buffer{}
+	if err := json.Compact(dst, configJSON); err != nil {
+		logger.Log.Error("error while print kafka configuration, err: %v", err)
+		panic(err)
+	}
+
+	logger.Log.Info("using kafka config: %v", dst.String())
 }
