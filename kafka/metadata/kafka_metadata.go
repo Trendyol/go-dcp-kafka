@@ -143,11 +143,15 @@ func NewKafkaMetadata(
 	if _, ok := kafkaMetadataConfig["topic"]; ok {
 		topic = kafkaMetadataConfig["topic"]
 	} else {
-		panic(errors.New("topic is not defined"))
+		err := errors.New("topic is not defined")
+		logger.Log.Error("error while kafka metadata, err: %v", err)
+		panic(err)
 	}
 
 	if topic == "" {
-		panic(errors.New("topic is empty"))
+		err := errors.New("topic is empty")
+		logger.Log.Error("error while kafka metadata, err: %v", err)
+		panic(err)
 	}
 
 	if _, ok := kafkaMetadataConfig["partition"]; ok {
@@ -157,7 +161,9 @@ func NewKafkaMetadata(
 	}
 
 	if partition == 0 {
-		panic(errors.New("partition is 0"))
+		err := errors.New("partition is 0")
+		logger.Log.Error("error while kafka metadata, err: %v", err)
+		panic(err)
 	}
 
 	if _, ok := kafkaMetadataConfig["replicationFactor"]; ok {
@@ -167,7 +173,9 @@ func NewKafkaMetadata(
 	}
 
 	if replicationFactor == 0 {
-		panic(errors.New("replicationFactor is 0"))
+		err := errors.New("replicationFactor is 0")
+		logger.Log.Error("error while kafka metadata, err: %v", err)
+		panic(err)
 	}
 
 	metadata := &kafkaMetadata{
@@ -179,11 +187,13 @@ func NewKafkaMetadata(
 	err := kafkaClient.CreateCompactedTopic(topic, partition, replicationFactor)
 
 	if err != nil && !errors.Is(err, kafka.TopicAlreadyExists) {
+		logger.Log.Error("error while kafka metadata, err: %v", err)
 		panic(err)
 	}
 
 	err = kafkaClient.CheckTopicIsCompacted(metadata.topic)
 	if err != nil {
+		logger.Log.Error("error while kafka metadata, err: %v", err)
 		panic(err)
 	}
 
