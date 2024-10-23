@@ -119,7 +119,9 @@ func (b *Batch) FlushMessages() {
 
 		if err != nil && b.sinkResponseHandler == nil {
 			if isFatalError(err) {
-				panic(fmt.Errorf("permanent error on Kafka side %v", err))
+				err = fmt.Errorf("permanent error on kafka side %v", err)
+				logger.Log.Error("error while flush, err: %v", err)
+				panic(err)
 			}
 			logger.Log.Error("batch producer flush error %v", err)
 			return
