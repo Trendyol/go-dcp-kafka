@@ -46,28 +46,53 @@ func newTLSContent(
 	scramUsername,
 	scramPassword,
 	rootCAPath,
-	interCAPath string,
+	interCAPath,
+	rootCA,
+	interCA string,
 ) (*tlsContent, error) {
 	mechanism, err := scram.Mechanism(scram.SHA512, scramUsername, scramPassword)
 	if err != nil {
 		return nil, err
 	}
 
-	caCert, err := os.ReadFile(os.ExpandEnv(rootCAPath))
-	if err != nil {
-		logger.Log.Error("an error occurred while reading ca.pem file! Error: %s", err.Error())
-		return nil, err
-	}
-
-	intCert, err := os.ReadFile(os.ExpandEnv(interCAPath))
-	if err != nil {
-		logger.Log.Error("an error occurred while reading int.pem file! Error: %s", err.Error())
-		return nil, err
-	}
-
+	certCount := 0
 	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-	caCertPool.AppendCertsFromPEM(intCert)
+
+	if rootCAPath != "" {
+		caCert, err := os.ReadFile(os.ExpandEnv(rootCAPath))
+		if err != nil {
+			logger.Log.Error("an error occurred while reading ca.pem file! Error: %s", err.Error())
+			return nil, err
+		}
+		caCertPool.AppendCertsFromPEM(caCert)
+		certCount++
+	}
+
+	if interCAPath != "" {
+		intCert, err := os.ReadFile(os.ExpandEnv(interCAPath))
+		if err != nil {
+			logger.Log.Error("an error occurred while reading int.pem file! Error: %s", err.Error())
+			return nil, err
+		}
+		caCertPool.AppendCertsFromPEM(intCert)
+		certCount++
+	}
+
+	if rootCA != "" {
+		caCertPool.AppendCertsFromPEM([]byte(rootCA))
+		certCount++
+	}
+
+	if interCA != "" {
+		caCertPool.AppendCertsFromPEM([]byte(interCA))
+		certCount++
+	}
+
+	if certCount == 0 {
+		err := errors.New("certPool is empty")
+		logger.Log.Error("an error occurred while creating tls content! Error: %s", err.Error())
+		return nil, err
+	}
 
 	return &tlsContent{
 		config: &tls.Config{
@@ -271,6 +296,8 @@ func NewClient(config *config.Connector) Client {
 			config.Kafka.ScramPassword,
 			config.Kafka.RootCAPath,
 			config.Kafka.InterCAPath,
+			config.Kafka.RootCA,
+			config.Kafka.InterCA,
 		)
 		if err != nil {
 			panic(err)

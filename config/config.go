@@ -14,9 +14,11 @@ type Kafka struct {
 	ProducerBatchBytes          any               `yaml:"producerBatchBytes"`
 	CollectionTopicMapping      map[string]string `yaml:"collectionTopicMapping"`
 	InterCAPath                 string            `yaml:"interCAPath"`
+	InterCA                     string            `yaml:"interCA"`
 	ScramUsername               string            `yaml:"scramUsername"`
 	ScramPassword               string            `yaml:"scramPassword"`
 	RootCAPath                  string            `yaml:"rootCAPath"`
+	RootCA                      string            `yaml:"rootCA"`
 	ClientID                    string            `yaml:"clientID"`
 	Balancer                    string            `yaml:"balancer"`
 	Brokers                     []string          `yaml:"brokers"`
