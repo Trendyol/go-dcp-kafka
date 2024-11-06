@@ -300,6 +300,7 @@ func NewClient(config *config.Connector) Client {
 			config.Kafka.InterCA,
 		)
 		if err != nil {
+			logger.Log.Error("error while creating new tls content, err: %v", err)
 			panic(err)
 		}
 

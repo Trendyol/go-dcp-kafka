@@ -1,9 +1,12 @@
 package config
 
 import (
+	"errors"
 	"math"
 	"strconv"
 	"time"
+
+	"github.com/Trendyol/go-dcp/logger"
 
 	"github.com/Trendyol/go-dcp/config"
 	"github.com/Trendyol/go-dcp/helpers"
@@ -50,13 +53,17 @@ func (k *Kafka) GetBalancer() kafka.Balancer {
 	case "Murmur2Balancer":
 		return kafka.Murmur2Balancer{}
 	default:
-		panic("invalid kafka balancer method, given: " + k.Balancer)
+		err := errors.New("invalid kafka balancer method, given: " + k.Balancer)
+		logger.Log.Error("error while get kafka balancer, err: %v", err)
+		panic(err)
 	}
 }
 
 func (k *Kafka) GetCompression() int8 {
 	if k.Compression < 0 || k.Compression > 4 {
-		panic("invalid kafka compression method, given: " + strconv.Itoa(int(k.Compression)))
+		err := errors.New("invalid kafka compression method, given: " + strconv.Itoa(int(k.Compression)))
+		logger.Log.Error("error while get kafka compression, err: %v", err)
+		panic(err)
 	}
 	return k.Compression
 }

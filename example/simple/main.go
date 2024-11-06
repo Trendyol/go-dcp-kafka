@@ -23,11 +23,11 @@ type sinkResponseHandler struct {
 }
 
 func (s *sinkResponseHandler) OnSuccess(ctx *kafka.SinkResponseHandlerContext) {
-	fmt.Printf("OnSuccess %v\n", string(ctx.Message.Value))
+	fmt.Printf("OnSuccess Key: %v, Len: %v\n", string(ctx.Message.Key), len(ctx.Message.Value))
 }
 
 func (s *sinkResponseHandler) OnError(ctx *kafka.SinkResponseHandlerContext) {
-	fmt.Printf("OnError %v\n", string(ctx.Message.Value))
+	fmt.Printf("OnError Key: %v, Len: %v, Err: %v\n", string(ctx.Message.Key), len(ctx.Message.Value), ctx.Err)
 }
 
 func main() {

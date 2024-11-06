@@ -123,7 +123,12 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 
 	topic := c.config.Kafka.CollectionTopicMapping[collectionName]
 	if topic == "" {
-		panic(fmt.Sprintf("there is no topic mapping for collection: %s on your configuration", collectionName))
+		err := fmt.Errorf(
+			"there is no topic mapping for collection: %s on your configuration",
+			collectionName,
+		)
+		logger.Log.Error("error while get topic name, err: %v", err)
+		panic(err)
 	}
 	return topic
 }
