@@ -30,12 +30,12 @@ until [[ $(check_db) = 0 ]]; do
 done
 
 couchbase-cli cluster-init -c localhost --cluster-name Cluster --cluster-username user \
-  --cluster-password password --services data --cluster-ramsize 1024
+  --cluster-password password --services data --cluster-ramsize 2048
 
-couchbase-cli bucket-create -c couchbase --username user --password password --bucket dcp-test --bucket-type couchbase --bucket-ramsize 768
-couchbase-cli bucket-create -c couchbase --username user --password password --bucket checkpoint-bucket-name --bucket-type couchbase --bucket-ramsize 256
+couchbase-cli bucket-create -c couchbase --username user --password password --bucket dcp-test --bucket-type couchbase --bucket-ramsize 1024
+couchbase-cli bucket-create -c couchbase --username user --password password --bucket checkpoint-bucket-name --bucket-type couchbase --bucket-ramsize 512
 
-cbimport json -c couchbase://127.0.0.1 -u user -p password --bucket-quota 768 -b dcp-test -d file://opt/couchbase/samples/travel-sample.zip -f sample
+cbimport json -c couchbase://127.0.0.1 -u user -p password --bucket-quota 1024 -b dcp-test -d file://opt/couchbase/samples/travel-sample.zip -f sample
 
 echo "couchbase-dev started"
 
