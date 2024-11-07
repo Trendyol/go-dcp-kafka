@@ -27,19 +27,13 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 }
 
 func TestKafka(t *testing.T) {
-	time.Sleep(time.Minute)
-
-	// Create topic
-	_, err := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", "test", 0)
-	if err != nil {
-		t.Fatalf("error while creating topic %s", err)
-	}
+	time.Sleep(time.Second * 30)
 
 	connector, err := dcpkafka.NewConnectorBuilder(&config.Connector{
 		Dcp: dcpConfig.Dcp{
 			Hosts:      []string{"localhost:8091"},
 			Username:   "user",
-			Password:   "123456",
+			Password:   "password",
 			BucketName: "dcp-test",
 			RollbackMitigation: dcpConfig.RollbackMitigation{
 				Disabled: true,
@@ -55,7 +49,7 @@ func TestKafka(t *testing.T) {
 			Metadata: dcpConfig.Metadata{
 				ReadOnly: true,
 				Config: map[string]string{
-					"bucket":     "dcp-test",
+					"bucket":     "checkpoint-bucket-name",
 					"scope":      "_default",
 					"collection": "_default",
 				},
@@ -63,14 +57,14 @@ func TestKafka(t *testing.T) {
 			},
 			Debug: true},
 		Kafka: config.Kafka{
-			CollectionTopicMapping: map[string]string{"_default": "test"},
+			CollectionTopicMapping: map[string]string{"_default": "topicname"},
 			Brokers:                []string{"localhost:9092"},
 			ProducerBatchBytes:     104857600,
 			ProducerBatchSize:      100,
 			ReadTimeout:            30 * time.Second,
 			WriteTimeout:           30 * time.Second,
 			MetadataTTL:            2400 * time.Second,
-			MetadataTopics:         []string{"test"},
+			MetadataTopics:         []string{"topicname"},
 		},
 	}).SetMapper(mapper).Build()
 	if err != nil {
@@ -88,7 +82,7 @@ func TestKafka(t *testing.T) {
 	go func() {
 		r := kafka.NewReader(kafka.ReaderConfig{
 			Brokers:       []string{"localhost:9092"},
-			Topic:         "test",
+			Topic:         "topicname",
 			QueueCapacity: 200,
 			MaxBytes:      10e6, // 10MB
 		})
@@ -117,8 +111,4 @@ func TestKafka(t *testing.T) {
 	}()
 
 	wg.Wait()
-}
-
-type CountResponse struct {
-	Count int64 `json:"count"`
 }

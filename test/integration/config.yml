@@ -16,7 +16,7 @@ metadata:
   type: couchbase
   readOnly: true
   config:
-    bucket: dcp-test
+    bucket: checkpoint-bucket-name
     scope: _default
     collection: _default
 kafka:
