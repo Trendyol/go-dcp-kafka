@@ -91,7 +91,7 @@ func (c *Connector) ApplyDefaults() {
 	}
 
 	if c.Kafka.ProducerBatchBytes == nil {
-		c.Kafka.ProducerBatchBytes = helpers.ResolveUnionIntOrStringValue("10mb")
+		c.Kafka.ProducerBatchBytes = helpers.ResolveUnionIntOrStringValue("1mb")
 	}
 
 	if c.Kafka.RequiredAcks == 0 {
