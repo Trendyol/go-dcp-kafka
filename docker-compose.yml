@@ -52,4 +52,4 @@ services:
     container_name: redpanda-topic-create
     depends_on:
       - kowl
-    entrypoint: [ "bash", "-c", "sleep 10 && rpk topic create topicname -c max.message.bytes=10485760 --brokers broker:29092" ]
+    entrypoint: [ "bash", "-c", "sleep 10 && rpk topic create topicname -c max.message.bytes=1048576 --brokers broker:29092" ]

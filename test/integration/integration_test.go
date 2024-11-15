@@ -59,7 +59,7 @@ func TestKafka(t *testing.T) {
 		Kafka: config.Kafka{
 			CollectionTopicMapping: map[string]string{"_default": "topicname"},
 			Brokers:                []string{"localhost:9092"},
-			ProducerBatchBytes:     104857600,
+			ProducerBatchBytes:     1048576,
 			ProducerBatchSize:      100,
 			ReadTimeout:            30 * time.Second,
 			WriteTimeout:           30 * time.Second,

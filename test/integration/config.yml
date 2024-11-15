@@ -27,7 +27,7 @@ kafka:
   readTimeout: 30s
   writeTimeout: 30s
   producerBatchSize: 100
-  producerBatchBytes: 104857600
+  producerBatchBytes: 1048576
   producerBatchTickerDuration: 5s
   metadataTTL: 2400s
   metadataTopics:
