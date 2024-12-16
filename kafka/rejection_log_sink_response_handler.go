@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+
 	"github.com/Trendyol/go-dcp-kafka/config"
 	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 	"github.com/Trendyol/go-dcp/logger"
@@ -24,7 +25,6 @@ func (r *RejectionLogSinkResponseHandler) OnInit(ctx *SinkResponseHandlerInitCon
 	r.Topic = ctx.Config.RejectionLog.Topic
 
 	err := r.KafkaClient.CheckTopics([]string{r.Topic})
-
 	if err != nil {
 		logger.Log.Error("error while rejection topic exist request, err: %v", err)
 		panic(err)
