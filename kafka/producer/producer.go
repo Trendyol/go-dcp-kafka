@@ -27,6 +27,13 @@ func NewProducer(kafkaClient gKafka.Client,
 ) (Producer, error) {
 	writer := kafkaClient.Producer()
 
+	if sinkResponseHandler != nil {
+		sinkResponseHandler.OnInit(&gKafka.SinkResponseHandlerInitContext{
+			Config:      config.Kafka,
+			KafkaClient: kafkaClient,
+		})
+	}
+
 	return Producer{
 		ProducerBatch: newBatch(
 			config.Kafka.ProducerBatchTickerDuration,
