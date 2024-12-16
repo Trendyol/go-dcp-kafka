@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Trendyol/go-dcp-kafka/config"
-	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 	"github.com/Trendyol/go-dcp/logger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/segmentio/kafka-go"
@@ -14,14 +13,12 @@ import (
 type RejectionLogSinkResponseHandler struct {
 	Config      config.Kafka
 	KafkaClient Client
-	Message     *message.KafkaMessage
 	Topic       string
 }
 
 func (r *RejectionLogSinkResponseHandler) OnInit(ctx *SinkResponseHandlerInitContext) {
 	r.Config = ctx.Config
 	r.KafkaClient = ctx.KafkaClient
-	r.Message = ctx.Message
 	r.Topic = ctx.Config.RejectionLog.Topic
 
 	err := r.KafkaClient.CheckTopics([]string{r.Topic})
@@ -36,7 +33,7 @@ func (r *RejectionLogSinkResponseHandler) OnSuccess(_ *SinkResponseHandlerContex
 
 func (r *RejectionLogSinkResponseHandler) OnError(ctx *SinkResponseHandlerContext) {
 	rejectionLog := r.buildRejectionLog(ctx)
-	if err := r.publishToKafka(rejectionLog); err != nil {
+	if err := r.publishToKafka(ctx, rejectionLog); err != nil {
 		logger.Log.Error("failed to publish rejection log, err: %v", err)
 		panic(err)
 	}
@@ -58,7 +55,7 @@ func (r *RejectionLogSinkResponseHandler) buildRejectionLog(ctx *SinkResponseHan
 	return rejectionLog
 }
 
-func (r *RejectionLogSinkResponseHandler) publishToKafka(rejectionLog RejectionLog) error {
+func (r *RejectionLogSinkResponseHandler) publishToKafka(ctx *SinkResponseHandlerContext, rejectionLog RejectionLog) error {
 	writer := r.KafkaClient.Producer()
 	defer func() {
 		if err := writer.Close(); err != nil {
@@ -75,7 +72,7 @@ func (r *RejectionLogSinkResponseHandler) publishToKafka(rejectionLog RejectionL
 		Topic:   r.Topic,
 		Key:     rejectionLog.Key,
 		Value:   logBytes,
-		Headers: r.Message.Headers,
+		Headers: ctx.Message.Headers,
 	}
 
 	if err := writer.WriteMessages(context.Background(), kafkaMessage); err != nil {

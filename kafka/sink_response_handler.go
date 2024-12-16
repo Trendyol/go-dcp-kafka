@@ -11,7 +11,6 @@ type SinkResponseHandlerContext struct {
 }
 
 type SinkResponseHandlerInitContext struct {
-	SinkResponseHandlerContext
 	KafkaClient Client
 	Config      config.Kafka
 }
