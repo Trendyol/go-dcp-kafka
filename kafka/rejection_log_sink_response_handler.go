@@ -41,11 +41,11 @@ func (r *RejectionLogSinkResponseHandler) OnError(ctx *SinkResponseHandlerContex
 
 func (r *RejectionLogSinkResponseHandler) buildRejectionLog(ctx *SinkResponseHandlerContext) RejectionLog {
 	rejectionLog := RejectionLog{
-		Topic: ctx.Message.Topic,
-		Key:   ctx.Message.Key,
-		Error: ctx.Err.Error(),
-		SeqNo: ctx.Message.SeqNo,
-		VbID:  ctx.Message.VbID,
+		Topic:     ctx.Message.Topic,
+		Key:       ctx.Message.Key,
+		Error:     ctx.Err.Error(),
+		Offset:    ctx.Message.Offset,
+		Partition: ctx.Message.Partition,
 	}
 
 	if r.Config.RejectionLog.IncludeValue {
@@ -87,10 +87,10 @@ func NewRejectionLogSinkResponseHandler() SinkResponseHandler {
 }
 
 type RejectionLog struct {
-	Topic string
-	SeqNo uint64
-	VbID  uint16
-	Key   []byte
-	Value string
-	Error string
+	Topic     string
+	Offset    int64
+	Partition int
+	Key       []byte
+	Value     string
+	Error     string
 }
