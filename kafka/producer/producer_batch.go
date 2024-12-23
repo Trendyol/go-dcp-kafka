@@ -1,6 +1,7 @@
 package producer
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/Trendyol/go-dcp-kafka/couchbase"
 
 	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
 	"github.com/Trendyol/go-dcp-kafka/kafka/message"
@@ -24,6 +27,7 @@ type Batch struct {
 	dcpCheckpointCommit func()
 	metric              *Metric
 	messages            []kafka.Message
+	cbEvent             *couchbase.Event
 	currentMessageBytes int64
 	batchTickerDuration time.Duration
 	batchLimit          int
@@ -84,7 +88,7 @@ func (b *Batch) PrepareEndRebalancing() {
 	b.isDcpRebalancing = false
 }
 
-func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time, isLastChunk bool) {
+func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, cbEvent *couchbase.Event, isLastChunk bool) {
 	b.flushLock.Lock()
 	if b.isDcpRebalancing {
 		logger.Log.Error("could not add new message to batch while rebalancing")
@@ -99,7 +103,11 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 	b.flushLock.Unlock()
 
 	if isLastChunk {
-		b.metric.KafkaConnectorLatency = time.Since(eventTime).Milliseconds()
+		b.metric.KafkaConnectorLatency = time.Since(cbEvent.EventTime).Milliseconds()
+	}
+
+	if cbEvent != nil {
+		b.cbEvent = cbEvent
 	}
 
 	if len(b.messages) >= b.batchLimit || b.currentMessageBytes >= b.batchBytes {
@@ -144,6 +152,7 @@ func (b *Batch) FlushMessages() {
 				return
 			}
 		}
+
 		b.messages = b.messages[:0]
 		b.currentMessageBytes = 0
 		b.batchTicker.Reset(b.batchTickerDuration)
@@ -170,12 +179,14 @@ func (b *Batch) handleWriteError(writeErrors kafka.WriteErrors) {
 	for i := range writeErrors {
 		if writeErrors[i] != nil {
 			b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
-				Message: convertKafkaMessage(b.messages[i]),
+				Message: convertKafkaMessage(b.messages[i], b.cbEvent),
 				Err:     writeErrors[i],
 			})
+
+			markMessageAsRejected(&b.messages[i])
 		} else {
 			b.sinkResponseHandler.OnSuccess(&gKafka.SinkResponseHandlerContext{
-				Message: convertKafkaMessage(b.messages[i]),
+				Message: convertKafkaMessage(b.messages[i], b.cbEvent),
 				Err:     nil,
 			})
 		}
@@ -183,18 +194,20 @@ func (b *Batch) handleWriteError(writeErrors kafka.WriteErrors) {
 }
 
 func (b *Batch) handleResponseError(err error) {
-	for _, msg := range b.messages {
+	for i, msg := range b.messages {
 		b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
-			Message: convertKafkaMessage(msg),
+			Message: convertKafkaMessage(msg, b.cbEvent),
 			Err:     err,
 		})
+
+		markMessageAsRejected(&b.messages[i])
 	}
 }
 
 func (b *Batch) handleResponseSuccess() {
 	for _, msg := range b.messages {
 		b.sinkResponseHandler.OnSuccess(&gKafka.SinkResponseHandlerContext{
-			Message: convertKafkaMessage(msg),
+			Message: convertKafkaMessage(msg, b.cbEvent),
 			Err:     nil,
 		})
 	}
@@ -202,17 +215,32 @@ func (b *Batch) handleResponseSuccess() {
 
 func (b *Batch) handleMessageTooLargeError(mTooLargeError kafka.MessageTooLargeError) {
 	b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
-		Message: convertKafkaMessage(mTooLargeError.Message),
+		Message: convertKafkaMessage(mTooLargeError.Message, b.cbEvent),
 		Err:     mTooLargeError,
 	})
+
+	for i, msg := range b.messages {
+		if bytes.Equal(msg.Key, mTooLargeError.Message.Key) {
+			markMessageAsRejected(&b.messages[i])
+		}
+	}
 }
 
-func convertKafkaMessage(src kafka.Message) *message.KafkaMessage {
+func markMessageAsRejected(message *kafka.Message) {
+	if !kafkaHeaderExists(message.Headers, gKafka.MessageIsRejectedKey) {
+		message.Headers = append(message.Headers, kafka.Header{Key: gKafka.MessageIsRejectedKey, Value: []byte("true")})
+		println(message)
+	}
+}
+
+func convertKafkaMessage(src kafka.Message, cbEvent *couchbase.Event) *message.KafkaMessage {
 	return &message.KafkaMessage{
 		Topic:   src.Topic,
 		Headers: src.Headers,
 		Key:     src.Key,
 		Value:   src.Value,
+		SeqNo:   cbEvent.SeqNo,
+		VbID:    cbEvent.VbID,
 	}
 }
 
@@ -227,4 +255,13 @@ func totalSizeOfMessages(messages []kafka.Message) int64 {
 		size += 14 + (4 + len(m.Key)) + (4 + len(m.Value)) + headerSize
 	}
 	return int64(size)
+}
+
+func kafkaHeaderExists(headers []kafka.Header, key string) bool {
+	for _, header := range headers {
+		if header.Key == key {
+			return true
+		}
+	}
+	return false
 }

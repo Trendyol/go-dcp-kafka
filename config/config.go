@@ -36,6 +36,12 @@ type Kafka struct {
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
+	RejectionLog                RejectionLog      `yaml:"rejectionLog"`
+}
+
+type RejectionLog struct {
+	Topic        string `yaml:"topic"`
+	IncludeValue bool   `yaml:"includeValue"`
 }
 
 func (k *Kafka) GetBalancer() kafka.Balancer {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	dcpkafka "github.com/Trendyol/go-dcp-kafka"
 	"github.com/Trendyol/go-dcp-kafka/couchbase"
 	"github.com/Trendyol/go-dcp-kafka/kafka"
@@ -19,26 +18,10 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 	}
 }
 
-type sinkResponseHandler struct {
-}
-
-func (s *sinkResponseHandler) OnInit(ctx *kafka.SinkResponseHandlerInitContext) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *sinkResponseHandler) OnSuccess(ctx *kafka.SinkResponseHandlerContext) {
-	fmt.Printf("OnSuccess Key: %v, Len: %v\n", string(ctx.Message.Key), len(ctx.Message.Value))
-}
-
-func (s *sinkResponseHandler) OnError(ctx *kafka.SinkResponseHandlerContext) {
-	fmt.Printf("OnError Key: %v, Len: %v, Err: %v\n", string(ctx.Message.Key), len(ctx.Message.Value), ctx.Err)
-}
-
 func main() {
 	c, err := dcpkafka.NewConnectorBuilder("config.yml").
 		SetMapper(mapper).
-		SetSinkResponseHandler(&sinkResponseHandler{}).
+		SetSinkResponseHandler(kafka.NewRejectionLogSinkResponseHandler()).
 		Build()
 	if err != nil {
 		panic(err)

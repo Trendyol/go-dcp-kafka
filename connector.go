@@ -68,20 +68,20 @@ func (c *connector) GetDcpClient() dcpCouchbase.Client {
 }
 
 func (c *connector) produce(ctx *models.ListenerContext) {
-	var e couchbase.Event
+	var cbEvent couchbase.Event
 	switch event := ctx.Event.(type) {
 	case models.DcpMutation:
-		e = couchbase.NewMutateEvent(
+		cbEvent = couchbase.NewMutateEvent(
 			event.Key, event.Value,
 			event.CollectionName, event.EventTime, event.Cas, event.VbID, event.SeqNo, event.RevNo,
 		)
 	case models.DcpExpiration:
-		e = couchbase.NewExpireEvent(
+		cbEvent = couchbase.NewExpireEvent(
 			event.Key, nil,
 			event.CollectionName, event.EventTime, event.Cas, event.VbID, event.SeqNo, event.RevNo,
 		)
 	case models.DcpDeletion:
-		e = couchbase.NewDeleteEvent(
+		cbEvent = couchbase.NewDeleteEvent(
 			event.Key, nil,
 			event.CollectionName, event.EventTime, event.Cas, event.VbID, event.SeqNo, event.RevNo,
 		)
@@ -89,7 +89,7 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 		return
 	}
 
-	kafkaMessages := c.mapper(e)
+	kafkaMessages := c.mapper(cbEvent)
 
 	if len(kafkaMessages) == 0 {
 		ctx.Ack()
@@ -99,7 +99,7 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 	messages := make([]sKafka.Message, 0, len(kafkaMessages))
 	for _, message := range kafkaMessages {
 		messages = append(messages, sKafka.Message{
-			Topic:   c.getTopicName(e.CollectionName, message.Topic),
+			Topic:   c.getTopicName(cbEvent.CollectionName, message.Topic),
 			Key:     message.Key,
 			Value:   message.Value,
 			Headers: message.Headers,
@@ -111,10 +111,10 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 		chunks := helpers.ChunkSliceWithSize[sKafka.Message](messages, batchSizeLimit)
 		lastChunkIndex := len(chunks) - 1
 		for idx, chunk := range chunks {
-			c.producer.Produce(ctx, e.EventTime, chunk, idx == lastChunkIndex)
+			c.producer.Produce(ctx, &cbEvent, chunk, idx == lastChunkIndex)
 		}
 	} else {
-		c.producer.Produce(ctx, e.EventTime, messages, true)
+		c.producer.Produce(ctx, &cbEvent, messages, true)
 	}
 }
 
