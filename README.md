@@ -38,51 +38,51 @@ used for both connectors.
 
 ```go
 func mapper(event couchbase.Event) []message.KafkaMessage {
-// return nil if you wish to discard the event
-return []message.KafkaMessage{
-{
-Headers: nil,
-Key:     event.Key,
-Value:   event.Value,
-},
-}
+	// return nil if you wish to discard the event
+	return []message.KafkaMessage{
+		{
+			Headers: nil,
+			Key:     event.Key,
+			Value:   event.Value,
+		},
+	}
 }
 
 func main() {
-c, err := dcpkafka.NewConnector(&config.Connector{
-Dcp: dcpConfig.Dcp{
-Hosts:      []string{"localhost:8091"},
-Username:   "user",
-Password:   "password",
-BucketName: "dcp-test",
-Dcp: dcpConfig.ExternalDcp{
-Group: dcpConfig.DCPGroup{
-Name: "groupName",
-Membership: dcpConfig.DCPGroupMembership{
-RebalanceDelay: 3 * time.Second,
-},
-},
-},
-Metadata: dcpConfig.Metadata{
-Config: map[string]string{
-"bucket":     "checkpoint-bucket-name",
-"scope":      "_default",
-"collection": "_default",
-},
-Type: "couchbase",
-},
-Debug: true},
-Kafka: config.Kafka{
-CollectionTopicMapping: map[string]string{"_default": "topic"},
-Brokers:                []string{"localhost:9092"},
-},
-}, mapper)
-if err != nil {
-panic(err)
-}
+	c, err := dcpkafka.NewConnector(&config.Connector{
+		Dcp: dcpConfig.Dcp{
+			Hosts:      []string{"localhost:8091"},
+			Username:   "user",
+			Password:   "password",
+			BucketName: "dcp-test",
+			Dcp: dcpConfig.ExternalDcp{
+				Group: dcpConfig.DCPGroup{
+					Name: "groupName",
+					Membership: dcpConfig.DCPGroupMembership{
+						RebalanceDelay: 3 * time.Second,
+					},
+				},
+			},
+			Metadata: dcpConfig.Metadata{
+				Config: map[string]string{
+					"bucket":     "checkpoint-bucket-name",
+					"scope":      "_default",
+					"collection": "_default",
+				},
+				Type: "couchbase",
+			},
+			Debug: true},
+		Kafka: config.Kafka{
+			CollectionTopicMapping: map[string]string{"_default": "topic"},
+			Brokers:                []string{"localhost:9092"},
+		},
+	}, mapper)
+	if err != nil {
+		panic(err)
+	}
 
-defer c.Close()
-c.Start()
+	defer c.Close()
+	c.Start()
 }
 ```
 
@@ -139,7 +139,7 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 | cbgo_kafka_connector_batch_produce_latency_ms_current | Time to produce messages in the batch. | N/A    | Gauge      |
 
 You can also use all DCP-related metrics explained [here](https://github.com/Trendyol/go-dcp#exposed-metrics).
-All DCP-related metrics are automatically injected. It means you don't need to do anything.
+All DCP-related metrics are automatically injected. It means you don't need to do anything. 
 
 ## Breaking Changes
 
