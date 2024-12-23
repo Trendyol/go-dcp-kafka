@@ -136,6 +136,10 @@ func (b *Batch) FlushMessages() {
 
 		b.metric.BatchProduceLatency = time.Since(startedTime).Milliseconds()
 
+		b.messages = b.messages[:0]
+		b.currentMessageBytes = 0
+		b.batchTicker.Reset(b.batchTickerDuration)
+
 		if b.sinkResponseHandler != nil {
 			switch e := err.(type) {
 			case nil:
@@ -151,9 +155,6 @@ func (b *Batch) FlushMessages() {
 				return
 			}
 		}
-		b.messages = b.messages[:0]
-		b.currentMessageBytes = 0
-		b.batchTicker.Reset(b.batchTickerDuration)
 	}
 	b.dcpCheckpointCommit()
 }
