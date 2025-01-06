@@ -5,13 +5,10 @@ import (
 	"fmt"
 
 	"github.com/Trendyol/go-dcp-kafka/config"
-	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 	"github.com/Trendyol/go-dcp/logger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/segmentio/kafka-go"
 )
-
-const MessageIsRejectedKey = "isRejected"
 
 type RejectionLogSinkResponseHandler struct {
 	Config      config.Kafka
@@ -35,10 +32,6 @@ func (r *RejectionLogSinkResponseHandler) OnSuccess(_ *SinkResponseHandlerContex
 }
 
 func (r *RejectionLogSinkResponseHandler) OnError(ctx *SinkResponseHandlerContext) {
-	if isMessageRejected(ctx.Message) {
-		return
-	}
-
 	rejectionLog := r.buildRejectionLog(ctx)
 	if err := r.publishToKafka(ctx, rejectionLog); err != nil {
 		logger.Log.Error("failed to publish rejection log, err: %v", err)
@@ -87,10 +80,6 @@ func (r *RejectionLogSinkResponseHandler) publishToKafka(ctx *SinkResponseHandle
 	}
 
 	return nil
-}
-
-func isMessageRejected(kafkaMessage *message.KafkaMessage) bool {
-	return kafkaMessage.IsHeaderExist(MessageIsRejectedKey)
 }
 
 func NewRejectionLogSinkResponseHandler() SinkResponseHandler {
