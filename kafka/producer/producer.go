@@ -1,8 +1,9 @@
 package producer
 
 import (
-	"github.com/Trendyol/go-dcp/helpers"
 	"time"
+
+	"github.com/Trendyol/go-dcp/helpers"
 
 	"github.com/Trendyol/go-dcp-kafka/config"
 	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
