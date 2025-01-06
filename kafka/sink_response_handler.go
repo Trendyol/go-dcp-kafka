@@ -3,6 +3,7 @@ package kafka
 import (
 	"github.com/Trendyol/go-dcp-kafka/config"
 	"github.com/Trendyol/go-dcp-kafka/kafka/message"
+	"github.com/segmentio/kafka-go"
 )
 
 type SinkResponseHandlerContext struct {
@@ -12,6 +13,7 @@ type SinkResponseHandlerContext struct {
 
 type SinkResponseHandlerInitContext struct {
 	KafkaClient Client
+	Writer      *kafka.Writer
 	Config      config.Kafka
 }
 

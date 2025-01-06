@@ -31,6 +31,7 @@ func NewProducer(kafkaClient gKafka.Client,
 		sinkResponseHandler.OnInit(&gKafka.SinkResponseHandlerInitContext{
 			Config:      config.Kafka,
 			KafkaClient: kafkaClient,
+			Writer:      writer,
 		})
 	}
 

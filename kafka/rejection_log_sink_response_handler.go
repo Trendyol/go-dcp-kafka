@@ -13,12 +13,14 @@ import (
 type RejectionLogSinkResponseHandler struct {
 	Config      config.Kafka
 	KafkaClient Client
+	Writer      *kafka.Writer
 	Topic       string
 }
 
 func (r *RejectionLogSinkResponseHandler) OnInit(ctx *SinkResponseHandlerInitContext) {
 	r.Config = ctx.Config
 	r.KafkaClient = ctx.KafkaClient
+	r.Writer = ctx.Writer
 	r.Topic = ctx.Config.RejectionLog.Topic
 
 	err := r.KafkaClient.CheckTopics([]string{r.Topic})
@@ -54,9 +56,8 @@ func (r *RejectionLogSinkResponseHandler) buildRejectionLog(ctx *SinkResponseHan
 }
 
 func (r *RejectionLogSinkResponseHandler) publishToKafka(ctx *SinkResponseHandlerContext, rejectionLog RejectionLog) error {
-	writer := r.KafkaClient.Producer()
 	defer func() {
-		if err := writer.Close(); err != nil {
+		if err := r.Writer.Close(); err != nil {
 			logger.Log.Error("failed to close Kafka writer, err: %v", err)
 		}
 	}()
@@ -73,7 +74,7 @@ func (r *RejectionLogSinkResponseHandler) publishToKafka(ctx *SinkResponseHandle
 		Headers: ctx.Message.Headers,
 	}
 
-	if err := writer.WriteMessages(context.Background(), kafkaMessage); err != nil {
+	if err := r.Writer.WriteMessages(context.Background(), kafkaMessage); err != nil {
 		return fmt.Errorf("failed to write Kafka message: %w", err)
 	}
 
