@@ -56,12 +56,6 @@ func (r *RejectionLogSinkResponseHandler) buildRejectionLog(ctx *SinkResponseHan
 }
 
 func (r *RejectionLogSinkResponseHandler) publishToKafka(ctx *SinkResponseHandlerContext, rejectionLog RejectionLog) error {
-	defer func() {
-		if err := r.Writer.Close(); err != nil {
-			logger.Log.Error("failed to close Kafka writer, err: %v", err)
-		}
-	}()
-
 	logBytes, err := jsoniter.Marshal(rejectionLog)
 	if err != nil {
 		return fmt.Errorf("failed to marshal rejection log: %w", err)
