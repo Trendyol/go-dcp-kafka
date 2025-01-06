@@ -44,8 +44,6 @@ func (r *RejectionLogSinkResponseHandler) buildRejectionLog(ctx *SinkResponseHan
 		Topic: ctx.Message.Topic,
 		Key:   ctx.Message.Key,
 		Error: ctx.Err.Error(),
-		SeqNo: ctx.Message.SeqNo,
-		VbID:  ctx.Message.VbID,
 	}
 
 	if r.Config.RejectionLog.IncludeValue {
@@ -88,8 +86,6 @@ func NewRejectionLogSinkResponseHandler() SinkResponseHandler {
 
 type RejectionLog struct {
 	Topic string
-	SeqNo uint64
-	VbID  uint16
 	Key   []byte
 	Value string
 	Error string

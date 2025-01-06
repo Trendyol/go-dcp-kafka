@@ -6,8 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Trendyol/go-dcp-kafka/couchbase"
-
 	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
 	"github.com/Trendyol/go-dcp-kafka/kafka/message"
 	"github.com/Trendyol/go-dcp/logger"
@@ -23,7 +21,6 @@ type Batch struct {
 	dcpCheckpointCommit func()
 	metric              *Metric
 	messages            []kafka.Message
-	cbEvent             *couchbase.Event
 	currentMessageBytes int64
 	batchTickerDuration time.Duration
 	batchLimit          int
@@ -84,7 +81,7 @@ func (b *Batch) PrepareEndRebalancing() {
 	b.isDcpRebalancing = false
 }
 
-func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, cbEvent *couchbase.Event, isLastChunk bool) {
+func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Message, eventTime time.Time, isLastChunk bool) {
 	b.flushLock.Lock()
 	if b.isDcpRebalancing {
 		logger.Log.Error("could not add new message to batch while rebalancing")
@@ -99,11 +96,7 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 	b.flushLock.Unlock()
 
 	if isLastChunk {
-		b.metric.KafkaConnectorLatency = time.Since(cbEvent.EventTime).Milliseconds()
-	}
-
-	if cbEvent != nil {
-		b.cbEvent = cbEvent
+		b.metric.KafkaConnectorLatency = time.Since(eventTime).Milliseconds()
 	}
 
 	if len(b.messages) >= b.batchLimit || b.currentMessageBytes >= b.batchBytes {
@@ -154,12 +147,12 @@ func (b *Batch) handleWriteError(writeErrors kafka.WriteErrors) {
 	for i := range writeErrors {
 		if writeErrors[i] != nil {
 			b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
-				Message: convertKafkaMessage(b.messages[i], b.cbEvent),
+				Message: convertKafkaMessage(b.messages[i]),
 				Err:     writeErrors[i],
 			})
 		} else {
 			b.sinkResponseHandler.OnSuccess(&gKafka.SinkResponseHandlerContext{
-				Message: convertKafkaMessage(b.messages[i], b.cbEvent),
+				Message: convertKafkaMessage(b.messages[i]),
 				Err:     nil,
 			})
 		}
@@ -169,7 +162,7 @@ func (b *Batch) handleWriteError(writeErrors kafka.WriteErrors) {
 func (b *Batch) handleResponseError(err error) {
 	for _, msg := range b.messages {
 		b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
-			Message: convertKafkaMessage(msg, b.cbEvent),
+			Message: convertKafkaMessage(msg),
 			Err:     err,
 		})
 	}
@@ -178,7 +171,7 @@ func (b *Batch) handleResponseError(err error) {
 func (b *Batch) handleResponseSuccess() {
 	for _, msg := range b.messages {
 		b.sinkResponseHandler.OnSuccess(&gKafka.SinkResponseHandlerContext{
-			Message: convertKafkaMessage(msg, b.cbEvent),
+			Message: convertKafkaMessage(msg),
 			Err:     nil,
 		})
 	}
@@ -186,19 +179,17 @@ func (b *Batch) handleResponseSuccess() {
 
 func (b *Batch) handleMessageTooLargeError(mTooLargeError kafka.MessageTooLargeError) {
 	b.sinkResponseHandler.OnError(&gKafka.SinkResponseHandlerContext{
-		Message: convertKafkaMessage(mTooLargeError.Message, b.cbEvent),
+		Message: convertKafkaMessage(mTooLargeError.Message),
 		Err:     mTooLargeError,
 	})
 }
 
-func convertKafkaMessage(src kafka.Message, cbEvent *couchbase.Event) *message.KafkaMessage {
+func convertKafkaMessage(src kafka.Message) *message.KafkaMessage {
 	return &message.KafkaMessage{
 		Topic:   src.Topic,
 		Headers: src.Headers,
 		Key:     src.Key,
 		Value:   src.Value,
-		SeqNo:   cbEvent.SeqNo,
-		VbID:    cbEvent.VbID,
 	}
 }
 

@@ -1,8 +1,8 @@
 package producer
 
 import (
-	"github.com/Trendyol/go-dcp-kafka/couchbase"
 	"github.com/Trendyol/go-dcp/helpers"
+	"time"
 
 	"github.com/Trendyol/go-dcp-kafka/config"
 	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
@@ -51,11 +51,11 @@ func (p *Producer) StartBatch() {
 
 func (p *Producer) Produce(
 	ctx *models.ListenerContext,
-	cbEvent *couchbase.Event,
+	eventTime time.Time,
 	messages []kafka.Message,
 	isLastChunk bool,
 ) {
-	p.ProducerBatch.AddMessages(ctx, messages, cbEvent, isLastChunk)
+	p.ProducerBatch.AddMessages(ctx, messages, eventTime, isLastChunk)
 }
 
 func (p *Producer) Close() error {

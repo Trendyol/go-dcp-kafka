@@ -7,6 +7,4 @@ type KafkaMessage struct {
 	Headers []kafka.Header
 	Key     []byte
 	Value   []byte
-	SeqNo   uint64
-	VbID    uint16
 }
