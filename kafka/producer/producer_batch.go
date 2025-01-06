@@ -2,11 +2,8 @@ package producer
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"sync"
-	"syscall"
 	"time"
 
 	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
@@ -118,13 +115,9 @@ func (b *Batch) FlushMessages() {
 		err := b.Writer.WriteMessages(context.Background(), b.messages...)
 
 		if err != nil && b.sinkResponseHandler == nil {
-			if isFatalError(err) {
-				err = fmt.Errorf("permanent error on kafka side %v", err)
-				logger.Log.Error("error while flush, err: %v", err)
-				panic(err)
-			}
-			logger.Log.Error("batch producer flush error %v", err)
-			return
+			err = fmt.Errorf("batch producer flush error %v", err)
+			logger.Log.Error("error while flush, err: %v", err)
+			panic(err)
 		}
 
 		b.metric.BatchProduceLatency = time.Since(startedTime).Milliseconds()
@@ -137,33 +130,17 @@ func (b *Batch) FlushMessages() {
 				b.handleWriteError(e)
 			case kafka.MessageTooLargeError:
 				b.handleMessageTooLargeError(e)
-				return
 			default:
 				b.handleResponseError(e)
-				logger.Log.Error("batch producer flush error %v", err)
-				return
+				logger.Log.Error("batch producer flush default error %v", err)
 			}
 		}
+
 		b.messages = b.messages[:0]
 		b.currentMessageBytes = 0
 		b.batchTicker.Reset(b.batchTickerDuration)
 	}
 	b.dcpCheckpointCommit()
-}
-
-func isFatalError(err error) bool {
-	e, ok := err.(kafka.Error)
-	if ok && errors.Is(err, kafka.UnknownTopicOrPartition) {
-		return true
-	}
-	if (ok && e.Temporary()) ||
-		errors.Is(err, io.ErrUnexpectedEOF) ||
-		errors.Is(err, syscall.ECONNREFUSED) ||
-		errors.Is(err, syscall.ECONNRESET) ||
-		errors.Is(err, syscall.EPIPE) {
-		return false
-	}
-	return true
 }
 
 func (b *Batch) handleWriteError(writeErrors kafka.WriteErrors) {

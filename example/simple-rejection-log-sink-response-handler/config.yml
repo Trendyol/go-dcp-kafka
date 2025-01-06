@@ -1,0 +1,35 @@
+hosts:
+  - localhost:8091
+username: user
+password: password
+bucketName: dcp-test
+scopeName: _default
+collectionNames:
+  - _default
+metadata:
+  type: couchbase
+  config:
+    bucket: checkpoint-bucket-name
+    scope: _default
+    collection: _default
+dcp:
+  group:
+    name: groupName
+    membership:
+      type: static
+kafka:
+  collectionTopicMapping:
+    _default: topicname
+  brokers:
+    - localhost:9092
+  # SSL configurations
+  #
+  # secureConnection: true
+  # Config support env variable "$HOME/example/..."
+  # rootCAPath: "example/stretch-kafka/rootCA.pem"
+  # interCAPath: "example/stretch-kafka/interCA.pem"
+  # scramUsername: "username"
+  # scramPassword: "password"
+  rejectionLog:
+    topic: "rejection-topic"
+    includeValue: true
