@@ -22,10 +22,7 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 type sinkResponseHandler struct {
 }
 
-func (s *sinkResponseHandler) OnInit(ctx *kafka.SinkResponseHandlerInitContext) {
-	//TODO implement me
-	panic("implement me")
-}
+func (s *sinkResponseHandler) OnInit(ctx *kafka.SinkResponseHandlerInitContext) {}
 
 func (s *sinkResponseHandler) OnSuccess(ctx *kafka.SinkResponseHandlerContext) {
 	fmt.Printf("OnSuccess Key: %v, Len: %v\n", string(ctx.Message.Key), len(ctx.Message.Value))
