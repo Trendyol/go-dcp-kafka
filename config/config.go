@@ -26,6 +26,7 @@ type Kafka struct {
 	Balancer                    string            `yaml:"balancer"`
 	Brokers                     []string          `yaml:"brokers"`
 	MetadataTopics              []string          `yaml:"metadataTopics"`
+	RejectionLog                RejectionLog      `yaml:"rejectionLog"`
 	ProducerMaxAttempts         int               `yaml:"producerMaxAttempts"`
 	ReadTimeout                 time.Duration     `yaml:"readTimeout"`
 	WriteTimeout                time.Duration     `yaml:"writeTimeout"`
@@ -36,7 +37,6 @@ type Kafka struct {
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
-	RejectionLog                RejectionLog      `yaml:"rejectionLog"`
 }
 
 type RejectionLog struct {

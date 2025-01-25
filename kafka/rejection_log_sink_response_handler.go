@@ -11,10 +11,10 @@ import (
 )
 
 type RejectionLogSinkResponseHandler struct {
-	Config      config.Kafka
 	KafkaClient Client
 	Writer      *kafka.Writer
 	Topic       string
+	Config      config.Kafka
 }
 
 func (r *RejectionLogSinkResponseHandler) OnInit(ctx *SinkResponseHandlerInitContext) {
@@ -81,7 +81,7 @@ func NewRejectionLogSinkResponseHandler() SinkResponseHandler {
 
 type RejectionLog struct {
 	Topic string
-	Key   []byte
 	Value string
 	Error string
+	Key   []byte
 }
