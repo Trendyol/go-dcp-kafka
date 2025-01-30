@@ -1,3 +1,5 @@
+
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Trendyol/go-dcp-kafka/badge)](https://scorecard.dev/viewer/?uri=github.com/Trendyol/go-dcp-kafka)
 # Go Dcp Kafka
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-dcp-kafka.svg)](https://pkg.go.dev/github.com/Trendyol/go-dcp-kafka) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-dcp-kafka)](https://goreportcard.com/report/github.com/Trendyol/go-dcp-kafka)
