@@ -1,8 +1,6 @@
 module grafana
 
-go 1.21
-
-toolchain go1.23.4
+go 1.20
 
 replace github.com/Trendyol/go-dcp-kafka => ../../.
 

@@ -1,8 +1,6 @@
 module github.com/Trendyol/go-dcp-kafka
 
-go 1.21
-
-toolchain go1.23.4
+go 1.20
 
 require (
 	github.com/Trendyol/go-dcp v1.2.2
