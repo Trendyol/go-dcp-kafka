@@ -39,10 +39,10 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 	// return nil if you wish to discard the event
 	return []message.KafkaMessage{
 		{
-			Headers: nil,
-			Key:     event.Key,
-			Value:   event.Value,
-			Writer:  event.Value
+			Headers:    nil,
+			Key:        event.Key,
+			Value:      event.Value,
+            WriterData: event.Value // The completion callback relies on WriterData for logging, so make sure it's correctly assigned.
 		},
 	}
 }

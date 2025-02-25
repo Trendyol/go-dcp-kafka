@@ -3,7 +3,7 @@ module github.com/Trendyol/go-dcp-kafka
 go 1.20
 
 require (
-	github.com/Trendyol/go-dcp v1.2.5
+	github.com/Trendyol/go-dcp v1.2.2
 	github.com/json-iterator/go v1.1.12
 	github.com/prometheus/client_golang v1.20.5
 	github.com/segmentio/kafka-go v0.4.47
@@ -46,12 +46,10 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.58.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.57.0 // indirect
