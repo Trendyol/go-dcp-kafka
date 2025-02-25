@@ -46,6 +46,7 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 			Headers: nil,
 			Key:     event.Key,
 			Value:   event.Value,
+			Writer:  event.Value
 		},
 	}
 }

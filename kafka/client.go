@@ -213,15 +213,7 @@ func (c *client) Producer() *kafka.Writer {
 		Compression:            kafka.Compression(c.config.Kafka.GetCompression()),
 		Transport:              c.transport,
 		AllowAutoTopicCreation: c.config.Kafka.AllowAutoTopicCreation,
-		Completion: func(messages []kafka.Message, err error) {
-			for i := range messages {
-				if err != nil {
-					logger.Log.Error("message produce error, error: %s message: %s, \n", err.Error(), messages[i].WriterData)
-				} else {
-					logger.Log.Debug("message produce success, message: %s\n", messages[i].WriterData)
-				}
-			}
-		},
+		Completion:             defaultCompletionCallback,
 	}
 }
 
@@ -325,4 +317,14 @@ func NewClient(config *config.Connector) Client {
 	}
 	newClient.kafkaClient.Transport = newClient.transport
 	return newClient
+}
+
+func defaultCompletionCallback(messages []kafka.Message, err error) {
+	for i := range messages {
+		if err != nil {
+			logger.Log.Error("message produce error, error: %s message: %s, \n", err.Error(), messages[i].WriterData)
+		} else {
+			logger.Log.Debug("message produce success, message: %s\n", messages[i].WriterData)
+		}
+	}
 }
