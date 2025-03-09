@@ -2,14 +2,13 @@ package config
 
 import (
 	"errors"
+	"github.com/Trendyol/go-dcp/config"
+	"github.com/Trendyol/go-dcp/helpers"
+	"github.com/Trendyol/go-dcp/logger"
 	"math"
 	"strconv"
 	"time"
 
-	"github.com/Trendyol/go-dcp/logger"
-
-	"github.com/Trendyol/go-dcp/config"
-	"github.com/Trendyol/go-dcp/helpers"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -37,11 +36,17 @@ type Kafka struct {
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
+	Completion                  CompletionType    `yaml:"completion,omitempty"`
 }
 
 type RejectionLog struct {
 	Topic        string `yaml:"topic"`
 	IncludeValue bool   `yaml:"includeValue"`
+}
+
+type CompletionType struct {
+	Func    func([]kafka.Message, error)
+	Default bool
 }
 
 func (k *Kafka) GetBalancer() kafka.Balancer {

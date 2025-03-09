@@ -17,7 +17,7 @@ type MockLogger struct {
 }
 
 func TestProducer(t *testing.T) {
-	// given
+
 	mockLogger := &MockLogger{}
 	logger.Log = mockLogger
 
@@ -35,13 +35,15 @@ func TestProducer(t *testing.T) {
 
 	client := &client{config: &mockConfig}
 
-	// when
 	writer := client.Producer()
 
-	// then
-	t.Run("Completion callback should log success message", func(t *testing.T) {
+	t.Run("Completion callback should log success message with default callback", func(t *testing.T) {
 		messages := []kafka.Message{
 			{WriterData: "message 1"},
+		}
+
+		client.config.Kafka.Completion = config.CompletionType{
+			Default: true,
 		}
 
 		writer.Completion(messages, nil)
@@ -52,9 +54,13 @@ func TestProducer(t *testing.T) {
 		}
 	})
 
-	t.Run("Completion callback should log error message", func(t *testing.T) {
+	t.Run("Completion callback should log error message with default callback", func(t *testing.T) {
 		messages := []kafka.Message{
 			{WriterData: "message 2"},
+		}
+
+		client.config.Kafka.Completion = config.CompletionType{
+			Default: true,
 		}
 
 		writer.Completion(messages, errors.New("Kafka error"))
@@ -62,6 +68,63 @@ func TestProducer(t *testing.T) {
 		expected := "message produce error, error: %s message: %s, \n"
 		if !contains(mockLogger.errorMessages, expected) {
 			t.Errorf("Expected log message: %s, but got: %v", expected, mockLogger.errorMessages)
+		}
+	})
+
+	client.config.Kafka.Completion = config.CompletionType{
+		Func: func(messages []kafka.Message, err error) {
+			for i := range messages {
+				if err != nil {
+					logger.Log.Error("custom error: %s message: %s, \n", err.Error(), messages[i].WriterData)
+				} else {
+					logger.Log.Debug("custom success: message: %s\n", messages[i].WriterData)
+				}
+			}
+		},
+	}
+
+	t.Run("Completion callback should log custom success message", func(t *testing.T) {
+		messages := []kafka.Message{
+			{WriterData: "message 3"},
+		}
+
+		writer.Completion(messages, nil)
+
+		expected := "custom success: message: %s\n"
+		if !contains(mockLogger.debugMessages, expected) {
+			t.Errorf("Expected log message: %s, but got: %v", expected, mockLogger.debugMessages)
+		}
+	})
+
+	t.Run("Completion callback should log custom error message", func(t *testing.T) {
+		messages := []kafka.Message{
+			{WriterData: "message 4"},
+		}
+
+		writer.Completion(messages, errors.New("Kafka error"))
+
+		expected := "custom error: %s message: %s, \n"
+		if !contains(mockLogger.errorMessages, expected) {
+			t.Errorf("Expected log message: %s, but got: %v", expected, mockLogger.errorMessages)
+		}
+	})
+
+	client.config.Kafka.Completion = config.CompletionType{
+		Func: nil,
+	}
+
+	t.Run("Completion callback should do nothing when Func is nil", func(t *testing.T) {
+		messages := []kafka.Message{
+			{WriterData: "message 5"},
+		}
+
+		mockLogger.debugMessages = nil
+		mockLogger.errorMessages = nil
+
+		writer.Completion(messages, nil)
+
+		if len(mockLogger.debugMessages) > 0 || len(mockLogger.errorMessages) > 0 {
+			t.Errorf("Expected no log messages, but got debug: %v, error: %v", mockLogger.debugMessages, mockLogger.errorMessages)
 		}
 	})
 }

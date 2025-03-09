@@ -200,6 +200,7 @@ func (c *client) CheckTopics(topics []string) error {
 }
 
 func (c *client) Producer() *kafka.Writer {
+
 	return &kafka.Writer{
 		Addr:                   kafka.TCP(c.config.Kafka.Brokers...),
 		Balancer:               c.config.Kafka.GetBalancer(),
@@ -213,7 +214,7 @@ func (c *client) Producer() *kafka.Writer {
 		Compression:            kafka.Compression(c.config.Kafka.GetCompression()),
 		Transport:              c.transport,
 		AllowAutoTopicCreation: c.config.Kafka.AllowAutoTopicCreation,
-		Completion:             defaultCompletionCallback,
+		Completion:             c.getCompletionCallback,
 	}
 }
 
@@ -319,12 +320,16 @@ func NewClient(config *config.Connector) Client {
 	return newClient
 }
 
-func defaultCompletionCallback(messages []kafka.Message, err error) {
-	for i := range messages {
-		if err != nil {
-			logger.Log.Error("message produce error, error: %s message: %s, \n", err.Error(), messages[i].WriterData)
-		} else {
-			logger.Log.Debug("message produce success, message: %s\n", messages[i].WriterData)
+func (c *client) getCompletionCallback(messages []kafka.Message, err error) {
+	if c.config.Kafka.Completion.Default {
+		for i := range messages {
+			if err != nil {
+				logger.Log.Error("message produce error, error: %s message: %s, \n", err.Error(), messages[i].WriterData)
+			} else {
+				logger.Log.Debug("message produce success, message: %s\n", messages[i].WriterData)
+			}
 		}
+	} else if c.config.Kafka.Completion.Func != nil {
+		c.config.Kafka.Completion.Func(messages, err)
 	}
 }
