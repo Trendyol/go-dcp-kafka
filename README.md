@@ -46,7 +46,6 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 			Headers: nil,
 			Key:     event.Key,
 			Value:   event.Value,
-            WriterData: event.Value // The default completion relies on WriterData for logging, so make sure it's correctly assigned if you want to use it. See `example/default-completion`.
         },
 	}
 }
