@@ -1,4 +1,8 @@
-# Go Dcp Kafka [![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-dcp-kafka.svg)](https://pkg.go.dev/github.com/Trendyol/go-dcp-kafka) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-dcp-kafka)](https://goreportcard.com/report/github.com/Trendyol/go-dcp-kafka) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Trendyol/go-dcp-kafka/badge)](https://scorecard.dev/viewer/?uri=github.com/Trendyol/go-dcp-kafka)
+
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Trendyol/go-dcp-kafka/badge)](https://scorecard.dev/viewer/?uri=github.com/Trendyol/go-dcp-kafka)
+# Go Dcp Kafka
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-dcp-kafka.svg)](https://pkg.go.dev/github.com/Trendyol/go-dcp-kafka) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-dcp-kafka)](https://goreportcard.com/report/github.com/Trendyol/go-dcp-kafka)
 
 Go implementation of the [Kafka Connect Couchbase](https://github.com/couchbase/kafka-connect-couchbase).
 
@@ -36,52 +40,52 @@ used for both connectors.
 
 ```go
 func mapper(event couchbase.Event) []message.KafkaMessage {
-// return nil if you wish to discard the event
-return []message.KafkaMessage{
-{
-Headers:    nil,
-Key:        event.Key,
-Value:      event.Value,
-WriterData: event.Value
-},
-}
+	// return nil if you wish to discard the event
+	return []message.KafkaMessage{
+		{
+			Headers: nil,
+			Key:     event.Key,
+			Value:   event.Value,
+            WriterData: event.Value // The default completion relies on WriterData for logging, so make sure it's correctly assigned if you want to use it. See `example/default-completion`.
+        },
+	}
 }
 
 func main() {
-c, err := dcpkafka.NewConnector(&config.Connector{
-Dcp: dcpConfig.Dcp{
-Hosts:      []string{"localhost:8091"},
-Username:   "user",
-Password:   "password",
-BucketName: "dcp-test",
-Dcp: dcpConfig.ExternalDcp{
-Group: dcpConfig.DCPGroup{
-Name: "groupName",
-Membership: dcpConfig.DCPGroupMembership{
-RebalanceDelay: 3 * time.Second,
-},
-},
-},
-Metadata: dcpConfig.Metadata{
-Config: map[string]string{
-"bucket":     "checkpoint-bucket-name",
-"scope":      "_default",
-"collection": "_default",
-},
-Type: "couchbase",
-},
-Debug: true},
-Kafka: config.Kafka{
-CollectionTopicMapping: map[string]string{"_default": "topic"},
-Brokers:                []string{"localhost:9092"},
-},
-}, mapper)
-if err != nil {
-panic(err)
-}
+	c, err := dcpkafka.NewConnector(&config.Connector{
+		Dcp: dcpConfig.Dcp{
+			Hosts:      []string{"localhost:8091"},
+			Username:   "user",
+			Password:   "password",
+			BucketName: "dcp-test",
+			Dcp: dcpConfig.ExternalDcp{
+				Group: dcpConfig.DCPGroup{
+					Name: "groupName",
+					Membership: dcpConfig.DCPGroupMembership{
+						RebalanceDelay: 3 * time.Second,
+					},
+				},
+			},
+			Metadata: dcpConfig.Metadata{
+				Config: map[string]string{
+					"bucket":     "checkpoint-bucket-name",
+					"scope":      "_default",
+					"collection": "_default",
+				},
+				Type: "couchbase",
+			},
+			Debug: true},
+		Kafka: config.Kafka{
+			CollectionTopicMapping: map[string]string{"_default": "topic"},
+			Brokers:                []string{"localhost:9092"},
+		},
+	}, mapper)
+	if err != nil {
+		panic(err)
+	}
 
-defer c.Close()
-c.Start()
+	defer c.Close()
+	c.Start()
 }
 ```
 
@@ -120,29 +124,7 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 | `kafka.clientID`                    | string            | no       |             | Unique identifier that the transport communicates to the brokers when it sends requests. For more detail please check [docs](https://pkg.go.dev/github.com/segmentio/kafka-go#Transport.ClientID).                                                                                               |
 | `kafka.allowAutoTopicCreation`      | bool              | no       | false       | Create topic if missing. For more detail please check [docs](https://pkg.go.dev/github.com/segmentio/kafka-go#Writer.AllowAutoTopicCreation).                                                                                                                                                    |
 | `kafka.rejectionLog.topic`          | string            | no       |             | Rejection topic name.                                                                                                                                                                                                                                                                            |
-| `kafka.rejectionLog.includeValue`   | boolean           | no       | false       | Includes rejection log source info. `false` is default.                                                                                                                                                                                                                                          
-| `kafka.completion`                  | object            | no       |             | Defines the completion callback behavior.                                                                                                                                                                                                                                                        |
-
-### Completion Callback Options
-
-The Kafka producer uses a completion callback for logging message status. The `WriterData` field in the `kafka.Message`
-is used for logging the message content.
-
-#### 1- Default Callback
-
-If `Completion.Default` is set to true, the default callback is used, logging success or failure of the message
-production.
-The default completion callback relies on `WriterData` for logging, so make sure it's correctly assigned.
-```go
-Kafka.Completion = CompletionType{ Default: true }
-```
-#### 2- Custom Callback
-You can provide a custom callback function with the signature `func([]kafka.Message, error)` for customized logging or actions.
-```go
-Kafka.Completion = CompletionType{ Func: customFunc }
-```
-#### 3- No Callback
-If `Completion` is not set or is nil, no callback will be executed.
+| `kafka.rejectionLog.includeValue`   | boolean           | no       | false       | Includes rejection log source info. `false` is default.                                                                                                                                                                                                                                          |
 
 ### Kafka Metadata Configuration(Use it if you want to store the checkpoint data in Kafka)
 
@@ -154,9 +136,9 @@ If `Completion` is not set or is nil, no callback will be executed.
 
 ## Exposed metrics
 
-| Metric Name                              		           | Description                            | Labels | Value Type |
+| Metric Name                              		| Description                            | Labels | Value Type |
 |-------------------------------------------------------|----------------------------------------|--------|------------|
-| cbgo_kafka_connector_latency_ms_current  		           | Time to adding to the batch.           | N/A    | Gauge      |
+| cbgo_kafka_connector_latency_ms_current  		| Time to adding to the batch.           | N/A    | Gauge      |
 | cbgo_kafka_connector_batch_produce_latency_ms_current | Time to produce messages in the batch. | N/A    | Gauge      |
 
 You can also use all DCP-related metrics explained [here](https://github.com/Trendyol/go-dcp#exposed-metrics).
@@ -164,9 +146,9 @@ All DCP-related metrics are automatically injected. It means you don't need to d
 
 ## Breaking Changes
 
-| Date taking effect | Date announced    | Change                         | How to check    |
-|--------------------|-------------------|--------------------------------|-----------------| 
-| November 11, 2023  | November 11, 2023 | Creating connector via builder | Compile project |
+| Date taking effect | Date announced | Change | How to check    |
+|--------------------| ---- |---- |-----------------| 
+| November 11, 2023  | November 11, 2023 |  Creating connector via builder | Compile project |
 
 ## Grafana Metric Dashboard
 

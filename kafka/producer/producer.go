@@ -24,8 +24,9 @@ func NewProducer(kafkaClient gKafka.Client,
 	config *config.Connector,
 	dcpCheckpointCommit func(),
 	sinkResponseHandler gKafka.SinkResponseHandler,
+	completionHandler func(messages []kafka.Message, err error),
 ) (Producer, error) {
-	writer := kafkaClient.Producer()
+	writer := kafkaClient.Producer(completionHandler)
 
 	if sinkResponseHandler != nil {
 		sinkResponseHandler.OnInit(&gKafka.SinkResponseHandlerInitContext{

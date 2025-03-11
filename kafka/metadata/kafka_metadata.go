@@ -180,7 +180,7 @@ func NewKafkaMetadata(
 
 	metadata := &kafkaMetadata{
 		kafkaClient: kafkaClient,
-		writer:      kafkaClient.Producer(),
+		writer:      kafkaClient.Producer(nil),
 		topic:       topic,
 	}
 
