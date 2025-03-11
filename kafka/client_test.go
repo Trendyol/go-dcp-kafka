@@ -86,6 +86,7 @@ func (m *MockLogger) Log(level string, message string, args ...interface{}) { pa
 func (m *MockLogger) Debug(format string, args ...interface{}) {
 	m.debugMessages = append(m.debugMessages, fmt.Sprintf(format, args...))
 }
+
 func (m *MockLogger) Error(format string, args ...interface{}) {
 	m.errorMessages = append(m.errorMessages, fmt.Sprintf(format, args...))
 }
