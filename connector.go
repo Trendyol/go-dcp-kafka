@@ -135,7 +135,9 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 	return topic
 }
 
-func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponseHandler, completionHandler func(messages []sKafka.Message, err error)) (Connector, error) {
+func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponseHandler,
+	completionHandler func(messages []sKafka.Message, err error),
+) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
 		return nil, err
