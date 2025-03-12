@@ -25,6 +25,7 @@ compose:
 tidy:
 	go mod tidy
 	cd example/default-mapper && go mod tidy && cd ../..
+	cd example/default-completion && go mod tidy && cd ../..
 	cd example/simple && go mod tidy && cd ../..
 	cd example/simple-logger && go mod tidy && cd ../..
 	cd example/struct-config && go mod tidy && cd ../..

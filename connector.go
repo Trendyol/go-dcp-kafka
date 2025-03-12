@@ -135,7 +135,9 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 	return topic
 }
 
-func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponseHandler) (Connector, error) {
+func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponseHandler,
+	completionHandler func(messages []sKafka.Message, err error),
+) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
 		return nil, err
@@ -170,7 +172,7 @@ func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponse
 
 	connector.dcp = dcpClient
 
-	connector.producer, err = producer.NewProducer(kafkaClient, c, dcpClient.Commit, sinkResponseHandler)
+	connector.producer, err = producer.NewProducer(kafkaClient, c, dcpClient.Commit, sinkResponseHandler, completionHandler)
 	if err != nil {
 		logger.Log.Error("kafka error: %v", err)
 		return nil, err
@@ -253,6 +255,7 @@ type ConnectorBuilder struct {
 	mapper              Mapper
 	config              any
 	sinkResponseHandler kafka.SinkResponseHandler
+	completionHandler   func(messages []sKafka.Message, err error)
 }
 
 func NewConnectorBuilder(config any) *ConnectorBuilder {
@@ -260,6 +263,7 @@ func NewConnectorBuilder(config any) *ConnectorBuilder {
 		config:              config,
 		mapper:              DefaultMapper,
 		sinkResponseHandler: nil,
+		completionHandler:   nil,
 	}
 }
 
@@ -274,7 +278,7 @@ func (c *ConnectorBuilder) SetSinkResponseHandler(sinkResponseHandler kafka.Sink
 }
 
 func (c *ConnectorBuilder) Build() (Connector, error) {
-	return newConnector(c.config, c.mapper, c.sinkResponseHandler)
+	return newConnector(c.config, c.mapper, c.sinkResponseHandler, c.completionHandler)
 }
 
 func (c *ConnectorBuilder) SetLogger(l *logrus.Logger) *ConnectorBuilder {
@@ -295,4 +299,9 @@ func printConfiguration(config config.Kafka) {
 	}
 
 	logger.Log.Info("using kafka config: %v", dst.String())
+}
+
+func (c *ConnectorBuilder) SetCompletionHandler(f func(messages []sKafka.Message, err error)) *ConnectorBuilder {
+	c.completionHandler = f
+	return c
 }

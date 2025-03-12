@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Trendyol/go-dcp/logger"
-
 	"github.com/Trendyol/go-dcp/config"
 	"github.com/Trendyol/go-dcp/helpers"
+	"github.com/Trendyol/go-dcp/logger"
+
 	"github.com/segmentio/kafka-go"
 )
 

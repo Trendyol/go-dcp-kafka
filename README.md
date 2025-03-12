@@ -1,4 +1,8 @@
-# Go Dcp Kafka [![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-dcp-kafka.svg)](https://pkg.go.dev/github.com/Trendyol/go-dcp-kafka) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-dcp-kafka)](https://goreportcard.com/report/github.com/Trendyol/go-dcp-kafka) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Trendyol/go-dcp-kafka/badge)](https://scorecard.dev/viewer/?uri=github.com/Trendyol/go-dcp-kafka)
+
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Trendyol/go-dcp-kafka/badge)](https://scorecard.dev/viewer/?uri=github.com/Trendyol/go-dcp-kafka)
+# Go Dcp Kafka
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-dcp-kafka.svg)](https://pkg.go.dev/github.com/Trendyol/go-dcp-kafka) [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-dcp-kafka)](https://goreportcard.com/report/github.com/Trendyol/go-dcp-kafka)
 
 Go implementation of the [Kafka Connect Couchbase](https://github.com/couchbase/kafka-connect-couchbase).
 
@@ -42,7 +46,7 @@ func mapper(event couchbase.Event) []message.KafkaMessage {
 			Headers: nil,
 			Key:     event.Key,
 			Value:   event.Value,
-		},
+        },
 	}
 }
 
@@ -137,7 +141,7 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 | cbgo_kafka_connector_batch_produce_latency_ms_current | Time to produce messages in the batch. | N/A    | Gauge      |
 
 You can also use all DCP-related metrics explained [here](https://github.com/Trendyol/go-dcp#exposed-metrics).
-All DCP-related metrics are automatically injected. It means you don't need to do anything. 
+All DCP-related metrics are automatically injected. It means you don't need to do anything.
 
 ## Breaking Changes
 

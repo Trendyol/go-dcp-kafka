@@ -23,7 +23,7 @@ type Client interface {
 	GetEndOffsets(topic string, partitions []int) ([]kafka.PartitionOffsets, error)
 	GetPartitions(topic string) ([]int, error)
 	CreateCompactedTopic(topic string, partition int, replicationFactor int) error
-	Producer() *kafka.Writer
+	Producer(completionHandler func(messages []kafka.Message, err error)) *kafka.Writer
 	Consumer(topic string, partition int, startOffset int64) *kafka.Reader
 	CheckTopicIsCompacted(topic string) error
 	CheckTopics(topics []string) error
@@ -199,7 +199,7 @@ func (c *client) CheckTopics(topics []string) error {
 	return nil
 }
 
-func (c *client) Producer() *kafka.Writer {
+func (c *client) Producer(completionHandler func(messages []kafka.Message, err error)) *kafka.Writer {
 	return &kafka.Writer{
 		Addr:                   kafka.TCP(c.config.Kafka.Brokers...),
 		Balancer:               c.config.Kafka.GetBalancer(),
@@ -213,6 +213,7 @@ func (c *client) Producer() *kafka.Writer {
 		Compression:            kafka.Compression(c.config.Kafka.GetCompression()),
 		Transport:              c.transport,
 		AllowAutoTopicCreation: c.config.Kafka.AllowAutoTopicCreation,
+		Completion:             completionHandler,
 	}
 }
 
