@@ -15,8 +15,6 @@ metadata:
 dcp:
   group:
     name: groupName
-    membership:
-      type: static
 kafka:
   collectionTopicMapping:
     _default: topicname
