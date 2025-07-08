@@ -1,8 +1,12 @@
 package couchbase
 
-import "time"
+import (
+	"github.com/Trendyol/go-dcp/tracing"
+	"time"
+)
 
 type Event struct {
+	tracing.ListenerTrace
 	CollectionName string
 	EventTime      time.Time
 	Key            []byte

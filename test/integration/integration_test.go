@@ -14,6 +14,11 @@ import (
 )
 
 func mapper(event couchbase.Event) []message.KafkaMessage {
+	trace := event.ListenerTrace.CreateChildTrace("test", map[string]interface{}{})
+	trace2 := trace.CreateChildTrace("test2", map[string]interface{}{})
+	trace2.Finish()
+	defer trace.Finish()
+
 	if event.IsExpired || event.IsDeleted {
 		return nil
 	}

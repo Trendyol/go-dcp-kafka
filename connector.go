@@ -68,6 +68,9 @@ func (c *connector) GetDcpClient() dcpCouchbase.Client {
 }
 
 func (c *connector) produce(ctx *models.ListenerContext) {
+	listenerTrace := ctx.ListenerTracerComponent.InitializeListenerTrace("Produce", map[string]interface{}{})
+	defer listenerTrace.Finish()
+
 	var e couchbase.Event
 	switch event := ctx.Event.(type) {
 	case models.DcpMutation:
@@ -89,6 +92,7 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 		return
 	}
 
+	e.ListenerTrace = listenerTrace
 	kafkaMessages := c.mapper(e)
 
 	if len(kafkaMessages) == 0 {
