@@ -183,6 +183,7 @@ func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponse
 	}
 
 	connector.dcp.SetEventHandler(&DcpEventHandler{
+		isFinite:      conf.IsDcpModeFinite(),
 		producerBatch: connector.producer.ProducerBatch,
 	})
 
