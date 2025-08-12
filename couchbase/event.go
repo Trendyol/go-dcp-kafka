@@ -1,8 +1,9 @@
 package couchbase
 
 import (
-	"github.com/Trendyol/go-dcp/tracing"
 	"time"
+
+	"github.com/Trendyol/go-dcp/tracing"
 )
 
 type Event struct {
