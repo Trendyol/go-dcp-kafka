@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"strings"
 	"sync"
 
+	"github.com/Trendyol/go-dcp/helpers"
+	"github.com/Trendyol/go-dcp/metadata"
 	"github.com/Trendyol/go-dcp/wrapper"
 
-	"github.com/Trendyol/go-dcp/metadata"
 	"github.com/Trendyol/go-dcp/models"
 
 	gKafka "github.com/Trendyol/go-dcp-kafka/kafka"
@@ -21,6 +23,7 @@ type kafkaMetadata struct {
 	kafkaClient gKafka.Client
 	writer      *kafka.Writer
 	topic       string
+	groupName   string
 }
 
 func (s *kafkaMetadata) Save(state map[uint16]*models.CheckpointDocument, dirtyOffsets map[uint16]bool, _ string) error {
@@ -37,7 +40,7 @@ func (s *kafkaMetadata) Save(state map[uint16]*models.CheckpointDocument, dirtyO
 
 		messages = append(messages, kafka.Message{
 			Topic: s.topic,
-			Key:   []byte(strconv.Itoa(int(vbID))),
+			Key:   getCheckpointID(vbID, s.groupName),
 			Value: value,
 		})
 	}
@@ -106,13 +109,8 @@ func (s *kafkaMetadata) Load( //nolint:funlen
 				exist = true
 			}
 
-			vbID, err := strconv.ParseUint(string(m.Key), 0, 16)
-			if err == nil {
-				state.Store(uint16(vbID), doc)
-			} else {
-				logger.Log.Error("cannot load checkpoint, vbID: %d %v", vbID, err)
-				panic(err)
-			}
+			vbID := getVbIdFromCheckpointId(string(m.Key))
+			state.Store(vbID, doc)
 		}
 	}()
 
@@ -135,6 +133,7 @@ func (s *kafkaMetadata) Clear(_ []uint16) error {
 func NewKafkaMetadata(
 	kafkaClient gKafka.Client,
 	kafkaMetadataConfig map[string]string,
+	groupName string,
 ) metadata.Metadata {
 	var topic string
 	var partition int
@@ -182,6 +181,7 @@ func NewKafkaMetadata(
 		kafkaClient: kafkaClient,
 		writer:      kafkaClient.Producer(nil),
 		topic:       topic,
+		groupName:   groupName,
 	}
 
 	err := kafkaClient.CreateCompactedTopic(topic, partition, replicationFactor)
@@ -198,4 +198,31 @@ func NewKafkaMetadata(
 	}
 
 	return metadata
+}
+
+func getCheckpointID(vbID uint16, groupName string) []byte {
+	// _connector:cbgo:groupName:stdout-listener:checkpoint:vbId
+	if strings.Contains(groupName, ".") {
+		err := errors.New("unsupported group name includes dot")
+		logger.Log.Error("error while get checkpoint id, err: %v", err)
+		panic(err)
+	}
+	return []byte(helpers.Prefix + groupName + ":checkpoint:" + strconv.Itoa(int(vbID)))
+}
+
+func getVbIdFromCheckpointId(checkpointId string) uint16 {
+	parts := strings.Split(checkpointId, ":")
+	if len(parts) != 6 {
+		err := errors.New("invalid checkpoint id")
+		logger.Log.Error("error while get checkpoint id, err: %v", err)
+		panic(err)
+	}
+
+	vbId, err := strconv.ParseUint(parts[5], 10, 16)
+	if err != nil {
+		logger.Log.Error("error while get checkpoint id, err: %v", err)
+		panic(err)
+	}
+
+	return uint16(vbId)
 }

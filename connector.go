@@ -32,7 +32,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var MetadataTypeKafka = "kafka"
+var (
+	MetadataTypeKafka   = "kafka"
+	MetadataTypeConnect = "connect"
+)
 
 type Connector interface {
 	Start()
@@ -170,8 +173,11 @@ func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponse
 		return nil, err
 	}
 
-	if conf.Metadata.Type == MetadataTypeKafka {
+	switch conf.Metadata.Type {
+	case MetadataTypeKafka:
 		setKafkaMetadata(kafkaClient, conf, dcpClient)
+	case MetadataTypeConnect:
+		setConnectMetadata(kafkaClient, conf, dcpClient)
 	}
 
 	connector.dcp = dcpClient
@@ -224,8 +230,13 @@ func createKafkaClient(cc *config.Connector) (kafka.Client, error) {
 }
 
 func setKafkaMetadata(kafkaClient kafka.Client, dcpConfig *dcpConfig.Dcp, dcp dcp.Dcp) {
-	kafkaMetadata := metadata.NewKafkaMetadata(kafkaClient, dcpConfig.Metadata.Config)
+	kafkaMetadata := metadata.NewKafkaMetadata(kafkaClient, dcpConfig.Metadata.Config, dcpConfig.Dcp.Group.Name)
 	dcp.SetMetadata(kafkaMetadata)
+}
+
+func setConnectMetadata(kafkaClient kafka.Client, dcpConfig *dcpConfig.Dcp, dcp dcp.Dcp) {
+	connectMetadata := metadata.NewConnectMetadata(kafkaClient, dcpConfig.Dcp.Group.Name, dcpConfig.BucketName)
+	dcp.SetMetadata(connectMetadata)
 }
 
 func initializeMetricCollector(connector *connector, dcp dcp.Dcp) {

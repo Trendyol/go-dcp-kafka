@@ -17,7 +17,7 @@ events in near real-time.
 * Handling different DCP events such as **expiration, deletion and mutation**(see [Example](#example)).
 * **Kafka compression** support(Gzip, Snappy, Lz4, Zstd).
 * **Kafka producer acknowledges** support(fire-and-forget, wait for the leader, wait for the full ISR).
-* Metadata can be saved to **Couchbase or Kafka**.
+* Metadata can be saved to **Couchbase, Kafka or Connect**.
 * **Managing batch configurations** such as maximum batch size, batch bytes, batch ticker durations.
 * **Scale up and down** by custom membership algorithms(Couchbase, KubernetesHa, Kubernetes StatefulSet or
   Static, see [examples](https://github.com/Trendyol/go-dcp#examples)).
@@ -129,7 +129,7 @@ Check out on [go-dcp](https://github.com/Trendyol/go-dcp#configuration)
 
 | Variable            | Type              | Description                                                                        |                                                            
 |---------------------|-------------------|------------------------------------------------------------------------------------|
-| `metadata.type`     | string            | Metadata storing types.  `kafka`,`file` or `couchbase`.                            |
+| `metadata.type`     | string            | Metadata storing types.  `kafka`,`connect`,`file` or `couchbase`.                  |
 | `metadata.readOnly` | bool              | Set this for debugging state purposes.                                             |
 | `metadata.config`   | map[string]string | Set key-values of config. `topic`,`partition`,`replicationFactor` for `kafka` type |
 
