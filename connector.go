@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	md "github.com/Trendyol/go-dcp/metadata"
 	jsoniter "github.com/json-iterator/go"
 
 	dcpCouchbase "github.com/Trendyol/go-dcp/couchbase"
@@ -143,7 +144,7 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 }
 
 func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponseHandler,
-	completionHandler func(messages []sKafka.Message, err error),
+	completionHandler func(messages []sKafka.Message, err error), md md.Metadata,
 ) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
@@ -173,11 +174,15 @@ func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponse
 		return nil, err
 	}
 
-	switch conf.Metadata.Type {
-	case MetadataTypeKafka:
-		setKafkaMetadata(kafkaClient, conf, dcpClient)
-	case MetadataTypeConnect:
-		setConnectMetadata(kafkaClient, conf, dcpClient)
+	if md != nil {
+		setMetadata(dcpClient, md)
+	} else {
+		switch conf.Metadata.Type {
+		case MetadataTypeKafka:
+			setKafkaMetadata(kafkaClient, conf, dcpClient)
+		case MetadataTypeConnect:
+			setConnectMetadata(kafkaClient, conf, dcpClient)
+		}
 	}
 
 	connector.dcp = dcpClient
@@ -239,6 +244,10 @@ func setConnectMetadata(kafkaClient kafka.Client, dcpConfig *dcpConfig.Dcp, dcp 
 	dcp.SetMetadata(connectMetadata)
 }
 
+func setMetadata(dcp dcp.Dcp, md md.Metadata) {
+	dcp.SetMetadata(md)
+}
+
 func initializeMetricCollector(connector *connector, dcp dcp.Dcp) {
 	metricCollector := metric.NewMetricCollector(connector.producer)
 	dcp.SetMetricCollectors(metricCollector)
@@ -272,6 +281,7 @@ type ConnectorBuilder struct {
 	config              any
 	sinkResponseHandler kafka.SinkResponseHandler
 	completionHandler   func(messages []sKafka.Message, err error)
+	md                  md.Metadata
 }
 
 func NewConnectorBuilder(config any) *ConnectorBuilder {
@@ -280,6 +290,7 @@ func NewConnectorBuilder(config any) *ConnectorBuilder {
 		mapper:              DefaultMapper,
 		sinkResponseHandler: nil,
 		completionHandler:   nil,
+		md:                  nil,
 	}
 }
 
@@ -293,8 +304,13 @@ func (c *ConnectorBuilder) SetSinkResponseHandler(sinkResponseHandler kafka.Sink
 	return c
 }
 
+func (c *ConnectorBuilder) SetMetadata(md md.Metadata) *ConnectorBuilder {
+	c.md = md
+	return c
+}
+
 func (c *ConnectorBuilder) Build() (Connector, error) {
-	return newConnector(c.config, c.mapper, c.sinkResponseHandler, c.completionHandler)
+	return newConnector(c.config, c.mapper, c.sinkResponseHandler, c.completionHandler, c.md)
 }
 
 func (c *ConnectorBuilder) SetLogger(l *logrus.Logger) *ConnectorBuilder {
