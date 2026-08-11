@@ -144,7 +144,7 @@ func (c *connector) getTopicName(collectionName string, messageTopic string) str
 }
 
 func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponseHandler,
-	completionHandler func(messages []sKafka.Message, err error), md md.Metadata, mdFunc func() md.Metadata,
+	completionHandler func(messages []sKafka.Message, err error), md md.Metadata, mdFunc func(client dcpCouchbase.Client) md.Metadata,
 ) (Connector, error) {
 	c, err := newConfig(cfg)
 	if err != nil {
@@ -177,7 +177,7 @@ func newConnector(cfg any, mapper Mapper, sinkResponseHandler kafka.SinkResponse
 	if md != nil { //nolint:gocritic
 		setMetadata(dcpClient, md)
 	} else if mdFunc != nil {
-		setMetadata(dcpClient, mdFunc())
+		setMetadata(dcpClient, mdFunc(dcpClient.GetClient()))
 	} else {
 		switch conf.Metadata.Type {
 		case MetadataTypeKafka:
@@ -284,7 +284,7 @@ type ConnectorBuilder struct {
 	sinkResponseHandler kafka.SinkResponseHandler
 	completionHandler   func(messages []sKafka.Message, err error)
 	md                  md.Metadata
-	mdFunc              func() md.Metadata
+	mdFunc              func(client dcpCouchbase.Client) md.Metadata
 }
 
 func NewConnectorBuilder(config any) *ConnectorBuilder {
@@ -312,7 +312,7 @@ func (c *ConnectorBuilder) SetMetadata(md md.Metadata) *ConnectorBuilder {
 	return c
 }
 
-func (c *ConnectorBuilder) SetMetadataFunc(mdFunc func() md.Metadata) *ConnectorBuilder {
+func (c *ConnectorBuilder) SetMetadataFunc(mdFunc func(client dcpCouchbase.Client) md.Metadata) *ConnectorBuilder {
 	c.mdFunc = mdFunc
 	return c
 }
