@@ -111,6 +111,7 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 			Key:     message.Key,
 			Value:   message.Value,
 			Headers: message.Headers,
+			Time:    e.EventTime,
 		})
 	}
 

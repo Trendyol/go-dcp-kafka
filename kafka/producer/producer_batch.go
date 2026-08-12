@@ -186,10 +186,11 @@ func (b *Batch) handleMessageTooLargeError(mTooLargeError kafka.MessageTooLargeE
 
 func convertKafkaMessage(src kafka.Message) *message.KafkaMessage {
 	return &message.KafkaMessage{
-		Topic:   src.Topic,
-		Headers: src.Headers,
-		Key:     src.Key,
-		Value:   src.Value,
+		Topic:     src.Topic,
+		Headers:   src.Headers,
+		Key:       src.Key,
+		Value:     src.Value,
+		EventTime: src.Time,
 	}
 }
 
