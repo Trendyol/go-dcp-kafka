@@ -1,10 +1,15 @@
 package message
 
-import "github.com/segmentio/kafka-go"
+import (
+	"time"
+
+	"github.com/segmentio/kafka-go"
+)
 
 type KafkaMessage struct {
-	Topic   string
-	Headers []kafka.Header
-	Key     []byte
-	Value   []byte
+	EventTime time.Time
+	Topic     string
+	Headers   []kafka.Header
+	Key       []byte
+	Value     []byte
 }
