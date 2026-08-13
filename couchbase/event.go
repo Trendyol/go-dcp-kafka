@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Trendyol/go-dcp/tracing"
+	"github.com/couchbase/gocbcore/v10"
 )
 
 type Event struct {
@@ -19,11 +20,12 @@ type Event struct {
 	IsMutated      bool
 	SeqNo          uint64
 	RevNo          uint64
+	VbUuid         gocbcore.VbUUID
 }
 
 func NewDeleteEvent(
 	key []byte, value []byte,
-	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64,
+	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64, vbUuid gocbcore.VbUUID,
 ) Event {
 	return Event{
 		Key:            key,
@@ -35,12 +37,13 @@ func NewDeleteEvent(
 		VbID:           vbID,
 		SeqNo:          seqNo,
 		RevNo:          revNo,
+		VbUuid:         vbUuid,
 	}
 }
 
 func NewExpireEvent(
 	key []byte, value []byte,
-	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64,
+	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64, vbUuid gocbcore.VbUUID,
 ) Event {
 	return Event{
 		Key:            key,
@@ -52,12 +55,13 @@ func NewExpireEvent(
 		VbID:           vbID,
 		SeqNo:          seqNo,
 		RevNo:          revNo,
+		VbUuid:         vbUuid,
 	}
 }
 
 func NewMutateEvent(
 	key []byte, value []byte,
-	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64,
+	collectionName string, eventTime time.Time, cas uint64, vbID uint16, seqNo uint64, revNo uint64, vbUuid gocbcore.VbUUID,
 ) Event {
 	return Event{
 		Key:            key,
@@ -69,5 +73,6 @@ func NewMutateEvent(
 		VbID:           vbID,
 		SeqNo:          seqNo,
 		RevNo:          revNo,
+		VbUuid:         vbUuid,
 	}
 }

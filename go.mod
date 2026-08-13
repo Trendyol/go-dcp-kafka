@@ -5,7 +5,8 @@ go 1.24.0
 toolchain go1.24.5
 
 require (
-	github.com/Trendyol/go-dcp v1.3.5
+	github.com/Trendyol/go-dcp v1.3.6
+	github.com/couchbase/gocbcore/v10 v10.9.3
 	github.com/json-iterator/go v1.1.12
 	github.com/prometheus/client_golang v1.23.2
 	github.com/segmentio/kafka-go v0.4.51
@@ -23,7 +24,6 @@ require (
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
-	github.com/couchbase/gocbcore/v10 v10.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
