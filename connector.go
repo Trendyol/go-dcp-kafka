@@ -106,13 +106,18 @@ func (c *connector) produce(ctx *models.ListenerContext) {
 
 	messages := make([]sKafka.Message, 0, len(kafkaMessages))
 	for _, message := range kafkaMessages {
-		messages = append(messages, sKafka.Message{
+		m := sKafka.Message{
 			Topic:   c.getTopicName(e.CollectionName, message.Topic),
 			Key:     message.Key,
 			Value:   message.Value,
 			Headers: message.Headers,
-			Time:    e.EventTime,
-		})
+		}
+
+		if c.config.Kafka.PassEventTimeToKafkaTime {
+			m.Time = e.EventTime
+		}
+
+		messages = append(messages, m)
 	}
 
 	batchSizeLimit := c.config.Kafka.ProducerBatchSize
