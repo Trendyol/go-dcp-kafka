@@ -37,6 +37,7 @@ type Kafka struct {
 	Compression                 int8              `yaml:"compression"`
 	SecureConnection            bool              `yaml:"secureConnection"`
 	AllowAutoTopicCreation      bool              `yaml:"allowAutoTopicCreation"`
+	PassEventTimeToKafkaTime    bool              `yaml:"passEventTimeToKafkaTime"`
 }
 
 type RejectionLog struct {
