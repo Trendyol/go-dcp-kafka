@@ -88,8 +88,15 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 		b.flushLock.Unlock()
 		return
 	}
+
+	messageBytes := totalSizeOfMessages(messages)
+
+	if len(b.messages) > 0 && (len(b.messages)+len(messages) >= b.batchLimit || b.currentMessageBytes+messageBytes >= b.batchBytes) {
+		b.flushMessages()
+	}
+
 	b.messages = append(b.messages, messages...)
-	b.currentMessageBytes += totalSizeOfMessages(messages)
+	b.currentMessageBytes += messageBytes
 	if isLastChunk {
 		ctx.Ack()
 	}
@@ -98,15 +105,16 @@ func (b *Batch) AddMessages(ctx *models.ListenerContext, messages []kafka.Messag
 	if isLastChunk {
 		b.metric.KafkaConnectorLatency = time.Since(eventTime).Milliseconds()
 	}
-
-	if len(b.messages) >= b.batchLimit || b.currentMessageBytes >= b.batchBytes {
-		b.FlushMessages()
-	}
 }
 
 func (b *Batch) FlushMessages() {
 	b.flushLock.Lock()
 	defer b.flushLock.Unlock()
+	b.flushMessages()
+}
+
+// flushMessages performs the actual flush. Caller must hold flushLock.
+func (b *Batch) flushMessages() {
 	if b.isDcpRebalancing {
 		return
 	}
